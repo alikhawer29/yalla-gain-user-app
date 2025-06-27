@@ -5,8 +5,8 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
+import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import fonts from './src/assets/fonts';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -14,7 +14,7 @@ function App() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <NewAppScreen templateFileName="App.tsx" />
+      <Text style={{ fontSize: 32, fontFamily: fonts.sfpro.bold }}>Hellooooooooooo</Text>
     </View>
   );
 }
@@ -22,6 +22,8 @@ function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
   },
 });
 
