@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import { DimensionValue, GestureResponderEvent, ImageSourcePropType, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
+import { DimensionValue, GestureResponderEvent, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
 
 export interface IWrapper {
     children: ReactNode
@@ -15,6 +15,11 @@ export interface ICardWrapper extends IWrapper {
     width?: DimensionValue,
     padding?: number,
     border?: boolean,
+}
+
+export interface IImage {
+    source: ImageSourcePropType,
+    style?: StyleProp<ImageStyle>
 }
 
 export interface IText {
