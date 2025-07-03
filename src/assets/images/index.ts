@@ -1,6 +1,9 @@
 const images = {
     logo: require('./logo.png'),
     header: require('./header.png'),
+    left_light: require('./left_light.png'),
+    right_light: require('./right_light.png'),
+    center_light: require('./center_light.png'),
     dummy: require('./dummy.png'),
     dumbbell: require('./dumbbell.png'),
     kabaddi: require('./kabaddi.png'),
@@ -8,6 +11,8 @@ const images = {
     run: require('./run.png'),
     globe: require('./globe.png'),
     calendar: require('./calendar.png'),
+    eye_slash: require('./eye-slash.png'),
+    eye: require('./eye.png'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
         exercise_two: require('./exercise_two.png'),
