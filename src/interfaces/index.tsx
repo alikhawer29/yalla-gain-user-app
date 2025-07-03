@@ -68,6 +68,32 @@ export interface IRow {
     gap?: number
 }
 
+export interface IInput {
+    label?: string;
+    placeholder?: string;
+    type?: 'text' | 'email' | 'number' | 'password' | 'textarea' | 'phone' | 'date' | 'time';
+    icon?: any;
+    error?: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+    maxLength?: number;
+    disabled?: boolean;
+    required?: boolean;
+}
+
+export interface IIcon {
+    size?: number;
+    color?: string;
+    source?: ImageSourcePropType;
+    rounded?: boolean;
+    tint_color?: string;
+    onPress?: () => void;
+    border?: string;
+    less_padding?: boolean;
+    no_padding?: boolean;
+    rotate?: boolean;
+}
+
 export interface IProgressBar {
     progress: number
 }
