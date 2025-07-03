@@ -41,7 +41,7 @@ export const dateFormatter = (date: Date) => {
     return dayjs(date).format("YYYY-MM-DD")
 };
 
-export const timeFormatter = (date: Date) => {
+export const timeFormatter = (date: Date | string) => {
     return dayjs(date).format("hh:mm a")
 };
 
