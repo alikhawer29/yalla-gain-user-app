@@ -1,8 +1,16 @@
 import images from "../assets/images"
 
+export const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo."
+
 export const USER = {
     first_name: "John",
-    last_name: "Elbert"
+    last_name: "Elbert",
+    email: "john.elbert@gmail.com",
+    phone: "(646) 000-0000",
+    dob: "10/07/2025",
+    language: "English",
+    unique_code: "AB#092178",
+    image: images.dummy
 }
 
 export const PROGRESS_TRACKING = [
@@ -112,4 +120,64 @@ export const WORKOUT_PLANS = [
         duration: "25 mins",
         helper_text: "Breathe deeply. Let go of the day’s stress."
     }
+]
+
+export const AUTH_TYPES = [
+    {
+        value: "email",
+        image: images.email,
+        title: "Send Via Email",
+        description: "Receive Verification Code via Email"
+    },
+    {
+        value: "phone",
+        image: images.phone,
+        title: "Send Via Phone",
+        description: "Receive Verification Code via Phone Number"
+    },
+]
+
+export const NEWSFEED = [
+    {
+        user: USER,
+        content: LOREM,
+        reaction_count: 60,
+        comment_count: 60,
+    },
+    {
+        user: USER,
+        content: LOREM,
+        media: images.workout.workout_one,
+        reaction_count: 60,
+        comment_count: 60,
+    },
+    {
+        user: USER,
+        content: LOREM,
+        media: images.workout.workout_one,
+        reaction_count: 60,
+        comment_count: 60,
+    },
+]
+
+export const CHATS = [
+    {
+        user: USER,
+        message: LOREM,
+        role: "User",
+        created_at: "3 days ago"
+    },
+    {
+        user: USER,
+        message: LOREM,
+        role: "User",
+        created_at: "3 days ago"
+    },
+    {
+        user: USER,
+        message: LOREM,
+        media: images.workout.workout_one,
+        role: "User",
+        created_at: "3 days ago"
+    },
 ]
