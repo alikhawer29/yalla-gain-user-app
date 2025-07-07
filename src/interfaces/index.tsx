@@ -1,8 +1,9 @@
 import { ReactNode } from "react"
-import { DimensionValue, GestureResponderEvent, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
+import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
 
 export interface IWrapper {
     children: ReactNode
+    background?: ImageSourcePropType
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -11,15 +12,20 @@ export interface IAuthWrapper extends IWrapper {
 }
 
 export interface ICardWrapper extends IWrapper {
-    height?: DimensionValue,
-    width?: DimensionValue,
-    padding?: number,
-    border?: boolean,
+    height?: DimensionValue
+    width?: DimensionValue
+    border_radius?: number
+    padding?: number
+    border?: boolean
+    border_color?: ColorValue
+    color?: ColorValue
+    onPress?: (event: GestureResponderEvent) => void
 }
 
 export interface IImage {
-    source: ImageSourcePropType,
-    style?: StyleProp<ImageStyle>
+    source: ImageSourcePropType | undefined
+    style?: StyleProp<ImageStyle>,
+    resize?: ImageResizeMode
 }
 
 export interface IText {
@@ -118,4 +124,34 @@ export interface IWorkoutCard extends IProgressBar {
     helper_text: string
     duration: string
     schedule: string
+}
+
+export interface IAuthSelectionCard {
+    image?: ImageSourcePropType
+    title: string
+    description: string,
+    selected?: boolean,
+    onPress?: (event: GestureResponderEvent) => void
+}
+
+
+export interface ITrackingCard extends IProgressBar {
+    icon: ImageSourcePropType
+    title: string
+    subtext: string
+}
+
+export interface INewsFeedCard {
+    media?: ImageSourcePropType
+    content: string
+    user?: any
+    reaction_count: number
+    comment_count: number
+}
+
+export interface IChatCard {
+    message: string
+    user: any
+    created_at: string
+    role: string
 }
