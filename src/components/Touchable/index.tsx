@@ -3,7 +3,7 @@ import { TouchableWithoutFeedback } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { ITouchable } from "../../interfaces";
 
-const Touchable: FC<ITouchable> = ({ children, style, disabled, slop, onPress, onLongPress, onPressOut }) => {
+const Touchable: FC<ITouchable> = ({ children, style, disabled, slop, onPress, onLongPress, onPressOut, effect = true }) => {
 
     const scale = useSharedValue(1);
 
@@ -25,7 +25,7 @@ const Touchable: FC<ITouchable> = ({ children, style, disabled, slop, onPress, o
     return (
         <TouchableWithoutFeedback disabled={disabled} onPressIn={handlePressIn}
             onPressOut={handlePressOut} onPress={onPress} hitSlop={slop} onLongPress={onLongPress} style={{ zIndex: 99 }}>
-            <Animated.View style={[animatedStyle, style]}>
+            <Animated.View style={[effect ? animatedStyle : {}, style]}>
                 {children}
             </Animated.View>
         </TouchableWithoutFeedback>
