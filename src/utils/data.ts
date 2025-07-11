@@ -181,3 +181,18 @@ export const CHATS = [
         created_at: "3 days ago"
     },
 ]
+
+export const CREATE_POST_OPTIONS = [
+    {
+        title: "Video",
+        icon: images.video
+    },
+    {
+        title: "Photo",
+        icon: images.gallery
+    },
+    {
+        title: "Polling",
+        icon: images.polling
+    },
+]
