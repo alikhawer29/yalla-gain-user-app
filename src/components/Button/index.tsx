@@ -8,7 +8,7 @@ import styles from "./styles"
 const Button: FC<IButton> = ({ text, style, onPress, type = "primary", font_size = 16 }) => {
 
     const button_default_style = {
-        ...(type === "outlined" ? { backgroundColor: colors.transparent } : type === "secondary" ? { backgroundColor: colors.white } : {})
+        ...(type === "outlined" ? { backgroundColor: colors.light_primary } : type === "secondary" ? { backgroundColor: colors.white } : {})
     }
 
     return (
