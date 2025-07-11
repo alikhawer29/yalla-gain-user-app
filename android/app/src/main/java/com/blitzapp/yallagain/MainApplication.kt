@@ -1,4 +1,4 @@
-package com.yallagain
+package com.blitzapp.yallagain
 
 import android.app.Application
 import com.facebook.react.PackageList
