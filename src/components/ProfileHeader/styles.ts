@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
     container: {
         height: heightPixel(50),
         width: "100%",
-        marginTop: heightPixel(120)
+        marginTop: heightPixel(30)
     },
     content_container: {
         flex: 0.7,
