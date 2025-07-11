@@ -1,11 +1,21 @@
 import { StyleSheet } from "react-native";
+import { heightPixel, widthPixel } from "../../../utils/helper";
 
 const styles = StyleSheet.create({
+    container: {
+        height: "100%"
+    },
     icon_container: {
         flex: 0.15
     },
     content_container: {
-        flex: 0.85
+        flex: 0.85,
+        height: "100%",
+        justifyContent: "space-between"
+    },
+    badge: {
+        paddingVertical: heightPixel(1),
+        paddingHorizontal: widthPixel(26)
     }
 })
 
