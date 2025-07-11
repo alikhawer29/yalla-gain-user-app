@@ -115,7 +115,7 @@ export interface IInput {
 }
 
 export interface IIcon {
-    size?: number | string;
+    size?: number | `${number}%`;
     color?: string;
     source?: ImageSourcePropType;
     rounded?: boolean;
