@@ -29,7 +29,7 @@ export const STATUSBAR_HEIGHT =
         ? initialWindowMetrics?.insets.top
         : StatusBar.currentHeight) || 0;
 
-export const BOTTOMBAR_HEIGHT = heightPixel(66);
+export const BOTTOMBAR_HEIGHT = initialWindowMetrics?.insets.bottom || 0
 
 export const vh = (SCREEN_HEIGHT - STATUSBAR_HEIGHT) * 0.01;
 export const vw = SCREEN_WIDTH * 0.01;
