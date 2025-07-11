@@ -1,13 +1,39 @@
 import { ReactNode } from "react"
 import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
 
+export type AppStackParamList = {
+    AuthStackNavigator: undefined
+    BottomTabNavigator: undefined
+};
+
+export type AuthStackParamList = {
+    Onboarding: undefined
+    UserEntry: undefined
+    AuthType: undefined
+    Login: undefined
+    ForgotPassword: undefined
+    VerifyCode: undefined
+    SetPassword: undefined
+};
+
+export type RootStackParamList = {
+    Home: undefined;
+    MyProfile: undefined
+    EditProfile: undefined
+    ChangePassword: undefined
+    Chat: undefined
+    NewsFeed: undefined
+    ProgressTracking: undefined
+};
+
 export interface IWrapper {
     children: ReactNode
-    background?: ImageSourcePropType
+    scrollable?: boolean
+    bottom_bar?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
-    title: string,
+    title?: string,
     subtitle?: string,
 }
 
@@ -47,6 +73,7 @@ export interface ITouchable {
     onLongPress?: (event: GestureResponderEvent) => void
     onPressOut?: (event?: GestureResponderEvent) => void
     disabled?: boolean
+    effect?: boolean
     slop?: Insets
     style?: StyleProp<ViewStyle>
 }
@@ -88,7 +115,7 @@ export interface IInput {
 }
 
 export interface IIcon {
-    size?: number;
+    size?: number | string;
     color?: string;
     source?: ImageSourcePropType;
     rounded?: boolean;
@@ -142,7 +169,6 @@ export interface ITrackingCard extends IProgressBar {
 }
 
 export interface INewsFeedCard {
-    media?: ImageSourcePropType
     content: string
     user?: any
     reaction_count: number
@@ -154,4 +180,29 @@ export interface IChatCard {
     user: any
     created_at: string
     role: string
+}
+
+export interface IBadge {
+    icon?: ImageSourcePropType
+    title: string
+    color?: string
+    onPress?: () => void
+    style?: StyleProp<ViewStyle>
+}
+
+export interface LabelValueItem {
+    label: string;
+    value: string | number;
+}
+
+export interface ITabs {
+    tabs: LabelValueItem[]
+    selected: string | number
+    setSelected: (value: string | number) => void
+    type?: 'basic' | 'advanced'
+}
+
+export interface IUpload {
+    text?: string
+    style?: StyleProp<ViewStyle>
 }
