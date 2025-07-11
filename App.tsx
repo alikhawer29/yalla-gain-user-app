@@ -1,20 +1,33 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import fonts from './src/assets/fonts';
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { StatusBar, StyleSheet, View } from 'react-native';
+import BootSplash from "react-native-bootsplash";
+import AppStackNavigator from './src/navigation/AppStackNavigator';
+import { navigationRef } from './src/utils/navigation';
+import colors from './src/utils/colors';
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+
+  useEffect(() => {
+    setTimeout(() => {
+      BootSplash.hide();
+    }, 1000)
+  }, [])
+
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.black,
+    },
+  };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Text style={{ fontSize: 32, fontFamily: fonts.sfpro.bold }}>Hellooooooooooo</Text>
+      <StatusBar barStyle={'light-content'} />
+      <NavigationContainer ref={navigationRef} theme={navTheme}>
+        <AppStackNavigator />
+      </NavigationContainer>
     </View>
   );
 }
@@ -22,8 +35,6 @@ function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center"
   },
 });
 
