@@ -35,6 +35,11 @@ const images = {
     back: require('./back.png'),
     drawer: require('./drawer.png'),
     notifications: require('./notifications.png'),
+    upload: require('./upload.png'),
+    apple: require('./apple.png'),
+    google: require('./google.png'),
+    facebook: require('./facebook.png'),
+    graph: require('./graph.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
@@ -43,6 +48,10 @@ const images = {
     workout: {
         workout_one: require('./workout_one.png'),
         workout_two: require('./workout_two.png'),
+    },
+    avatar: {
+        fat: require('./fat_avatar.png'),
+        slim: require('./slim_avatar.png'),
     },
 };
 
