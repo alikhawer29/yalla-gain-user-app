@@ -18,12 +18,13 @@ const Icon: FC<IIcon> = props => {
         onPress,
         border,
         less_padding = false,
+        less_rounded = false,
         no_padding = false,
         rotate = false,
     } = props
 
     let default_styles = {
-        ...(rounded ? { borderRadius: typeof size === "string" ? size : heightPixel(size * 2), padding: no_padding ? 0 : typeof size === "string" ? size : heightPixel(size / (less_padding ? 5 : 3.5)) } : {}),
+        ...(rounded ? { borderRadius: typeof size === "string" ? size : heightPixel(less_rounded ? 10 : size * 2), padding: no_padding ? 0 : typeof size === "string" ? size : heightPixel(size / (less_padding ? 5 : 3.5)) } : {}),
         ...(border ? { borderWidth: heightPixel(1), borderColor: border } : {}),
         ...(size ? { height: typeof size === "string" ? size : heightPixel(size), width: typeof size === "string" ? size : heightPixel(size), } : {}),
         backgroundColor: color,
