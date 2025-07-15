@@ -40,6 +40,10 @@ const images = {
     google: require('./google.png'),
     facebook: require('./facebook.png'),
     graph: require('./graph.png'),
+    check: require('./check.png'),
+    announcement: require('./announcement.png'),
+    search: require('./search.png'),
+    filters: require('./filters.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
