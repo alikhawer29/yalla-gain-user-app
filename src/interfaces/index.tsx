@@ -112,19 +112,21 @@ export interface IInput {
     maxLength?: number;
     disabled?: boolean;
     required?: boolean;
+    height?: number;
 }
 
 export interface IIcon {
-    size?: number | `${number}%`;
-    color?: string;
-    source?: ImageSourcePropType;
-    rounded?: boolean;
-    tint_color?: string;
-    onPress?: () => void;
-    border?: string;
-    less_padding?: boolean;
-    no_padding?: boolean;
-    rotate?: boolean;
+    size?: number | `${number}%`
+    color?: string
+    source?: ImageSourcePropType
+    rounded?: boolean
+    tint_color?: string
+    onPress?: () => void
+    border?: string
+    less_padding?: boolean
+    less_rounded?: boolean
+    no_padding?: boolean
+    rotate?: boolean
 }
 
 export interface IProgressBar {
@@ -177,9 +179,9 @@ export interface INewsFeedCard {
 
 export interface IChatCard {
     message: string
-    user: any
+    user?: any
     created_at: string
-    role: string
+    system?: boolean
 }
 
 export interface IBadge {
@@ -205,4 +207,14 @@ export interface ITabs {
 export interface IUpload {
     text?: string
     style?: StyleProp<ViewStyle>
+}
+
+export interface ICheckbox {
+    checked?: boolean
+    onPress?: () => void
+}
+
+export interface ISeperator {
+    horizontal?: boolean
+    size?: number
 }
