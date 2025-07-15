@@ -10,7 +10,8 @@ export const USER = {
     dob: "10/07/2025",
     language: "English",
     unique_code: "AB#092178",
-    image: images.dummy
+    image: images.dummy,
+    role: "User"
 }
 
 export const PROGRESS_TRACKING = [
@@ -162,24 +163,41 @@ export const NEWSFEED = [
 
 export const CHATS = [
     {
-        user: USER,
         message: LOREM,
-        role: "User",
-        created_at: "3 days ago"
+        created_at: "3 DAYS AGO",
+        system: true
     },
     {
         user: USER,
         message: LOREM,
-        role: "User",
-        created_at: "3 days ago"
+        created_at: "3 DAYS AGO"
+    },
+    {
+        user: USER,
+        message: LOREM,
+        created_at: "3 DAYS AGO"
     },
     {
         user: USER,
         message: LOREM,
         media: images.workout.workout_one,
-        role: "User",
-        created_at: "3 days ago"
+        created_at: "3 DAYS AGO"
     },
+]
+
+export const CHAT_TYPES = [
+    {
+        label: "User",
+        value: "user"
+    },
+    {
+        label: "Trainer",
+        value: "trainer"
+    },
+    {
+        label: "Doctor",
+        value: "doctor"
+    }
 ]
 
 export const CREATE_POST_OPTIONS = [
