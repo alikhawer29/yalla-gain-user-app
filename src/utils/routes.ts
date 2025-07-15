@@ -49,7 +49,7 @@ const ROUTES_OPTIONS = [
         left: "drawer",
         right: "notifications",
         logo: false,
-        title: "Chat"
+        title: "Chats"
     },
     {
         route_name: ROUTES.MY_PROFILE,
