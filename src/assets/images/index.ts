@@ -44,6 +44,10 @@ const images = {
     announcement: require('./announcement.png'),
     search: require('./search.png'),
     filters: require('./filters.png'),
+    save: require('./save.png'),
+    dots: require('./dots.png'),
+    coin: require('./coin.png'),
+    spotify_logo: require('./spotify_logo.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
@@ -56,6 +60,21 @@ const images = {
     avatar: {
         fat: require('./fat_avatar.png'),
         slim: require('./slim_avatar.png'),
+    },
+    drawer_icons: {
+        challenges: require('./drawer/challenges.png'),
+        help_center: require('./drawer/help_center.png'),
+        home: require('./drawer/home.png'),
+        movement: require('./drawer/movement.png'),
+        music_panel: require('./drawer/music_panel.png'),
+        saved_content: require('./drawer/saved_content.png'),
+        vr: require('./drawer/vr.png'),
+        watch: require('./drawer/watch.png'),
+        workout: require('./drawer/workout.png'),
+        consult_trainer: require('./drawer/consult_trainer.png'),
+        consult_doctor: require('./drawer/consult_doctor.png'),
+        my_bookings: require('./drawer/my_bookings.png'),
+        logout: require('./drawer/logout.png'),
     },
 };
 
