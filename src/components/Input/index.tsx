@@ -3,19 +3,19 @@ import { LayoutAnimation, TextInput, TouchableOpacity, Vibration, View } from 'r
 import DatePicker from 'react-native-date-picker';
 import PhoneInput from "react-native-phone-number-input";
 import fonts from '../../assets/fonts';
+import images from '../../assets/images';
 import useToggle from '../../hooks/useToggle';
 import { IInput } from '../../interfaces';
 import colors from '../../utils/colors';
-import { dateFormatter, timeFormatter } from '../../utils/helper';
+import { createInsets, dateFormatter, heightPixel, timeFormatter, widthPixel } from '../../utils/helper';
 import Icon from '../Icon';
 import Text from '../Text';
 import Touchable from '../Touchable';
 import styles from './styles';
-import images from '../../assets/images';
 
 const Input: FC<IInput> = props => {
 
-    const { label, placeholder, type, icon, error, value, onChangeText, maxLength, disabled, required = false } = props
+    const { label, placeholder, type, icon, error, value, onChangeText, maxLength, disabled, required = false, height, mode = "primary" } = props
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(type === 'password');
     const [isFocused, setIsFocused] = useState(false);
@@ -61,34 +61,39 @@ const Input: FC<IInput> = props => {
 
     return (
         <View style={styles.container}>
-            {label && <Text size={16} weight="semibold" color={isFocused ? colors.white : colors.white} style={styles.label}>{label} <Text size={12} weight="semibold" color={colors.danger} style={styles.label}>*</Text></Text>}
+            {label && <Text size={16} weight="semibold" color={isFocused ? colors.white : colors.white} style={styles.label}>{label} {required && <Text size={12} weight="semibold" color={colors.danger} style={styles.label}>*</Text>}</Text>}
             {
                 type === "phone" && (loaded || value === "") ?
-                    <View style={styles.inputContainer}>
-                        <PhoneInput
-                            layout='first'
-                            allowFontScaling={false}
-                            disabled={disabled}
-                            placeholder={placeholder}
-                            defaultValue={value}
-                            value={value}
-                            defaultCode="US"
-                            onChangeText={onChangeText}
-                            containerStyle={[styles.input, { padding: 0 }]}
-                            textInputStyle={[styles.input, { padding: 0 }]}
-                            codeTextStyle={{ fontFamily: fonts.sfpro.regular, margin: 0, padding: 0 }}
-                            flagButtonStyle={{ backgroundColor: colors.light_gray, margin: 0 }}
-                            textContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
-                        />
-                    </View> :
-                    <Component style={[styles.inputContainer, isFocused && styles.focusedInputContainer, type === "textarea" && styles.multiline_input_container]} onPress={toggleDate} disabled={disabled}>
+                    <PhoneInput
+                        layout='first'
+                        allowFontScaling={false}
+                        disabled={disabled}
+                        placeholder={placeholder}
+                        defaultValue={value}
+                        value={value}
+                        defaultCode="US"
+                        onChangeText={onChangeText}
+                        containerStyle={[styles.input, { padding: 0, height: heightPixel(height), backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
+                        textInputStyle={[styles.input, { padding: 0, height: heightPixel(height), backgroundColor: colors.transparent, color: colors.white }]}
+                        codeTextStyle={{ fontFamily: fonts.sfpro.regular, margin: 0, padding: 0, color: colors.white }}
+                        flagButtonStyle={{ backgroundColor: colors.transparent, margin: 0 }}
+                        textContainerStyle={{ paddingHorizontal: widthPixel(15), paddingVertical: 0, backgroundColor: colors.transparent, borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
+                        countryPickerButtonStyle={{ borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
+                        textInputProps={{
+                            cursorColor: colors.primary,
+                            placeholderTextColor: colors.white
+                        }}
+                        disableArrowIcon
+                    />
+                    :
+                    <Component style={[styles.inputContainer, isFocused && mode !== "secondary" && styles.focusedInputContainer, type === "textarea" && styles.multiline_input_container, mode === "secondary" ? { borderColor: colors.transparent, backgroundColor: colors.grayish_black } : {}]} onPress={toggleDate} disabled={disabled}>
                         {
                             icon &&
-                            <Icon source={icon} size={18} />
+                            <Icon source={icon} size={13.5} />
                         }
                         <TextInput
                             allowFontScaling={false}
-                            style={[styles.input, type === "textarea" ? styles.multiline_input : {}]}
+                            style={[styles.input, type === "textarea" ? styles.multiline_input : {}, height ? { height: heightPixel(height) } : {}]}
                             placeholder={placeholder}
                             placeholderTextColor={colors.white}
                             secureTextEntry={isPasswordVisible}
@@ -105,7 +110,7 @@ const Input: FC<IInput> = props => {
                         />
                         {
                             (type === 'password' || type === 'date') && (
-                                <TouchableOpacity onPress={togglePasswordVisibility} style={styles.toggleIcon} disabled={type !== 'password'}>
+                                <TouchableOpacity onPress={togglePasswordVisibility} style={styles.toggleIcon} disabled={type !== 'password'} hitSlop={createInsets(15)}>
                                     <Icon source={type === 'password' ? (!isPasswordVisible ? images.eye : images.eye_slash) : type === "date" ? images.calendar : null} size={18} tint_color={colors.white} />
                                 </TouchableOpacity>
                             )

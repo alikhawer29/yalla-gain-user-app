@@ -15,19 +15,20 @@ const styles = StyleSheet.create({
     inputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderWidth: 0.5,
-        borderColor: colors.icon_gray,
+        borderWidth: heightPixel(1),
+        borderColor: colors.white,
         borderRadius: heightPixel(5),
         paddingHorizontal: widthPixel(15),
         backgroundColor: colors.transparent,
-        overflow: "hidden"
+        overflow: "hidden",
+        gap: widthPixel(5)
     },
     input: {
         flex: 1,
         fontSize: font(14),
         fontFamily: fonts.sfpro.regular,
-        height: heightPixel(54),
-        color: colors.white
+        color: colors.white,
+        height: heightPixel(54)
     },
     multiline_input_container: {
         borderRadius: heightPixel(5),
