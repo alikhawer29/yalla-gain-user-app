@@ -48,6 +48,8 @@ const images = {
     dots: require('./dots.png'),
     coin: require('./coin.png'),
     spotify_logo: require('./spotify_logo.png'),
+    play: require('./play.png'),
+    pause: require('./pause.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
