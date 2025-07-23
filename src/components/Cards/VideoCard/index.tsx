@@ -2,17 +2,23 @@ import { FC, memo } from "react";
 import { View } from "react-native";
 import images from "../../../assets/images";
 import { IVideoCard } from "../../../interfaces";
+import colors from "../../../utils/colors";
 import CardWrapper from "../../CardWrapper";
+import Icon from "../../Icon";
 import Image from "../../Image";
 import Row from "../../Row";
 import Text from "../../Text";
+import Touchable from "../../Touchable";
 import styles from "./styles";
 
 const VideoCard: FC<IVideoCard> = ({ image, title, description, date, language }) => {
     return (
         <CardWrapper height={230} width={224} border>
             <View style={styles.image_container}>
-                <Image source={image} style={styles.image} />
+                <Image source={image} style={styles.image} resize="cover" />
+                <Touchable style={styles.save_icon}>
+                    <Icon source={images.save} color={colors.primary} rounded />
+                </Touchable>
             </View>
             <View style={styles.content_container}>
                 <Text weight="semibold" lines={1}>{title}</Text>

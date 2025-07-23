@@ -15,12 +15,16 @@ const styles = StyleSheet.create({
     image: {
         height: "100%",
         width: "100%",
-        resizeMode: "cover"
     },
     icon: {
         width: heightPixel(12),
         height: heightPixel(12),
         resizeMode: "contain",
+    },
+    save_icon: {
+        position: "absolute",
+        top: heightPixel(5),
+        right: heightPixel(5)
     }
 })
 
