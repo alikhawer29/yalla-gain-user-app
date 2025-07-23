@@ -7,6 +7,7 @@ import { heightPixel } from "../../../utils/helper";
 import CardWrapper from "../../CardWrapper";
 import Icon from "../../Icon";
 import Image from "../../Image";
+import Menu from "../../Menu";
 import Row from "../../Row";
 import Text from "../../Text";
 
@@ -14,11 +15,14 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ content, media, reaction_count = 0, c
     return (
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
             <Row align="center" gap={12}>
-                <Icon source={images.dummy} size={45} />
-                <View>
-                    <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
-                    <Text size={12} color={colors.icon_gray}>2 days ago</Text>
-                </View>
+                <Row style={{ flex: 0.9 }} align="center" gap={12}>
+                    <Icon source={images.dummy} size={45} />
+                    <View>
+                        <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
+                        <Text size={12} color={colors.icon_gray}>2 days ago</Text>
+                    </View>
+                </Row>
+                <Menu dropdown_items={[{ label: "Report" }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
             </Row>
             <View style={{ marginVertical: heightPixel(15), gap: heightPixel(15) }}>
                 {content && <Text>{content}</Text>}
