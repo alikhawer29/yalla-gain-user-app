@@ -6,7 +6,7 @@ const colors = {
     bluish_primary: '#F0F1FF',
     white: '#FFFFFF',
     black: '#000000',
-    textblack: '#222222',
+    grayish_black: '#282828',
     navyblue: '#002A58',
     light_gray: '#F8F8F8',
     blackish_gray: '#1F1F1F',
@@ -14,6 +14,8 @@ const colors = {
     icon_gray: '#999999',
     danger: '#FF0000',
     transparent_black: 'rgba(0,0,0,0.08)',
+    light_green: "#32cd32",
+    transparent_light_green: "rgba(50, 205, 50, 0.3)"
 };
 
 export default colors;
