@@ -6,10 +6,10 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     icon_container: {
-        flex: 0.15
+        flex: 0.12
     },
     content_container: {
-        flex: 0.85,
+        flex: 0.88,
         height: "100%",
         justifyContent: "space-between"
     },
