@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Dimensions, PixelRatio, Platform, StatusBar } from 'react-native';
+import { Dimensions, Insets, PixelRatio, Platform, StatusBar } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -36,6 +36,13 @@ export const vw = SCREEN_WIDTH * 0.01;
 
 export const HEADER_HEIGHT = vh * 9 + STATUSBAR_HEIGHT;
 export const PAGE_WIDTH = vw * 100;
+
+export const createInsets = (value: number): Insets => ({
+    top: value,
+    bottom: value,
+    left: value,
+    right: value,
+})
 
 export const dateFormatter = (date: Date) => {
     return dayjs(date).format("YYYY-MM-DD")
