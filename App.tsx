@@ -1,10 +1,15 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import BootSplash from "react-native-bootsplash";
+import { MenuProvider } from 'react-native-popup-menu';
+import { Provider } from 'react-redux';
+import AppWrapper from './src/components/AppWrapper';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
-import { navigationRef } from './src/utils/navigation';
+import { persistor, store } from './src/redux/Store';
 import colors from './src/utils/colors';
+import { navigationRef } from './src/utils/navigation';
+import { PersistGate } from 'redux-persist/integration/react';
 
 function App() {
 
@@ -18,17 +23,23 @@ function App() {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
-      background: colors.black,
+      background: colors.transparent,
     },
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle={'light-content'} />
-      <NavigationContainer ref={navigationRef} theme={navTheme}>
-        <AppStackNavigator />
-      </NavigationContainer>
-    </View>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <AppWrapper>
+          <StatusBar barStyle={'light-content'} />
+          <MenuProvider>
+            <NavigationContainer ref={navigationRef} theme={navTheme}>
+              <AppStackNavigator />
+            </NavigationContainer>
+          </MenuProvider>
+        </AppWrapper>
+      </PersistGate>
+    </Provider>
   );
 }
 
