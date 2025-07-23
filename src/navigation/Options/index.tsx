@@ -5,7 +5,7 @@ import Image from "../../components/Image";
 import Text from "../../components/Text";
 import Touchable from "../../components/Touchable";
 import colors from "../../utils/colors";
-import { heightPixel, widthPixel } from "../../utils/helper";
+import { widthPixel } from "../../utils/helper";
 import { goBack } from "../../utils/navigation";
 import { ROUTES_OPTIONS } from "../../utils/routes";
 
@@ -17,17 +17,17 @@ const Options = (props) => {
     const icon_source = route?.left ? images[route?.left] : null
 
     const onPress = () => {
-      console.log('DSAdasdsa');
-
       if (route?.left === "back") {
         goBack()
+      } else if (route?.left === "drawer") {
+        props?.navigation.openDrawer()
       }
     }
 
     if (icon_source) {
       return (
-        <Touchable onPress={onPress} style={{ zIndex: 99, borderWidth: 0.5, borderColor: colors.white, height: heightPixel(40), width: heightPixel(40), borderRadius: heightPixel(12), justifyContent: "center", alignItems: "center", marginLeft: widthPixel(10), padding: heightPixel(10) }}>
-          <Icon source={icon_source} size={"100%"} />
+        <Touchable onPress={onPress} style={{ zIndex: 99, marginLeft: widthPixel(20) }}>
+          <Icon source={icon_source} border={colors.white} size={40} rounded less_rounded less_padding />
         </Touchable>
       )
     }
@@ -43,8 +43,8 @@ const Options = (props) => {
 
     if (icon_source) {
       return (
-        <View style={{ borderWidth: 0.5, borderColor: colors.white, height: heightPixel(40), width: heightPixel(40), borderRadius: heightPixel(12), justifyContent: "center", alignItems: "center", marginRight: widthPixel(10), padding: heightPixel(10) }}>
-          <Icon source={images.notifications} size={"100%"} />
+        <View style={{ marginRight: widthPixel(20) }}>
+          <Icon source={images.notifications} border={colors.white} size={40} rounded less_rounded less_padding />
         </View>
       )
     }

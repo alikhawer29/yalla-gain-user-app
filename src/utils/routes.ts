@@ -1,11 +1,13 @@
 const NAVIGATORS = {
     AUTH_STACK: "AuthStackNavigator",
     BOTTOM: "BottomTabNavigator",
+    DRAWER: "DrawerNavigator",
     HOME_STACK: "HomeStackNavigator",
     NEWSFEED_STACK: "NewsFeedStackNavigator",
     PROGRESS_TRACKING_STACK: "ProgressTrackingStackNavigator",
     CHAT_STACK: "ChatStackNavigator",
     MY_PROFILE_STACK: "MyProfileStackNavigator",
+    MUSIC_PANEL_STACK: "MusicPanelStackNavigator",
 } as const
 
 const ROUTES = {
@@ -21,6 +23,8 @@ const ROUTES = {
     CHAT: "Chat",
     MY_PROFILE: "MyProfile",
     CHANGE_PASSWORD: "ChangePassword",
+    MUSIC_AUTH: "MusicAuth",
+    PLAYLIST_DETAILS: "PlaylistDetails",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -65,6 +69,20 @@ const ROUTES_OPTIONS = [
         logo: false,
         title: "Change Password",
         bottom_tab: false
+    },
+    {
+        route_name: ROUTES.MUSIC_AUTH,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Music"
+    },
+    {
+        route_name: ROUTES.PLAYLIST_DETAILS,
+        left: "back",
+        right: null,
+        logo: false,
+        title: ""
     },
 ] as const
 
