@@ -17,7 +17,7 @@ const MyProfile = () => {
             </View>
             <Row style={styles.item_container}>
                 <View style={[styles.item, styles.item_width]}>
-                    <Text color={colors.icon_gray}>User Unique Code</Text>
+                    <Text color={colors.icon_gray}>User's Unique Id</Text>
                     <Text weight="bold">{USER.unique_code}</Text>
                 </View>
                 <View style={[styles.item, styles.item_width]}>
