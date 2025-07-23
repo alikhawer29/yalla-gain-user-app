@@ -3,8 +3,8 @@ import { heightPixel } from "../../../utils/helper";
 
 const styles = StyleSheet.create({
     image: {
-        height: heightPixel(70),
-        width: heightPixel(70),
+        height: heightPixel(60),
+        width: heightPixel(60),
         resizeMode: "cover",
         borderRadius: heightPixel(10),
     },
