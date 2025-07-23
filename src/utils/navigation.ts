@@ -13,7 +13,7 @@ export const navigate = <RouteName extends keyof CombinedParamList>(
         : CombinedParamList[RouteName]
 ) => {
     if (navigationRef.isReady()) {
-        navigationRef.navigate(name, params as any);
+        navigationRef.navigate(name, params);
     }
 };
 
@@ -26,12 +26,15 @@ export const goBack = () => {
 export const navigateAndSimpleReset = <RouteName extends keyof CombinedParamList>(
     name: RouteName,
     index: number = 0,
+    params?: undefined extends CombinedParamList[RouteName]
+        ? CombinedParamList[RouteName] | undefined
+        : CombinedParamList[RouteName]
 ) => {
     if (navigationRef.isReady()) {
         navigationRef.dispatch(
             CommonActions.reset({
                 index,
-                routes: [{ name }],
+                routes: [{ name, params }],
             }),
         );
     }
