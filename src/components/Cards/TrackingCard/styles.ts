@@ -13,13 +13,13 @@ const styles = StyleSheet.create({
         gap: heightPixel(6)
     },
     progress_container: {
-        flex: 0.4,
+        flex: 0.5,
         height: "100%",
         alignItems: "center",
         justifyContent: "center",
     },
     image_container: {
-        flex: 0.6,
+        flex: 0.5,
         height: "100%",
         alignItems: "center",
         justifyContent: "center",
