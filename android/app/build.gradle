@@ -79,11 +79,14 @@ android {
 
     namespace "com.blitzapp.yallagain"
     defaultConfig {
+        manifestPlaceholders = [
+            appAuthRedirectScheme: 'myapp'
+        ]
         applicationId "com.blitzapp.yallagain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "0.0.1"
+        versionCode 3
+        versionName "0.0.2"
     }
     signingConfigs {
         debug {
