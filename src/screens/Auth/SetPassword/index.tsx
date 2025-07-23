@@ -22,7 +22,7 @@ const SetPassword = () => {
             />
             <Input
                 label="Confirm Password"
-                placeholder="Enter Confirm Password"
+                placeholder="Set Confirm Password"
                 type="password"
             />
             <Button text={"Update"} style={styles.button} onPress={onPress} />
