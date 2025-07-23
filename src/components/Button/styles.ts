@@ -8,8 +8,6 @@ const styles = StyleSheet.create({
         minWidth: widthPixel(120),
         borderRadius: heightPixel(5),
         paddingHorizontal: widthPixel(25),
-        justifyContent: "center",
-        alignItems: "center",
         backgroundColor: colors.primary,
         borderWidth: heightPixel(1),
         borderColor: colors.primary
