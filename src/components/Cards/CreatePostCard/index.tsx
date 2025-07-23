@@ -13,12 +13,12 @@ import Row from "../../Row";
 const CreatePostCard: FC = () => {
     return (
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
-            <Row gap={12}>
+            <Row gap={12} align="center">
                 <View style={{ flex: 0.15 }}>
                     <Icon source={images.dummy} size={50} />
                 </View>
                 <View style={{ flex: 0.85 }}>
-                    <Input placeholder="What's on your mind?" type="textarea" />
+                    <Input placeholder="What's on your mind?" type="textarea" height={45} mode="secondary" />
                 </View>
             </Row>
             <Row justify="space-evenly" style={{ marginTop: heightPixel(18 - 7.5) }}>
