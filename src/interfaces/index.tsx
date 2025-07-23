@@ -1,17 +1,19 @@
 import { ReactNode } from "react"
 import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
 
+export type InputType = 'email' | 'text' | 'password' | 'number' | 'textarea' | 'time' | 'phone' | 'date';
+
 export type AppStackParamList = {
     AuthStackNavigator: undefined
-    BottomTabNavigator: undefined
+    DrawerNavigator: undefined
 };
 
 export type AuthStackParamList = {
     Onboarding: undefined
-    UserEntry: undefined
+    UserEntry: { type: string }
     AuthType: undefined
     Login: undefined
-    ForgotPassword: undefined
+    ForgotPassword: { type: InputType }
     VerifyCode: undefined
     SetPassword: undefined
 };
@@ -24,12 +26,15 @@ export type RootStackParamList = {
     Chat: undefined
     NewsFeed: undefined
     ProgressTracking: undefined
+    MusicAuth: undefined
+    PlaylistDetails: { id: string }
 };
 
 export interface IWrapper {
     children: ReactNode
     scrollable?: boolean
     bottom_bar?: boolean
+    no_padding?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -83,7 +88,9 @@ export interface IButton {
     font_size?: number
     onPress?: () => void
     style?: StyleProp<ViewStyle>
-    type?: "primary" | "secondary" | "outlined"
+    type?: "primary" | "secondary" | "outlined" | "custom",
+    icon?: ImageSourcePropType,
+    loading?: boolean,
 }
 
 export interface IRow {
@@ -104,7 +111,7 @@ export interface IRow {
 export interface IInput {
     label?: string;
     placeholder?: string;
-    type?: 'text' | 'email' | 'number' | 'password' | 'textarea' | 'phone' | 'date' | 'time';
+    type?: InputType;
     icon?: any;
     error?: string;
     value?: string;
@@ -217,4 +224,18 @@ export interface ICheckbox {
 export interface ISeperator {
     horizontal?: boolean
     size?: number
+}
+
+export interface IPlaylistCard {
+    icon: ImageSourcePropType
+    title: string
+    onPress: () => void
+}
+
+export interface ISongCard {
+    icon: ImageSourcePropType
+    title: string
+    artist: string
+    onPress: () => void,
+    active?: boolean
 }
