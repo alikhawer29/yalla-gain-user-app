@@ -53,6 +53,11 @@ const useSpotify = (playlist_id?: string) => {
         }
     };
 
+    const logout = async () => {
+        dispatch(logoutSpotify())
+    };
+
+
     const refreshToken = async () => {
         try {
             if (!refresh_token) return;
@@ -105,20 +110,69 @@ const useSpotify = (playlist_id?: string) => {
         getPlaylists();
     }, [spotify_authenticated, access_token]);
 
-    useEffect(() => {
-        if (!spotify_authenticated || !playlist_id || !access_token) return;
+    // useEffect(() => {
+    //     if (!spotify_authenticated || !playlist_id || !access_token) return;
 
+    //     const getPlaylist = async () => {
+    //         setIsLoading(true);
+    //         const data = await fetchWithAuth(`https://api.spotify.com/v1/playlists/${playlist_id}`);
+    //         if (data) setSinglePlaylist(data);
+    //         setIsLoading(false);
+    //     };
+
+    //     getPlaylist();
+    // }, [spotify_authenticated, access_token, playlist_id]);
+
+    useEffect(() => {
         const getPlaylist = async () => {
-            const data = await fetchWithAuth(`https://api.spotify.com/v1/playlists/${playlist_id}`);
-            if (data) setSinglePlaylist(data);
+            if (!spotify_authenticated || !playlist_id || !access_token) return;
+
+            setIsLoading(true);
+
+            const playlistData = await fetchWithAuth(
+                `https://api.spotify.com/v1/playlists/${playlist_id}`
+            );
+
+            if (playlistData) {
+                // Fetch full track info by track ID to get `preview_url`
+                const trackItems = playlistData.tracks?.items || [];
+
+                const trackDetailPromises = trackItems.map(async (item: any) => {
+                    const trackId = item.track?.id;
+                    if (!trackId) return null;
+
+                    const trackDetail = await fetchWithAuth(
+                        `https://api.spotify.com/v1/tracks/${trackId}`
+                    );
+                    return trackDetail;
+                });
+
+                const fullTracks = await Promise.all(trackDetailPromises);
+
+                // Filter out nulls and assign enriched tracks to the playlist
+                const updatedPlaylist = {
+                    ...playlistData,
+                    tracks: {
+                        ...playlistData.tracks,
+                        items: fullTracks.filter(Boolean),
+                    },
+                };
+
+                setSinglePlaylist(updatedPlaylist);
+            }
+
+            setIsLoading(false);
         };
 
         getPlaylist();
+
     }, [spotify_authenticated, access_token, playlist_id]);
+
 
     return {
         spotify_authenticated,
         login,
+        logout,
         playlists,
         singlePlaylist,
         isLoading,
