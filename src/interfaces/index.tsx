@@ -28,7 +28,8 @@ export type RootStackParamList = {
     NewsFeed: undefined
     ProgressTracking: undefined
     MusicAuth: undefined
-    PlaylistDetails: { id: string }
+    PlaylistDetails: { id: string },
+    HelpDesk: undefined,
 };
 
 export interface IWrapper {
@@ -244,4 +245,10 @@ export interface ISongCard {
 export interface ILoader {
     color?: string
     type?: IndicatorName
+}
+
+export interface IHelpDeskCard {
+    color?: string,
+    icon: ImageSourcePropType,
+    title: string
 }
