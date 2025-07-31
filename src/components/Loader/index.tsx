@@ -1,12 +1,13 @@
-import { memo } from "react"
+import { FC, memo } from "react"
 import LoaderKitView from "react-native-loader-kit"
+import { ILoader } from "../../interfaces"
 import colors from "../../utils/colors"
-import { View } from "react-native"
+import styles from "./styles"
 
-const Loader = ({ color = colors.white, type = "BallPulse" }) => {
+const Loader: FC<ILoader> = ({ color = colors.white, type = "Orbit" }) => {
     return (
         <LoaderKitView
-            style={{ width: 30, height: 30, alignSelf: "center" }}
+            style={styles.loader}
             name={type}
             animationSpeedMultiplier={1.0}
             color={color}

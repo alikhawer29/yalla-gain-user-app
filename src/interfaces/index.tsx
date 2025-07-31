@@ -1,5 +1,6 @@
-import { ReactNode } from "react"
-import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native"
+import { ReactNode } from "react";
+import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native";
+import { IndicatorName } from "react-native-loader-kit";
 
 export type InputType = 'email' | 'text' | 'password' | 'number' | 'textarea' | 'time' | 'phone' | 'date';
 
@@ -238,4 +239,9 @@ export interface ISongCard {
     artist: string
     onPress: () => void,
     active?: boolean
+}
+
+export interface ILoader {
+    color?: string
+    type?: IndicatorName
 }
