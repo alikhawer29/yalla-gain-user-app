@@ -12,7 +12,7 @@ const HelpDeskCard: FC<IHelpDeskCard> = ({ title, color = colors.primary, icon =
     return (
         <CardWrapper height={155} width={"47%"} padding={16}>
             <View style={styles.icon_container}>
-                <Icon source={icon} tint_color={colors.white} color={color} rounded size={72} less_padding />
+                <Icon source={icon} color={color} rounded size={72} less_padding />
             </View>
             <View style={styles.title_container}>
                 <Text weight="semibold" size={16} lines={1}>{title}</Text>
