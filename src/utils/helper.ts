@@ -52,6 +52,12 @@ export const timeFormatter = (date: Date | string) => {
     return dayjs(date).format("hh:mm a")
 };
 
+export const formatTimer = (s: number): string => {
+    const mins = Math.floor(s / 60).toString().padStart(2, '0');
+    const secs = (s % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+};
+
 export const formHandler = (data: any) => {
 
     let formdata = new FormData()
