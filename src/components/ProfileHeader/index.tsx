@@ -1,7 +1,8 @@
 import { FC, memo } from "react"
 import { View } from "react-native"
 import images from "../../assets/images"
-import { USER } from "../../utils/data"
+import { useAppSelector } from "../../hooks"
+import { selectUser } from "../../redux/Slices/AuthSlice"
 import { getGreetingText } from "../../utils/helper"
 import Button from "../Button"
 import Image from "../Image"
@@ -10,6 +11,9 @@ import Text from "../Text"
 import styles from "./styles"
 
 const ProfileHeader: FC = () => {
+
+    const user = useAppSelector(selectUser)
+
     return (
         <Row align="center" style={styles.container}>
             <Row align="center" style={styles.content_container}>
@@ -18,7 +22,7 @@ const ProfileHeader: FC = () => {
                 </View>
                 <View>
                     <Text size={13}>{getGreetingText()}</Text>
-                    <Text weight="bold" size={18}>Hi, {USER.first_name} {USER.last_name} 👋</Text>
+                    <Text weight="bold" size={18}>Hi, {user?.first_name} {user?.last_name} 👋</Text>
                 </View>
             </Row>
             <View style={styles.button_container}>
