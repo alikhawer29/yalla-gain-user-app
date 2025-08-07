@@ -45,7 +45,7 @@ const PlaylistDetails = () => {
             {
                 isLoading ?
                     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                        <Loader name="Orbit" />
+                        <Loader />
                     </View> :
                     <Fragment>
                         <ImageBackground
