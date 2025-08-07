@@ -1,3 +1,4 @@
+import { Formik } from "formik";
 import { StyleSheet, View } from "react-native";
 import images from "../../../assets/images";
 import AuthWrapper from "../../../components/AuthWrapper";
@@ -8,61 +9,60 @@ import Input from "../../../components/Input";
 import Row from "../../../components/Row";
 import Tabs from "../../../components/Tabs";
 import Text from "../../../components/Text";
-import Upload from "../../../components/Upload";
 import colors from "../../../utils/colors";
 import { TABS } from "../../../utils/data";
 import { heightPixel } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
-import { NAVIGATORS, ROUTES } from "../../../utils/routes";
+import { ROUTES } from "../../../utils/routes";
 import useAddEntryController from "./useAddEntryController";
-import { Formik } from "formik";
 
 const UserEntry = () => {
 
-    const { schema, values: { selected, remember, initial }, functions: { toggleRemember, setSelected, onSubmit } } = useAddEntryController()
+    const { schema, refs: { formik_ref }, values: { selected, remember, initial, isLoading }, functions: { toggleRemember, setSelected, onSubmit } } = useAddEntryController()
 
-    const renderForm = () => {
+    const renderForm = ({ handleChange, values: data, errors, touched, setFieldValue }) => {
         if (selected === "login") {
             return (
-                <Formik
-                    initialValues={initial}
-                    validationSchema={schema}
-                    onSubmit={onSubmit}
-                >
-                    {({ handleSubmit, handleChange, handleBlur, values: data, errors }) => (
-                        <>
-                            <Input label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={errors?.email} />
-                            <Input label="Password" placeholder="Enter Password" type="password" required value={data?.email} onChangeText={handleChange("password")} error={errors?.password} />
-                            <Row justify="space-between" style={styles.row_space_between}>
-                                <Row align="center" gap={7}>
-                                    <Checkbox checked={remember} onPress={toggleRemember} />
-                                    <Text>Remember Me</Text>
-                                </Row>
-                                <Text underline onPress={() => navigate(ROUTES.AUTH_TYPE)}>
-                                    Forgot Password?
-                                </Text>
-                            </Row>
-                            <Button
-                                text={TABS.find((item) => item.value === selected)?.label ?? ""}
-                                style={styles.submit_button}
-                                onPress={() => navigate(NAVIGATORS.DRAWER)}
-                            />
-                        </>
-                    )}
-                </Formik>
+                <>
+                    <Input key={`${selected}-1`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
+                    <Input key={`${selected}-2`} label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
+                    <Row justify="space-between" style={styles.row_space_between}>
+                        <Row align="center" gap={7}>
+                            <Checkbox checked={remember} onPress={toggleRemember} />
+                            <Text>Remember Me</Text>
+                        </Row>
+                        <Text underline onPress={() => navigate(ROUTES.AUTH_TYPE)}>
+                            Forgot Password?
+                        </Text>
+                    </Row>
+                </>
             );
         }
 
         return (
             <>
-                <Input label="First Name" placeholder="Enter First Name" required />
-                <Input label="Last Name" placeholder="Enter Last Name" required />
-                <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" required />
-                <Input label="Mobile Number" placeholder="Enter Your Phone Number" type="phone" required />
-                <Input label="Email Address" placeholder="Enter Email Address" type="email" required />
-                <Input label="Password" placeholder="Enter Password" type="password" required />
-                <Input label="Confirm Password" placeholder="Confirm Password" type="password" required />
-                <Upload text="Upload Profile Picture" style={styles.upload_margin} />
+                <Input key={`${selected}-1`} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
+                <Input key={`${selected}-2`} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
+                {/* <Input key={`${selected}-3`} label="Date of Birth" placeholder="mm/dd/yyyy" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={errors?.dob} /> */}
+                <Input
+                    key={`${selected}-4`}
+                    label="Mobile Number"
+                    placeholder="Enter Your Phone Number"
+                    type="phone"
+                    required
+                    value={data?.phone}
+                    onChangeText={handleChange("phone")}
+                    error={touched?.phone ? errors?.phone : ""}
+                    country={data?.country_code}
+                    onChangeCountry={e => {
+                        setFieldValue("country_code", e?.cca2)
+                        setFieldValue("dialing_code", e?.callingCode?.[0])
+                    }}
+                />
+                <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
+                <Input key={`${selected}-6`} label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
+                <Input key={`${selected}-7`} label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />
+                {/* <Upload text="Upload Profile Picture" style={styles.upload_margin} /> */}
             </>
         );
     };
@@ -72,9 +72,28 @@ const UserEntry = () => {
             <View style={styles.tab_wrapper}>
                 <Tabs tabs={TABS} selected={selected} setSelected={setSelected} type="basic" />
             </View>
-
-            {renderForm()}
-
+            <Formik
+                innerRef={formik_ref}
+                initialValues={initial}
+                validationSchema={schema}
+                onSubmit={onSubmit}
+                enableReinitialize
+            >
+                {(form) => (
+                    <>
+                        {console.log("hello", form?.errors)}
+                        {
+                            renderForm(form)
+                        }
+                        <Button
+                            text={TABS.find((item) => item.value === selected)?.label ?? ""}
+                            style={styles.submit_button}
+                            loading={isLoading}
+                            onPress={form.handleSubmit}
+                        />
+                    </>
+                )}
+            </Formik>
             {selected === "login" && (
                 <View style={styles.social_container}>
                     <Text weight="semibold">Or</Text>
