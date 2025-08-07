@@ -15,7 +15,8 @@ const Text: FC<IText> = ({
     underline = false,
     onPress,
     position,
-    lines
+    lines,
+    capitalize = false
 }) => {
 
     let default_style: TextStyle = {
@@ -23,7 +24,8 @@ const Text: FC<IText> = ({
         color: color,
         lineHeight: font(line_height),
         textDecorationLine: underline ? "underline" : "none",
-        textAlign: position
+        textAlign: position,
+        textTransform: capitalize ? "capitalize" : "none"
     }
 
     return (
