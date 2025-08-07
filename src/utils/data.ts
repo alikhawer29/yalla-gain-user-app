@@ -1,5 +1,16 @@
 import images from "../assets/images"
 
+export const TABS = [
+    {
+        label: "Login",
+        value: "login"
+    },
+    {
+        label: "Register",
+        value: "register"
+    },
+];
+
 export const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo."
 
 export const USER = {
