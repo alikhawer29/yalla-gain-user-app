@@ -50,6 +50,10 @@ const images = {
     spotify_logo: require('./spotify_logo.png'),
     play: require('./play.png'),
     pause: require('./pause.png'),
+    modal_check: require('./modal_check.png'),
+    modal_cross: require('./modal_cross.png'),
+    cross: require('./cross.png'),
+    warning: require('./warning.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
@@ -77,6 +81,20 @@ const images = {
         consult_doctor: require('./drawer/consult_doctor.png'),
         my_bookings: require('./drawer/my_bookings.png'),
         logout: require('./drawer/logout.png'),
+    },
+    helpdesk: {
+        aboutus: require('./helpdesk/aboutus.png'),
+        basic_details: require('./helpdesk/basic_details.png'),
+        blocked_user: require('./helpdesk/blocked_user.png'),
+        complaint: require('./helpdesk/complaint.png'),
+        contact: require('./helpdesk/contact.png'),
+        faq: require('./helpdesk/faq.png'),
+        languages: require('./helpdesk/languages.png'),
+        myposts: require('./helpdesk/myposts.png'),
+        rate: require('./helpdesk/rate.png'),
+        subscription: require('./helpdesk/subscription.png'),
+        trash: require('./helpdesk/trash.png'),
+        wallet: require('./helpdesk/wallet.png'),
     },
 };
 
