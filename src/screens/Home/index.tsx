@@ -1,4 +1,4 @@
-import { FlatList, ScrollView, View } from "react-native"
+import { FlatList, View } from "react-native"
 import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
@@ -16,14 +16,6 @@ import { PROGRESS_TRACKING, RECOMMENDED_VIDEOS, WORKOUT_PLANS } from "../../util
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
 
 const Home = () => {
-
-    const chartConfig = {
-        color: (opacity = 1) => colors.white,
-        strokeWidth: 2, // optional, default 3
-        barPercentage: 0.5,
-        useShadowColorFromDataset: false, // optional
-        fillShadowGradientFrom: colors.primary,
-    };
 
     const data = {
         labels: ["Mon", "Tues", "Wed", "Thu", "Fri"],
