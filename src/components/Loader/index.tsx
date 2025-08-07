@@ -4,7 +4,7 @@ import { ILoader } from "../../interfaces"
 import colors from "../../utils/colors"
 import styles from "./styles"
 
-const Loader: FC<ILoader> = ({ color = colors.white, type = "Orbit" }) => {
+const Loader: FC<ILoader> = ({ color = colors.white, type = "BallPulse" }) => {
     return (
         <LoaderKitView
             style={styles.loader}
