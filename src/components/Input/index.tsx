@@ -1,5 +1,5 @@
 import React, { FC, memo, useEffect, useState } from 'react';
-import { LayoutAnimation, TextInput, TouchableOpacity, Vibration, View } from 'react-native';
+import { LayoutAnimation, TextInput, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import PhoneInput from "react-native-phone-number-input";
 import fonts from '../../assets/fonts';
@@ -15,7 +15,7 @@ import styles from './styles';
 
 const Input: FC<IInput> = props => {
 
-    const { label, placeholder, type, icon, error, value, onChangeText, maxLength, disabled, required = false, height, mode = "primary" } = props
+    const { label, placeholder, type, icon, error, value, onChangeText, onChangeCountry, maxLength, disabled, required = false, height, mode = "primary", country = "AE" } = props
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(type === 'password');
     const [isFocused, setIsFocused] = useState(false);
@@ -27,7 +27,6 @@ const Input: FC<IInput> = props => {
 
     useEffect(() => {
         if (error) {
-            Vibration.vibrate(500);
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         }
     }, [error]);
@@ -66,15 +65,15 @@ const Input: FC<IInput> = props => {
                 type === "phone" && (loaded || value === "") ?
                     <PhoneInput
                         layout='first'
-                        allowFontScaling={false}
                         disabled={disabled}
                         placeholder={placeholder}
                         defaultValue={value}
                         value={value}
-                        defaultCode="US"
+                        defaultCode={country}
                         onChangeText={onChangeText}
-                        containerStyle={[styles.input, { padding: 0, height: heightPixel(height), backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
-                        textInputStyle={[styles.input, { padding: 0, height: heightPixel(height), backgroundColor: colors.transparent, color: colors.white }]}
+                        onChangeCountry={onChangeCountry}
+                        containerStyle={[styles.input, { padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
+                        textInputStyle={[styles.input, { padding: 0, backgroundColor: colors.transparent, color: colors.white }]}
                         codeTextStyle={{ fontFamily: fonts.sfpro.regular, margin: 0, padding: 0, color: colors.white }}
                         flagButtonStyle={{ backgroundColor: colors.transparent, margin: 0 }}
                         textContainerStyle={{ paddingHorizontal: widthPixel(15), paddingVertical: 0, backgroundColor: colors.transparent, borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
@@ -84,6 +83,7 @@ const Input: FC<IInput> = props => {
                             placeholderTextColor: colors.white
                         }}
                         disableArrowIcon
+                        countryPickerProps={{ renderFlagButton: false }}
                     />
                     :
                     <Component style={[styles.inputContainer, isFocused && mode !== "secondary" && styles.focusedInputContainer, type === "textarea" && styles.multiline_input_container, mode === "secondary" ? { borderColor: colors.transparent, backgroundColor: colors.grayish_black } : {}]} onPress={toggleDate} disabled={disabled}>
@@ -118,7 +118,7 @@ const Input: FC<IInput> = props => {
                     </Component>
             }
             {error && (
-                <Text size={10} color={colors.danger} style={styles.error}>
+                <Text size={12} color={colors.danger} style={styles.error}>
                     {error}
                 </Text>
             )}
