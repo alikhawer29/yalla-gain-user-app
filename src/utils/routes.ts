@@ -8,6 +8,7 @@ const NAVIGATORS = {
     CHAT_STACK: "ChatStackNavigator",
     MY_PROFILE_STACK: "MyProfileStackNavigator",
     MUSIC_PANEL_STACK: "MusicPanelStackNavigator",
+    HELP_DESK_STACK: "HelpDeskStackNavigator",
 } as const
 
 const ROUTES = {
@@ -25,6 +26,7 @@ const ROUTES = {
     CHANGE_PASSWORD: "ChangePassword",
     MUSIC_AUTH: "MusicAuth",
     PLAYLIST_DETAILS: "PlaylistDetails",
+    HELP_DESK: "HelpDesk",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -83,6 +85,13 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: ""
+    },
+    {
+        route_name: ROUTES.HELP_DESK,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Help Desk"
     },
 ] as const
 
