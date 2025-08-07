@@ -15,7 +15,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
         .min(8, 'Password must be at least 8 characters')
         .required('Password is required'),
     password_confirmation: Yup.string()
-        .min(8, 'Password must be at least 8 characters')
+        .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm Password is required'),
     dialing_code: Yup.string(),
     country_code: Yup.string(),
@@ -50,7 +50,7 @@ export const SET_PASSWORD_SCHEMA = Yup.object().shape({
         .min(8, 'Password must be at least 8 characters')
         .required('Password is required'),
     password_confirmation: Yup.string()
-        .min(8, 'Password must be at least 8 characters')
+        .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm Password is required'),
 });
 
@@ -61,6 +61,6 @@ export const CHANGE_PASSWORD_SCHEMA = Yup.object().shape({
         .min(8, 'Password must be at least 8 characters')
         .required('New Password is required'),
     password_confirmation: Yup.string()
-        .min(8, 'Password must be at least 8 characters')
+        .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm Password is required'),
 });
