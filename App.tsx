@@ -1,15 +1,21 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { useEffect } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { Platform, StatusBar, StyleSheet, UIManager } from 'react-native';
 import BootSplash from "react-native-bootsplash";
 import { MenuProvider } from 'react-native-popup-menu';
+import Toast from "react-native-toast-message";
 import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
+import { ModalProvider } from './src/contexts/ModalContext';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
 import { persistor, store } from './src/redux/Store';
 import colors from './src/utils/colors';
 import { navigationRef } from './src/utils/navigation';
-import { PersistGate } from 'redux-persist/integration/react';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function App() {
 
@@ -33,9 +39,12 @@ function App() {
         <AppWrapper>
           <StatusBar barStyle={'light-content'} />
           <MenuProvider>
-            <NavigationContainer ref={navigationRef} theme={navTheme}>
-              <AppStackNavigator />
-            </NavigationContainer>
+            <ModalProvider>
+              <NavigationContainer ref={navigationRef} theme={navTheme}>
+                <AppStackNavigator />
+                <Toast />
+              </NavigationContainer>
+            </ModalProvider>
           </MenuProvider>
         </AppWrapper>
       </PersistGate>
