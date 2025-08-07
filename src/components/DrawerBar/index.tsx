@@ -1,15 +1,18 @@
-import { DrawerContentScrollView, DrawerItem, DrawerItemList } from "@react-navigation/drawer"
-import { NAVIGATORS } from "../../utils/routes"
+import { DrawerContentScrollView } from "@react-navigation/drawer"
+import { View } from "react-native"
+import images from "../../assets/images"
+import { useModal } from "../../contexts/ModalContext"
+import { useAppDispatch } from "../../hooks"
+import { logout } from "../../redux/Slices/AuthSlice"
+import colors from "../../utils/colors"
+import { USER } from "../../utils/data"
+import { heightPixel } from "../../utils/helper"
 import { navigate } from "../../utils/navigation"
+import { NAVIGATORS } from "../../utils/routes"
+import Button from "../Button"
+import Icon from "../Icon"
 import Row from "../Row"
 import Text from "../Text"
-import colors from "../../utils/colors"
-import { heightPixel, widthPixel } from "../../utils/helper"
-import Icon from "../Icon"
-import images from "../../assets/images"
-import Button from "../Button"
-import { View } from "react-native"
-import { USER } from "../../utils/data"
 import styles from "./styles"
 
 const DRAWER_ROUTES = [
@@ -44,7 +47,7 @@ const DRAWER_ROUTES = [
             {
                 title: "Help Center",
                 icon: images.drawer_icons.help_center,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.HELP_DESK_STACK
             }
         ]
     },
@@ -92,6 +95,17 @@ const DRAWER_ROUTES = [
 
 const DrawerBar = (props) => {
 
+    const dispatch = useAppDispatch()
+    const { showYesNoModal } = useModal()
+
+    const onPressLogout = () => {
+        showYesNoModal({
+            type: "warning",
+            title: "Logout",
+            message: "Are you sure you want to logout?"
+        }, () => dispatch(logout()))
+    }
+
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
@@ -122,7 +136,7 @@ const DrawerBar = (props) => {
                         </> : null
                 ))
             }
-            <Button text="Logout" type="custom" icon={images.drawer_icons.logout} style={styles.logout_button} />
+            <Button text="Logout" type="custom" icon={images.drawer_icons.logout} style={styles.logout_button} onPress={onPressLogout} />
         </DrawerContentScrollView>
     )
 }
