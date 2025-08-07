@@ -15,8 +15,8 @@ export type AuthStackParamList = {
     AuthType: undefined
     Login: undefined
     ForgotPassword: { type: InputType }
-    VerifyCode: undefined
-    SetPassword: undefined
+    VerifyCode: { via: string, email: string, dialing_code: string, phone: string }
+    SetPassword: { via: string, email: string, dialing_code: string, phone: string, token: string }
 };
 
 export type RootStackParamList = {
@@ -70,6 +70,7 @@ export interface IText {
     line_height?: number
     lines?: number
     underline?: boolean
+    capitalize?: boolean
     position?: 'auto' | 'left' | 'right' | 'center' | 'justify'
     onPress?: (event: GestureResponderEvent) => void
 }
@@ -116,8 +117,11 @@ export interface IInput {
     type?: InputType;
     icon?: any;
     error?: string;
+    country?: string;
     value?: string;
+    mode?: "primary" | "secondary";
     onChangeText?: (text: string) => void;
+    onChangeCountry?: (country: any) => void;
     maxLength?: number;
     disabled?: boolean;
     required?: boolean;
