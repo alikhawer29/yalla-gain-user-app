@@ -36,7 +36,7 @@ const MusicAuth = () => {
                         Playlists
                     </Text>
                     {
-                        isLoading ? <Loader name="Orbit" /> :
+                        isLoading ? <Loader /> :
                             <FlatList
                                 data={playlists?.items}
                                 renderItem={renderPlaylist}
