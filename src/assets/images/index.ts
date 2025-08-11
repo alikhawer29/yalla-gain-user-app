@@ -54,6 +54,7 @@ const images = {
     modal_cross: require('./modal_cross.png'),
     cross: require('./cross.png'),
     warning: require('./warning.png'),
+    empty: require('./empty.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
