@@ -30,6 +30,8 @@ export type RootStackParamList = {
     MusicAuth: undefined
     PlaylistDetails: { id: string },
     HelpDesk: undefined,
+    Subscription: undefined,
+    SubscriptionLogs: undefined,
 };
 
 export interface IWrapper {
@@ -254,5 +256,24 @@ export interface ILoader {
 export interface IHelpDeskCard {
     color?: string,
     icon: ImageSourcePropType,
-    title: string
+    title: string,
+    onPress?: () => void
+}
+
+export interface ISubscriptionLogCard {
+    subscription_type: string
+    subscribed_on: string
+    expired_on: string
+    amount: string
+    label: {
+        text: string
+        color: string,
+        underline?: boolean,
+        onPress?: () => void | undefined
+    }
+}
+
+export interface IEmpty {
+    message?: string
+    image?: ImageSourcePropType
 }
