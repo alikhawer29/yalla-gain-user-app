@@ -1,8 +1,8 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../../interfaces';
 import Home from '../../screens/Home';
-import Options from '../Options';
 import { ROUTES } from '../../utils/routes';
+import Options from '../Options';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
