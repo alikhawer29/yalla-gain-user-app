@@ -1,9 +1,11 @@
 import { FlatList } from "react-native"
-import HelpDeskCard from "../../components/Cards/HelpDeskCard"
-import Wrapper from "../../components/Wrapper"
-import Seperator from "../../components/Seperator"
-import colors from "../../utils/colors"
 import images from "../../assets/images"
+import HelpDeskCard from "../../components/Cards/HelpDeskCard"
+import Seperator from "../../components/Seperator"
+import Wrapper from "../../components/Wrapper"
+import colors from "../../utils/colors"
+import { navigate } from "../../utils/navigation"
+import { ROUTES } from "../../utils/routes"
 
 const HELPDESK = [
     { icon: images.helpdesk.faq, title: "FAQ's" },
@@ -14,7 +16,7 @@ const HELPDESK = [
     { icon: images.helpdesk.rate, title: "Rate App" },
     { icon: images.helpdesk.myposts, title: "My Posts" },
     { icon: images.helpdesk.blocked_user, title: "Blocked User" },
-    { icon: images.helpdesk.subscription, title: "Subscription" },
+    { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
     { icon: images.helpdesk.aboutus, title: "About Us" },
     { icon: images.helpdesk.contact, title: "Contact Us" },
     { icon: images.helpdesk.trash, title: "Delete Account", color: colors.danger }
