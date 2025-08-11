@@ -9,6 +9,7 @@ const NAVIGATORS = {
     MY_PROFILE_STACK: "MyProfileStackNavigator",
     MUSIC_PANEL_STACK: "MusicPanelStackNavigator",
     HELP_DESK_STACK: "HelpDeskStackNavigator",
+    SUBSCRIPTION_STACK: "SubscriptionStackNavigator",
 } as const
 
 const ROUTES = {
@@ -27,6 +28,8 @@ const ROUTES = {
     MUSIC_AUTH: "MusicAuth",
     PLAYLIST_DETAILS: "PlaylistDetails",
     HELP_DESK: "HelpDesk",
+    SUBSCRIPTION: "Subscription",
+    SUBSCRIPTION_LOGS: "SubscriptionLogs",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -92,6 +95,20 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: "Help Desk"
+    },
+    {
+        route_name: ROUTES.SUBSCRIPTION,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Premium Subscription"
+    },
+    {
+        route_name: ROUTES.SUBSCRIPTION_LOGS,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "Subscription Logs"
     },
 ] as const
 
