@@ -26,9 +26,40 @@ export const userApi = createApi({
                 body
             }),
         }),
+        getSubscriptionPlans: builder.query({
+            query: () => ({
+                url: `plans`,
+                method: "GET",
+            }),
+            keepUnusedDataFor: 0
+        }),
+        getSubscriptionLogs: builder.query({
+            query: () => ({
+                url: `subscription-logs`,
+                method: "GET",
+            }),
+            keepUnusedDataFor: 0
+        }),
+        subscribe: builder.mutation({
+            query: (body) => ({
+                url: `payment`,
+                method: "POST",
+                body
+            }),
+        }),
+        cancelSubscription: builder.mutation({
+            query: (id) => ({
+                url: `subscription/${id}/cancel`,
+                method: "POST",
+            }),
+        }),
     }),
 })
 
 export const {
     useChangePasswordMutation,
+    useGetSubscriptionPlansQuery,
+    useGetSubscriptionLogsQuery,
+    useSubscribeMutation,
+    useCancelSubscriptionMutation
 } = userApi
