@@ -8,9 +8,9 @@ import Icon from "../../Icon";
 import Text from "../../Text";
 import styles from "./styles";
 
-const HelpDeskCard: FC<IHelpDeskCard> = ({ title, color = colors.primary, icon = images.calendar }) => {
+const HelpDeskCard: FC<IHelpDeskCard> = ({ title, color = colors.primary, icon = images.calendar, onPress }) => {
     return (
-        <CardWrapper height={155} width={"47%"} padding={16}>
+        <CardWrapper height={155} width={"47%"} padding={16} onPress={onPress}>
             <View style={styles.icon_container}>
                 <Icon source={icon} color={color} rounded size={72} less_padding />
             </View>
