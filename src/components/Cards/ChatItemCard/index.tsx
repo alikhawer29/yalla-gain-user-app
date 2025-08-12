@@ -41,7 +41,7 @@ const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at })
         >
             {!is_sender && image && (
                 <View style={{ width: "20%" }}>
-                    <Icon source={images.chatbot} rounded no_padding size={39} />
+                    <Icon source={image} rounded no_padding size={39} />
                 </View>
             )}
             <View style={[styles.message_bubble, is_sender ? styles.sender_bubble : styles.receiver_bubble]}>
@@ -53,7 +53,7 @@ const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at })
             </View>
 
             {is_sender && image && (
-                <Icon source={images.dummy} rounded no_padding size={39} />
+                <Icon source={image} rounded no_padding size={39} />
             )}
         </Animated.View>
     );
