@@ -7,6 +7,7 @@ import { authApi } from '../Apis/Auth';
 import { userApi } from '../Apis/User';
 import authReducer from '../Slices/AuthSlice';
 import spotifyReducer from '../Slices/SpotifySlice';
+import { chatbotApi } from '../Apis/Chatbot';
 
 const persistConfig = {
     key: 'yallagain',
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
     spotify: spotifyReducer,
     [authApi.reducerPath]: authApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
+    [chatbotApi.reducerPath]: chatbotApi.reducer,
 })
 
 const persistedReducer = persistReducer(persistConfig, rootReducer)
@@ -31,6 +33,7 @@ export const store = configureStore({
         })
             .concat(authApi.middleware)
             .concat(userApi.middleware)
+            .concat(chatbotApi.middleware)
             .concat(errorLogger)
             .concat(successLogger)
 });

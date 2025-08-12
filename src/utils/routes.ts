@@ -30,6 +30,7 @@ const ROUTES = {
     HELP_DESK: "HelpDesk",
     SUBSCRIPTION: "Subscription",
     SUBSCRIPTION_LOGS: "SubscriptionLogs",
+    CHATBOT: "Chatbot",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -109,6 +110,13 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: "Subscription Logs"
+    },
+    {
+        route_name: ROUTES.CHATBOT,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "Chat Bot Complain"
     },
 ] as const
 

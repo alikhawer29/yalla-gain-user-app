@@ -9,7 +9,7 @@ import { ROUTES } from "../../utils/routes"
 
 const HELPDESK = [
     { icon: images.helpdesk.faq, title: "FAQ's" },
-    { icon: images.helpdesk.complaint, title: "Complain Chat Bot" },
+    { icon: images.helpdesk.complaint, title: "Complain Chat Bot", onPress: () => navigate(ROUTES.CHATBOT) },
     { icon: images.helpdesk.wallet, title: "Wallet" },
     { icon: images.helpdesk.basic_details, title: "Basic Details" },
     { icon: images.helpdesk.languages, title: "Choose Language" },

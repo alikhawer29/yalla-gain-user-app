@@ -5,6 +5,7 @@ import Subscription from '../../screens/Subscription';
 import SubscriptionLogs from '../../screens/SubscriptionLogs';
 import { ROUTES } from '../../utils/routes';
 import Options from '../Options';
+import Chatbot from '../../screens/Chatbot';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -14,6 +15,7 @@ const HelpDeskStackNavigator = () => {
             <Stack.Screen name={ROUTES.HELP_DESK} component={HelpDesk} />
             <Stack.Screen name={ROUTES.SUBSCRIPTION} component={Subscription} />
             <Stack.Screen name={ROUTES.SUBSCRIPTION_LOGS} component={SubscriptionLogs} />
+            <Stack.Screen name={ROUTES.CHATBOT} component={Chatbot} />
         </Stack.Navigator>
     );
 }

@@ -55,6 +55,8 @@ const images = {
     cross: require('./cross.png'),
     warning: require('./warning.png'),
     empty: require('./empty.png'),
+    send: require('./send.png'),
+    chatbot: require('./chatbot.png'),
     splash: require('./splash.jpg'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),

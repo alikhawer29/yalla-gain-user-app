@@ -32,6 +32,7 @@ export type RootStackParamList = {
     HelpDesk: undefined,
     Subscription: undefined,
     SubscriptionLogs: undefined,
+    Chatbot: undefined
 };
 
 export interface IWrapper {
@@ -276,4 +277,11 @@ export interface ISubscriptionLogCard {
 export interface IEmpty {
     message?: string
     image?: ImageSourcePropType
+}
+
+export interface IChatItemCard {
+    message: string
+    image?: any
+    created_at: string
+    sender?: boolean
 }
