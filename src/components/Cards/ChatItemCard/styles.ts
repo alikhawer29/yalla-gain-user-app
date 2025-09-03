@@ -9,10 +9,10 @@ const styles = StyleSheet.create({
     },
     sender_container: {
         flexDirection: "row-reverse",
-        justifyContent: "flex-end",
+        alignSelf: "flex-end",
     },
     receiver_container: {
-        justifyContent: "flex-start",
+        alignSelf: "flex-start",
     },
     message_bubble: {
         width: "80%",
@@ -26,6 +26,20 @@ const styles = StyleSheet.create({
     },
     receiver_bubble: {
         borderTopLeftRadius: 0,
+    },
+    tailLeft: {
+        position: 'absolute',
+        top: 0,
+        left: -16,
+        transform: [{rotate: '180deg'}],
+        zIndex: 99
+    },
+    tailRight: {
+        position: 'absolute',
+        top: 0,
+        right: -16,
+        transform: [{rotate: '180deg'}],
+        zIndex: 99
     },
 });
 

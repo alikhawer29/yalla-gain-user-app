@@ -1,15 +1,17 @@
 import { FC, memo, useEffect, useRef } from "react";
 import { Animated, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import images from "../../../assets/images";
 import { IChatItemCard } from "../../../interfaces";
 import colors from "../../../utils/colors";
 import { timeFormatter } from "../../../utils/helper";
 import Icon from "../../Icon";
+import Loader from "../../Loader";
 import Row from "../../Row";
 import Text from "../../Text";
 import styles from "./styles";
 
-const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at }) => {
+const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at, typing = false }) => {
 
     const slide_anim = useRef(new Animated.Value(50)).current;
     const opacity_anim = useRef(new Animated.Value(0)).current;
@@ -29,7 +31,24 @@ const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at })
         ]).start();
     }, [slide_anim, opacity_anim]);
 
-    const is_sender = Boolean(sender);
+    const is_sender = Boolean(sender)
+
+    const Tail = ({ right = true, fill = colors.blackish_gray }) => {
+
+        const dLeft = `M0 0 L0 18 L18 18 Z`
+        const dRight = `M14 0 L18 18 L0 18 Z`
+
+        return (
+            <Svg
+                width={18}
+                height={18}
+                viewBox="0 0 18 18"
+                style={right ? styles.tailRight : styles.tailLeft}
+            >
+                <Path d={right ? dRight : dLeft} fill={fill} />
+            </Svg>
+        );
+    };
 
     return (
         <Animated.View
@@ -39,23 +58,31 @@ const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at })
                 { transform: [{ translateY: slide_anim }], opacity: opacity_anim }
             ]}
         >
-            {!is_sender && image && (
-                <View style={{ width: "20%" }}>
+            {image && (
+                <View style={{ width: "20%", alignItems: is_sender ? "flex-end" : "flex-start" }}>
                     <Icon source={image} rounded no_padding size={39} />
                 </View>
             )}
-            <View style={[styles.message_bubble, is_sender ? styles.sender_bubble : styles.receiver_bubble]}>
-                <Text size={12}>{message}</Text>
-                <Row align="center" gap={5}>
-                    <Icon source={images.clock} tint_color={colors.white} size={10} />
-                    {created_at && <Text size={10}>{timeFormatter(created_at)}</Text>}
-                </Row>
-            </View>
-
-            {is_sender && image && (
-                <Icon source={image} rounded no_padding size={39} />
-            )}
-        </Animated.View>
+            {
+                typing ?
+                    <View style={{ alignItems: "center", justifyContent: "center" }}>
+                        <Loader type="BallPulseSync" />
+                    </View> :
+                    <>
+                        <View style={[styles.message_bubble, is_sender ? styles.sender_bubble : styles.receiver_bubble]}>
+                            <Tail right={is_sender} />
+                            <Text size={12}>{message}</Text>
+                            {
+                                created_at &&
+                                <Row align="center" justify={is_sender ? "flex-start" : "flex-end"} gap={5}>
+                                    <Icon source={images.clock} tint_color={colors.white} size={10} />
+                                    <Text size={10}>{timeFormatter(created_at)}</Text>
+                                </Row>
+                            }
+                        </View>
+                    </>
+            }
+        </Animated.View >
     );
 };
 
