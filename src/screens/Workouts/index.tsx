@@ -2,7 +2,7 @@ import { FlatList, RefreshControl } from "react-native"
 import VideoCard from "../../components/Cards/VideoCard"
 import Seperator from "../../components/Seperator"
 import Wrapper from "../../components/Wrapper"
-import styles from "./styles"
+import styles from "../../utils/styles"
 import useWorkoutController from "./useWorkoutController"
 
 const Workouts = () => {
@@ -22,7 +22,7 @@ const Workouts = () => {
                 )}
                 ItemSeparatorComponent={() => <Seperator size={20} />}
                 showsVerticalScrollIndicator={false}
-                ListHeaderComponentStyle={styles.list_header}
+                ListHeaderComponentStyle={styles.list_header_component}
                 refreshControl={
                     <RefreshControl
                         refreshing={values.isLoading}
