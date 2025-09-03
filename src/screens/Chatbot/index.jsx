@@ -1,170 +1,70 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import {
     FlatList,
-    Keyboard,
     KeyboardAvoidingView,
     Platform,
     StyleSheet,
     TextInput,
     View
 } from "react-native";
-import { useSelector } from "react-redux";
 import fonts from "../../assets/fonts";
 import images from "../../assets/images";
 import ChatItemCard from "../../components/Cards/ChatItemCard";
-import Empty from "../../components/Empty";
 import Icon from "../../components/Icon";
 import Wrapper from "../../components/Wrapper";
-import { useCreateConversationMutation, useEndSessionMutation, useSendQuestionMutation } from "../../redux/Apis/Chatbot";
-import { selectUser } from "../../redux/Slices/AuthSlice";
 import colors from "../../utils/colors";
 import { heightPixel } from "../../utils/helper";
-import Text from "../../components/Text";
-import Loader from "../../components/Loader";
+import useChatbotController from "./useChatbotController";
+import Seperator from "../../components/Seperator";
 
 const Chatbot = () => {
 
-    const flatlist_ref = useRef(null);
-    const user = useSelector(selectUser);
-
-    const [messages, setMessages] = useState([]);
-    const [input, setInput] = useState("");
-
-    const [createConversation, { data: createConversationData }] = useCreateConversationMutation();
-    const [send, { data: sendData, isLoading: isSendLoading, isSuccess: isSendSuccess }] = useSendQuestionMutation();
-    const [endSession] = useEndSessionMutation();
-
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
-    const [isKeyboardVisible, setKeyboardVisible] = useState(true);
-
-    useEffect(() => {
-        if (flatlist_ref.current) {
-            flatlist_ref.current.scrollToEnd({ animated: true });
+    const {
+        refs: {
+            flatlist_ref
+        },
+        values: {
+            data,
+            input
+        },
+        functions: {
+            onChangeInput,
+            onSendMessage
         }
-    }, [messages]);
+    } = useChatbotController()
 
-    useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            e => {
-                setKeyboardHeight(e.endCoordinates.height);
-            },
-        );
-        const keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                setKeyboardHeight(0);
-            },
-        );
-
-        return () => {
-            keyboardDidShowListener.remove();
-            keyboardDidHideListener.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        const keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            () => {
-                setKeyboardVisible(true); // Keyboard is open
-            },
-        );
-        const keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                setKeyboardVisible(false); // Keyboard is closed
-            },
-        );
-
-        return () => {
-            keyboardDidHideListener.remove();
-            keyboardDidShowListener.remove();
-        };
-    }, []);
-
-    useEffect(() => {
-        // return () => {
-        //     endSession({
-        //         session_id: createConversationData?.session_id,
-        //         visitor_id: user?.id
-        //     })
-        // }
-    }, [])
-
-    useEffect(() => {
-        if (user && user.id) {
-            createConversation({ visitor_id: user.id });
-        }
-    }, [user]);
-
-    useEffect(() => {
-        if (isSendSuccess) {
-            const newMessage = {
-                id: Date.now().toString(),
-                text: sendData,
-                sender: "other",
-                time: new Date()
-            };
-            setMessages((prev) => [...prev, newMessage]);
-        }
-    }, [isSendSuccess, sendData]);
-
-    const sendMessage = () => {
-        if (input.trim() === "") return;
-        const newMessage = {
-            id: Date.now().toString(),
-            text: input,
-            sender: "me",
-            time: new Date()
-        };
-        setMessages((prev) => [...prev, newMessage]);
-        setInput("");
-
-        handleStream(newMessage.text);
-    };
-
-    const handleStream = async (question) => {
-        send({ session_id: createConversationData?.session_id, question });
-    };
-
-    const renderItem = ({ item }) => {
-        const isMe = item.sender === "me";
-        return (
-            <ChatItemCard message={item?.text} sender={isMe} created_at={item?.toString()} image="https://i.pravatar.cc/150?img=5" />
-        );
-    };
+    const renderItem = ({ item }) => (
+        <ChatItemCard
+            message={item?.text}
+            sender={item.sender === "me"}
+            created_at={item?.timestamp}
+            typing={item?.typing}
+            image={item.sender === "me" ? images.dummy : images.chatbot}
+        />
+    )
 
     return (
         <Wrapper>
             <KeyboardAvoidingView
-                style={[styles.container, { marginBottom: isKeyboardVisible ? keyboardHeight : 0 }]}
+                style={[styles.container]}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
                 <FlatList
                     ref={flatlist_ref}
-                    data={messages}
+                    data={data}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
-                    style={styles.chatList}
-                    // contentContainerStyle={{ paddingVertical: 10 }}
-                    ListEmptyComponent={<Empty message="Start Conversation" />}
+                    ItemSeparatorComponent={<Seperator />}
                 />
-                {
-                    isSendLoading &&
-                    <View>
-                        <Loader />
-                    </View>
-                }
-                <View style={styles.inputContainer}>
+                <View style={styles.input_container}>
                     <TextInput
                         style={styles.input}
                         placeholder="Type a message..."
                         value={input}
-                        onChangeText={setInput}
+                        onChangeText={onChangeInput}
                         placeholderTextColor={colors.icon_gray}
                     />
-                    <Icon rounded color={colors.primary} onPress={sendMessage} source={images.send} size={50} />
+                    <Icon rounded color={colors.primary} onPress={onSendMessage} source={images.send} size={50} />
                 </View>
             </KeyboardAvoidingView>
         </Wrapper>
@@ -172,42 +72,10 @@ const Chatbot = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
-    chatList: { flex: 1, paddingHorizontal: 10 },
-    messageRow: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        marginVertical: 5
+    container: {
+        flex: 1
     },
-    rowReverse: {
-        flexDirection: "row-reverse"
-    },
-    avatar: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        marginHorizontal: 5
-    },
-    messageContainer: {
-        padding: 10,
-        borderRadius: 10,
-        maxWidth: "75%"
-    },
-    myMessage: {
-        backgroundColor: colors.blackish_gray,
-        borderTopRightRadius: 0
-    },
-    otherMessage: {
-        backgroundColor: colors.blackish_gray,
-        borderTopLeftRadius: 0
-    },
-    messageText: { color: "#fff" },
-    timeText: {
-        fontSize: 10,
-        color: "#999",
-        marginTop: 2
-    },
-    inputContainer: {
+    input_container: {
         flexDirection: "row",
         backgroundColor: colors.transparent,
         gap: 10,
@@ -223,13 +91,6 @@ const styles = StyleSheet.create({
         color: colors.white,
         height: heightPixel(50),
         fontFamily: fonts.sfpro.regular
-    },
-    sendButton: {
-        backgroundColor: "#6A24C6",
-        paddingHorizontal: 20,
-        justifyContent: "center",
-        borderRadius: 20,
-        marginLeft: 10
     }
 });
 
