@@ -5,7 +5,7 @@ export const LOGIN_SCHEMA = Yup.object().shape({
     password: Yup.string()
         .min(8, 'Password must be at least 8 characters')
         .required('Password is required'),
-});
+})
 
 export const SIGNUP_SCHEMA = Yup.object().shape({
     first_name: Yup.string().required('First Name is required'),
@@ -20,7 +20,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     dialing_code: Yup.string(),
     country_code: Yup.string(),
     phone: Yup.string().required('Mobile Number is required'),
-});
+})
 
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
     via: Yup.string().oneOf(['email', 'phone']).required('Method is required'),
@@ -39,11 +39,11 @@ export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
         then: schema => schema.required('Dialing code is required'),
         otherwise: schema => schema.notRequired(),
     }),
-});
+})
 
 export const VERIFY_CODE_SCHEMA = Yup.object().shape({
     token: Yup.string().required('Verification Code is required').length(4, "Verification Code must be 4 digit")
-});
+})
 
 export const SET_PASSWORD_SCHEMA = Yup.object().shape({
     password: Yup.string()
@@ -52,7 +52,7 @@ export const SET_PASSWORD_SCHEMA = Yup.object().shape({
     password_confirmation: Yup.string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm Password is required'),
-});
+})
 
 export const CHANGE_PASSWORD_SCHEMA = Yup.object().shape({
     old_password: Yup.string()
@@ -63,4 +63,12 @@ export const CHANGE_PASSWORD_SCHEMA = Yup.object().shape({
     password_confirmation: Yup.string()
         .oneOf([Yup.ref('password')], 'Passwords must match')
         .required('Confirm Password is required'),
-});
+})
+
+export const CREATE_POST_SCHEMA = Yup.object().shape({
+    title: Yup.string()
+})
+
+export const EXERCISE_SCHEMA = Yup.object().shape({
+    exercise: Yup.string().required('Exercise is required')
+})
