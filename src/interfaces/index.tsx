@@ -2,6 +2,14 @@ import { ReactNode } from "react";
 import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IndicatorName } from "react-native-loader-kit";
 
+export type TMessage = {
+    id: string;
+    text: string;
+    sender: string;
+    timestamp: Date | null;
+    typing?: boolean
+}
+
 export type InputType = 'email' | 'text' | 'password' | 'number' | 'textarea' | 'time' | 'phone' | 'date';
 
 export type AppStackParamList = {
@@ -33,6 +41,10 @@ export type RootStackParamList = {
     Subscription: undefined,
     SubscriptionLogs: undefined,
     Chatbot: undefined
+    CreateNewsFeed: undefined
+    Workout: undefined
+    WorkoutDetails: undefined
+    VideoDetails: undefined
 };
 
 export interface IWrapper {
@@ -158,8 +170,10 @@ export interface IVideoCard {
     image: ImageSourcePropType
     title: string
     description: string
-    date: string
-    language: string
+    created_at: string
+    language?: string,
+    type?: "primary" | "secondary",
+    onSave?: () => void
 }
 
 export interface IWorkoutCard extends IProgressBar {
@@ -187,7 +201,7 @@ export interface ITrackingCard extends IProgressBar {
 }
 
 export interface INewsFeedCard {
-    content: string
+    title: string
     user?: any
     reaction_count: number
     comment_count: number
@@ -284,4 +298,5 @@ export interface IChatItemCard {
     image?: any
     created_at: string
     sender?: boolean
+    typing?: boolean
 }
