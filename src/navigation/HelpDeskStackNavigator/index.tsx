@@ -1,11 +1,11 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import { RootStackParamList } from '../../interfaces';
+import Chatbot from '../../screens/Chatbot';
 import HelpDesk from '../../screens/HelpDesk';
 import Subscription from '../../screens/Subscription';
 import SubscriptionLogs from '../../screens/SubscriptionLogs';
 import { ROUTES } from '../../utils/routes';
 import Options from '../Options';
-import Chatbot from '../../screens/Chatbot';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
