@@ -69,9 +69,13 @@ export const chatbotApi = createApi({
             query: body => ({
                 url: 'end_session',
                 method: 'POST',
-                body: {
+                params: {
                     ...CHAT_CONFIG,
                     ...body
+                },
+                headers: {
+                    accept: 'application/json',
+                    'Content-Type': 'application/json',
                 },
             }),
         }),
