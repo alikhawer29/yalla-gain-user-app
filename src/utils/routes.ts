@@ -10,6 +10,7 @@ const NAVIGATORS = {
     MUSIC_PANEL_STACK: "MusicPanelStackNavigator",
     HELP_DESK_STACK: "HelpDeskStackNavigator",
     SUBSCRIPTION_STACK: "SubscriptionStackNavigator",
+    WORKOUT_STACK: "WorkoutStackNavigator",
 } as const
 
 const ROUTES = {
@@ -31,6 +32,13 @@ const ROUTES = {
     SUBSCRIPTION: "Subscription",
     SUBSCRIPTION_LOGS: "SubscriptionLogs",
     CHATBOT: "Chatbot",
+    MOVEMENT_CORRECTION: "MovementCorrection",
+    MOVEMENT_CORRECTION_CAMERA: "MovementCorrectionCamera",
+    WORKOUT: "Workout",
+    WORKOUT_DETAILS: "WorkoutDetails",
+    VIDEO_DETAILS: "VideoDetails",
+    VIDEO_PLAYER: "VideoPlayer",
+    SAVED_WORKOUT_CONTENT: "SavedWorkoutContent",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -117,6 +125,54 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: "Chat Bot Complain"
+    },
+    {
+        route_name: ROUTES.MOVEMENT_CORRECTION,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Movement Correction With Camera"
+    },
+    {
+        route_name: ROUTES.MOVEMENT_CORRECTION_CAMERA,
+        left: null,
+        right: null,
+        logo: false,
+        title: "Movement Correction With Camera"
+    },
+    {
+        route_name: ROUTES.WORKOUT,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Workout Content"
+    },
+    {
+        route_name: ROUTES.WORKOUT_DETAILS,
+        left: "back",
+        right: null,
+        logo: false
+    },
+    {
+        route_name: ROUTES.VIDEO_DETAILS,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "View Video"
+    },
+    {
+        route_name: ROUTES.VIDEO_PLAYER,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "Video Player",
+    },
+    {
+        route_name: ROUTES.SAVED_WORKOUT_CONTENT,
+        left: "drawer",
+        right: null,
+        logo: false,
+        title: "Saved Content",
     },
 ] as const
 
