@@ -5,7 +5,11 @@ import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 import { EXERCISE_SCHEMA } from "../../utils/validators";
 
-const initial = {
+type TData = {
+    exercise: string
+}
+
+const initial: TData = {
     exercise: ""
 }
 
@@ -22,7 +26,7 @@ const useMovementCorrectionController = () => {
         }
     }, [isSuccess, data])
 
-    const onSubmit = (data) => {
+    const onSubmit = (data: TData) => {
         start(JSON.stringify(data))
     }
 
