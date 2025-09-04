@@ -9,6 +9,7 @@ import Seperator from "../../components/Seperator"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
+import globalStyles from "../../utils/styles"
 import styles from "./styles"
 import useVideoDetailController from "./useVideoDetailController"
 
@@ -36,7 +37,7 @@ const VideoDetails = () => {
                     style={styles.thumbnail_image}
                     resize="cover"
                 />
-                <View style={styles.overlay}>
+                <View style={globalStyles.overlay}>
                     <Icon
                         source={images.play}
                         size={60}
