@@ -23,6 +23,10 @@ const styles = StyleSheet.create({
     },
     save_icon: {
         position: "absolute",
+        top: heightPixel(14),
+        right: heightPixel(14)
+    },
+    secondary_save_icon: {
         top: heightPixel(5),
         right: heightPixel(5)
     }
