@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
     loader: {
         width: heightPixel(30),
         height: heightPixel(30),
-        alignSelf: "center"
+        // alignSelf: "center"
     }
 })
 
