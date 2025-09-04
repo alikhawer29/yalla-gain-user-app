@@ -70,5 +70,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>YallaGain needs access to your camera to take photos and videos.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>YallaGain needs access to your location to provide better location-based services.</string>
 </dict>
 </plist>

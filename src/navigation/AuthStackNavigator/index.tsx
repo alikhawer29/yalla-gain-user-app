@@ -12,7 +12,7 @@ const Stack = createStackNavigator<AuthStackParamList>();
 
 const AuthStackNavigator = () => {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Navigator screenOptions={{ headerShown: false, animation: "none" }}>
             <Stack.Screen name={ROUTES.ONBOARDING} component={Onboarding} />
             <Stack.Screen name={ROUTES.USER_ENTRY} component={UserEntry} />
             <Stack.Screen name={ROUTES.AUTH_TYPE} component={AuthType} />

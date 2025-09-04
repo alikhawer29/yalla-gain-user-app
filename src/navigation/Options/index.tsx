@@ -5,7 +5,7 @@ import Image from "../../components/Image";
 import Text from "../../components/Text";
 import Touchable from "../../components/Touchable";
 import colors from "../../utils/colors";
-import { widthPixel } from "../../utils/helper";
+import { heightPixel, STATUSBAR_HEIGHT, widthPixel } from "../../utils/helper";
 import { goBack } from "../../utils/navigation";
 import { ROUTES_OPTIONS } from "../../utils/routes";
 
@@ -71,7 +71,8 @@ const Options = (props) => {
     headerTransparent: true,
     headerStyle: {
       backgroundColor: colors.transparent,
-      zIndex: 99
+      zIndex: 99,
+      height: heightPixel(56) + STATUSBAR_HEIGHT
     },
     headerTitleAlign: 'center',
     headerTitle: renderTitle,

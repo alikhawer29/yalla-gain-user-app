@@ -31,8 +31,8 @@ const HelpDesk = () => {
                 numColumns={2}
                 ItemSeparatorComponent={() => <Seperator />}
                 columnWrapperStyle={{ gap: "3%" }}
+                showsVerticalScrollIndicator={false}
             />
-
         </Wrapper>
     )
 }

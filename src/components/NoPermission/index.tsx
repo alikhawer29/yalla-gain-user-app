@@ -33,7 +33,11 @@ const NoPermission: FC<INoPermission> = ({ message }) => {
                 <Row justify="space-evenly" align="center" style={styles.buttons_row}>
                     <Button
                         text="Go to Settings"
-                        onPress={openSettings}
+                        onPress={() => {
+                            setTimeout(() => {
+                                openSettings()
+                            }, 200)
+                        }}
                     />
                     <Button
                         text="Go Back"
