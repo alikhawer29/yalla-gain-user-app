@@ -56,6 +56,7 @@ export interface IWrapper {
     scrollable?: boolean
     bottom_bar?: boolean
     no_padding?: boolean
+    loading?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
