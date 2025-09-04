@@ -1,10 +1,17 @@
-import { StyleSheet } from "react-native";
-import { widthPixel } from "../../utils/helper";
+import { StyleSheet } from "react-native"
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: widthPixel(20),
+    },
+    scroll: {
+        flex: 1,
+    },
+    scroll_content: {
+        flexGrow: 1,
+    },
+    body: {
+        flex: 1,
     },
 })
 
