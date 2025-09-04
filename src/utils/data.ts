@@ -52,35 +52,35 @@ export const RECOMMENDED_VIDEOS = [
     {
         title: "Morning Stretch Routine",
         description: "A gentle 10-minute stretch session to wake up your body and boost flexibility.",
-        date: "30/06/2025",
+        created_at: "30/06/2025",
         language: "English",
         image: images.recommended_videos.exercise_one
     },
     {
         title: "Beginner Strength Training",
         description: "A simple strength workout to help beginners build muscle with minimal equipment.",
-        date: "30/06/2025",
+        created_at: "30/06/2025",
         language: "English",
         image: images.recommended_videos.exercise_two
     },
     {
         title: "Cardio Burn Workout",
         description: "A 25-minute cardio routine to improve stamina and burn calories effectively.",
-        date: "30/06/2025",
+        created_at: "30/06/2025",
         language: "English",
         image: images.recommended_videos.exercise_one
     },
     {
         title: "Entrenamiento de abdominales en casa",
         description: "Rutina rápida de abdominales para fortalecer tu core sin necesidad de equipo.",
-        date: "30/06/2025",
+        created_at: "30/06/2025",
         language: "Spanish",
         image: images.recommended_videos.exercise_two
     },
     {
         title: "Séance de récupération active",
         description: "Un entraînement léger pour favoriser la récupération et réduire les douleurs musculaires.",
-        date: "30/06/2025",
+        created_at: "30/06/2025",
         language: "French",
         image: images.recommended_videos.exercise_one
     }
