@@ -33,15 +33,11 @@ const NoPermission: FC<INoPermission> = ({ message }) => {
                 <Row justify="space-evenly" align="center" style={styles.buttons_row}>
                     <Button
                         text="Go to Settings"
-                        onPress={() => {
-                            openSettings().catch(() =>
-                                console.warn("Unable to open settings")
-                            )
-                        }}
+                        onPress={openSettings}
                     />
                     <Button
                         text="Go Back"
-                        onPress={() => goBack()}
+                        onPress={goBack}
                         type="outlined"
                     />
                 </Row>
