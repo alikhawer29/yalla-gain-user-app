@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-        width: '85%',
+        width: '75%',
         padding: 20,
         // paddingBottom: heightPixel(40),
         backgroundColor: colors.blackish_gray,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '80%',
+        width: '70%',
         gap: widthPixel(10)
     },
 });
