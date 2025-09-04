@@ -16,6 +16,16 @@ const styles = StyleSheet.create({
         height: "100%",
         width: "100%",
     },
+    overlay: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: colors.light_transparent_primary,
+        justifyContent: "center",
+        alignItems: "center",
+    },
     title_wrapper: {
         gap: heightPixel(10),
         marginBottom: heightPixel(6),

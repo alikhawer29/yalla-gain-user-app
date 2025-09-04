@@ -8,34 +8,56 @@ import Row from "../../components/Row"
 import Seperator from "../../components/Seperator"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
+import colors from "../../utils/colors"
 import styles from "./styles"
 import useVideoDetailController from "./useVideoDetailController"
 
 const VideoDetails = () => {
 
-    const { values, functions } = useVideoDetailController()
+    const {
+        values: {
+            data,
+            isLoading,
+            isStartExerciseLoading
+        },
+        functions: {
+            onPressMovementCorrection,
+            onPressVideo,
+            onSave
+        }
+    } = useVideoDetailController()
 
     return (
-        <Wrapper loading={values.isLoading} scrollable>
-            <Button type="outlined" text="Movement Correction AI" />
+        <Wrapper loading={isLoading} scrollable>
+            <Button type="outlined" text="Movement Correction AI" onPress={onPressMovementCorrection} loading={isStartExerciseLoading} />
             <View style={styles.thumbnail_wrapper}>
                 <Image
-                    source={{ uri: values.data?.thumbnail }}
+                    source={{ uri: data?.thumbnail }}
                     style={styles.thumbnail_image}
                     resize="cover"
                 />
+                <View style={styles.overlay}>
+                    <Icon
+                        source={images.play}
+                        size={60}
+                        rounded
+                        color={colors.transparent_primary}
+                        tint_color={colors.white}
+                        onPress={onPressVideo}
+                    />
+                </View>
             </View>
             <View style={styles.title_wrapper}>
-                <Text size={22}>{values.data?.title}</Text>
+                <Text size={22}>{data?.title}</Text>
                 <Row justify="space-between" align="center">
                     <Row gap={8} align="center">
                         <Icon source={images.calendar} size={19} />
-                        <Text size={18}>{values.data?.created_at}</Text>
+                        <Text size={18}>{data?.created_at}</Text>
                     </Row>
                     <Row gap={8} align="center">
                         <Icon source={images.globe} size={19} />
                         <Text size={18} capitalize>
-                            {values.data?.language}
+                            {data?.language}
                         </Text>
                     </Row>
                 </Row>
@@ -44,19 +66,19 @@ const VideoDetails = () => {
                 <Text size={16} weight="semibold">
                     Description
                 </Text>
-                <Text>{values.data?.description}</Text>
+                <Text>{data?.description}</Text>
             </View>
             <View style={styles.section}>
                 <Text size={16} weight="semibold">
                     Rest Time
                 </Text>
-                <Text>{values.data?.rest_time}</Text>
+                <Text>{data?.rest_time}</Text>
             </View>
             <View style={styles.section}>
                 <Text size={16} weight="semibold">
                     Sets
                 </Text>
-                <Text>{values.data?.sets}</Text>
+                <Text>{data?.sets}</Text>
             </View>
             <Text
                 size={24}
@@ -68,13 +90,13 @@ const VideoDetails = () => {
             </Text>
             <FlatList
                 horizontal
-                data={values.data?.similar_videos}
+                data={data?.similar_videos}
                 renderItem={({ item }) => (
                     <VideoCard
                         {...item}
                         image={{ uri: item?.thumbnail }}
                         type="secondary"
-                        onSave={() => functions.onSave(item.id)}
+                        onSave={() => onSave(item.id)}
                     />
                 )}
                 showsHorizontalScrollIndicator={false}
