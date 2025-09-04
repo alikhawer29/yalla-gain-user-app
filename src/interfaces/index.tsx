@@ -178,6 +178,9 @@ export interface IVideoCard {
     language?: string,
     type?: "primary" | "secondary",
     onSave?: () => void
+    onPress?: () => void
+    is_saved?: boolean,
+    is_video?: boolean,
 }
 
 export interface IWorkoutCard extends IProgressBar {
