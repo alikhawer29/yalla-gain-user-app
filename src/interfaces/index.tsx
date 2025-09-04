@@ -307,3 +307,7 @@ export interface IChatItemCard {
     sender?: boolean
     typing?: boolean
 }
+
+export interface INoPermission {
+    message: string
+}
