@@ -57,7 +57,7 @@ const Home = () => {
                 <FlatList
                     horizontal
                     data={RECOMMENDED_VIDEOS}
-                    renderItem={({ item }) => <VideoCard {...item} />}
+                    renderItem={({ item }) => <VideoCard {...item} type="secondary" is_video={false} />}
                     showsHorizontalScrollIndicator={false}
                     ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
                 />
