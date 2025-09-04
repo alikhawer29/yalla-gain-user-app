@@ -60,8 +60,8 @@ const Options = (props) => {
     return (
       route?.logo ?
         <Image style={{ width: widthPixel(85), zIndex: 99 }} source={images.logo} /> :
-        <Text line_height={40} style={{ zIndex: 99 }} color={colors.white} weight="semibold" size={24}>
-          {route?.title}
+        <Text line_height={32} style={{ zIndex: 99 }} color={colors.white} weight="semibold" size={24} position="center">
+          {route?.title || props?.route?.params?.title}
         </Text>
     )
   }
