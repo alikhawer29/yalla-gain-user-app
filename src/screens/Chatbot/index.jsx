@@ -11,11 +11,12 @@ import fonts from "../../assets/fonts";
 import images from "../../assets/images";
 import ChatItemCard from "../../components/Cards/ChatItemCard";
 import Icon from "../../components/Icon";
+import Seperator from "../../components/Seperator";
 import Wrapper from "../../components/Wrapper";
+import useKeyboard from "../../hooks/useKeyboard";
 import colors from "../../utils/colors";
 import { heightPixel } from "../../utils/helper";
 import useChatbotController from "./useChatbotController";
-import Seperator from "../../components/Seperator";
 
 const Chatbot = () => {
 
@@ -33,6 +34,9 @@ const Chatbot = () => {
         }
     } = useChatbotController()
 
+    const keyboardHeight = useKeyboard()
+    const isNewAndroid = Platform.OS === "android" && Platform.Version >= 35;
+
     const renderItem = ({ item }) => (
         <ChatItemCard
             message={item?.text}
@@ -46,7 +50,9 @@ const Chatbot = () => {
     return (
         <Wrapper>
             <KeyboardAvoidingView
-                style={[styles.container]}
+                style={[styles.container, {
+                    marginBottom: isNewAndroid ? keyboardHeight : 0
+                }]}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
             >
                 <FlatList
