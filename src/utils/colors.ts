@@ -15,7 +15,9 @@ const colors = {
     danger: '#FF0000',
     transparent_black: 'rgba(0,0,0,0.08)',
     light_green: "#32cd32",
-    transparent_light_green: "rgba(50, 205, 50, 0.3)"
+    transparent_light_green: "rgba(50, 205, 50, 0.3)",
+    transparent_primary: "rgba(17, 128, 118, 0.7)",
+    light_transparent_primary: "rgba(17, 128, 118, 0.1)"
 };
 
 export default colors;
