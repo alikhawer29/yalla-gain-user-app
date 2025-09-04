@@ -6,6 +6,7 @@ import { NAVIGATORS } from '../../utils/routes';
 import BottomTabNavigator from '../BottomTabNavigator';
 import HelpDeskStackNavigator from '../HelpDeskStackNavigator';
 import MusicPanelStackNavigator from '../MusicPanelStackNavigator';
+import WorkoutStackNavigator from '../WorkoutStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
@@ -15,6 +16,7 @@ const DrawerNavigator = () => {
             <Drawer.Screen name={NAVIGATORS.BOTTOM} component={BottomTabNavigator} />
             <Drawer.Screen name={NAVIGATORS.MUSIC_PANEL_STACK} component={MusicPanelStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.HELP_DESK_STACK} component={HelpDeskStackNavigator} />
+            <Drawer.Screen name={NAVIGATORS.WORKOUT_STACK} component={WorkoutStackNavigator} />
         </Drawer.Navigator>
     );
 }
