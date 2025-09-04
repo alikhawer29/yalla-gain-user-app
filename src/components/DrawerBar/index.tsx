@@ -8,7 +8,7 @@ import colors from "../../utils/colors"
 import { USER } from "../../utils/data"
 import { heightPixel } from "../../utils/helper"
 import { navigate } from "../../utils/navigation"
-import { NAVIGATORS } from "../../utils/routes"
+import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
 import Row from "../Row"
@@ -27,17 +27,20 @@ const DRAWER_ROUTES = [
             {
                 title: "Movement Correction with Live Camera",
                 icon: images.drawer_icons.movement,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.WORKOUT_STACK,
+                child: ROUTES.MOVEMENT_CORRECTION
             },
             {
                 title: "Workout Video Content",
                 icon: images.drawer_icons.workout,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.WORKOUT_STACK,
+                child: ROUTES.WORKOUT
             },
             {
                 title: "Saved Content",
                 icon: images.drawer_icons.saved_content,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.WORKOUT_STACK,
+                child: ROUTES.SAVED_WORKOUT_CONTENT
             },
             {
                 title: "Challenges",
@@ -127,7 +130,7 @@ const DrawerBar = (props) => {
                             {item?.title && <Text size={16} color={colors.white} style={styles.drawer_item_header}>{item.title}</Text>}
                             {
                                 item?.children?.map((item) => (
-                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route)}>
+                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {})}>
                                         <Icon source={item?.icon} size={24} tint_color={colors.white} />
                                         <Text size={15} weight="semibold" color={colors.white}>{item.title}</Text>
                                     </Row>
