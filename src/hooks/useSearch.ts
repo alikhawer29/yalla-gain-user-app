@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 
-const useDebouncedSearch = (initialValue: string = "", delay: number = 1000) => {
+const useSearch = (initialValue: string = "", delay: number = 1000) => {
 
     const [search, setSearch] = useState(initialValue)
     const [debouncedSearch, setDebouncedSearch] = useState(initialValue)
@@ -27,4 +27,4 @@ const useDebouncedSearch = (initialValue: string = "", delay: number = 1000) => 
 
 }
 
-export default useDebouncedSearch
+export default useSearch
