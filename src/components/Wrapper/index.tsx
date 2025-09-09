@@ -14,7 +14,7 @@ const Wrapper: FC<IWrapper> = ({
     loading = false,
 }) => {
     
-    const headerHeight = useHeaderHeight()
+    const headerHeight = useHeaderHeight()    
 
     const container_style = [
         styles.container,

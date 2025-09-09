@@ -6,6 +6,7 @@ import Icon from '../components/Icon';
 import Text from '../components/Text';
 import colors from '../utils/colors';
 import { font, heightPixel, widthPixel } from '../utils/helper';
+import Row from '../components/Row';
 
 const ModalContext = createContext();
 
@@ -97,18 +98,18 @@ export const ModalProvider = ({ children }) => {
                                             hideModal();
                                         }} />
                                     ) : modalType === 'info' ? null : (
-                                        <View style={styles.buttonContainer}>
-                                            <Button text="Yes" style={{ width: "50%" }} onPress={() => {
+                                        <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
+                                            <Button text="Yes"  style={{width: "50%", minWidth: 'auto'}} onPress={() => {
                                                 modalContent.onConfirm();
                                                 hideModal();
                                             }} />
-                                            <Button text="No" type="outlined" style={{ width: "50%" }} onPress={() => {
+                                            <Button text="No" type='outlined' style={{width: "50%", minWidth: 'auto'}} onPress={() => {
                                                 if (modalContent?.onCancel) {
                                                     modalContent.onCancel();
                                                 }
                                                 hideModal();
                                             }} />
-                                        </View>
+                                        </Row>
                                     )}
                                 </View>
                             </TouchableWithoutFeedback>
@@ -146,9 +147,6 @@ const styles = StyleSheet.create({
         width: "80%"
     },
     buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '70%',
-        gap: widthPixel(10)
+        width: '90%',
     },
 });

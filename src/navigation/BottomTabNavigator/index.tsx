@@ -12,7 +12,7 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
     return (
-        <Tab.Navigator screenOptions={{ headerShown: false }} tabBar={props => <BottomBar {...props} />}>
+        <Tab.Navigator screenOptions={{ headerShown: false, animation: "fade" }} tabBar={props => <BottomBar {...props} />}>
             <Tab.Screen name={NAVIGATORS.HOME_STACK} component={HomeStackNavigator} options={{ tabBarIcon: images.tab_home }} />
             <Tab.Screen name={NAVIGATORS.NEWSFEED_STACK} component={NewsFeedStackNavigator} options={{ tabBarIcon: images.tab_gallery }} />
             <Tab.Screen name={NAVIGATORS.PROGRESS_TRACKING_STACK} component={ProgressTrackingStackNavigator} options={{ tabBarIcon: images.tab_graph }} />

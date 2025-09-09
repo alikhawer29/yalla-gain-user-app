@@ -110,7 +110,7 @@ const DrawerBar = (props) => {
     }
 
     return (
-        <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }}>
+        <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }} showsVerticalScrollIndicator={false}>
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
                 <View>
                     <Icon source={images.dummy} size={50} rounded no_padding />

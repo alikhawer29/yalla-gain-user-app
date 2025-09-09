@@ -10,7 +10,7 @@ import styles from "./styles";
 
 const HelpDeskCard: FC<IHelpDeskCard> = ({ title, color = colors.primary, icon = images.calendar, onPress }) => {
     return (
-        <CardWrapper height={155} width={"47%"} padding={16} onPress={onPress}>
+        <CardWrapper height={155} width={"48.5%"} padding={16} onPress={onPress}>
             <View style={styles.icon_container}>
                 <Icon source={icon} color={color} rounded size={72} less_padding />
             </View>

@@ -95,7 +95,7 @@ const useMovementCorrectionCameraController = () => {
         setIsProcessing(true)
 
         try {
-            const photo = await cameraRef.current.takePhoto({ flash: "off" });
+            const photo = await cameraRef.current.takePhoto({ flash: "off", enableShutterSound: false });
 
             const base64 = await RNFS.readFile(photo.path, "base64");
 

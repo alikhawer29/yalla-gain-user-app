@@ -1,6 +1,6 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context" // ✅
+import { SafeAreaView } from "react-native-safe-area-context"
 import images from "../../assets/images"
 import Icon from "../../components/Icon"
 import Image from "../../components/Image"
