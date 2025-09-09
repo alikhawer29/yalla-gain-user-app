@@ -1,6 +1,6 @@
 import { useHeaderHeight } from "@react-navigation/elements"
 import { FC, memo } from "react"
-import { ActivityIndicator, ScrollView, StatusBar, View } from "react-native"
+import { ActivityIndicator, ScrollView, View } from "react-native"
 import { IWrapper } from "../../interfaces"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
@@ -13,17 +13,18 @@ const Wrapper: FC<IWrapper> = ({
     no_padding = false,
     loading = false,
 }) => {
-    
-    const headerHeight = useHeaderHeight()    
+
+    const headerHeight = useHeaderHeight()
 
     const container_style = [
         styles.container,
         {
-            paddingTop: no_padding
-                ? 0
-                : headerHeight > 0
-                    ? headerHeight + heightPixel(10)
-                    : StatusBar.currentHeight,
+            paddingTop: heightPixel(10),
+            // no_padding
+            // ? 0
+            //     : headerHeight > 0
+            //         ? headerHeight + heightPixel(10)
+            //         : StatusBar.currentHeight,
             paddingBottom: heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT,
             paddingHorizontal: no_padding ? 0 : widthPixel(20),
         },
