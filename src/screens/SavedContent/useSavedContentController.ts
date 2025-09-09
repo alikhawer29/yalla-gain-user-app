@@ -1,12 +1,12 @@
 import { useCallback, useEffect } from "react";
-import { useDebouncedSearch } from "../../hooks/useSearch";
+import useSearch from "../../hooks/useSearch";
 import { useGetSavedContentQuery, useSaveVideoMutation } from "../../redux/Apis/User";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 
 const useSavedContentController = () => {
 
-    const { search, debouncedSearch, onChange: onSearch } = useDebouncedSearch()
+    const { search, debouncedSearch, onChange: onSearch } = useSearch()
 
     const { data, isFetching: isLoading, refetch } = useGetSavedContentQuery({ search: debouncedSearch })
     const [save, { isSuccess: saveSuccess }] = useSaveVideoMutation()

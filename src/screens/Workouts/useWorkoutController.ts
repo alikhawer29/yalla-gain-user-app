@@ -1,12 +1,12 @@
 import { useCallback } from "react";
-import { useDebouncedSearch } from "../../hooks/useSearch";
+import useSearch from "../../hooks/useSearch";
 import { useGetWorkoutQuery } from "../../redux/Apis/User";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 
 const useWorkoutController = () => {
 
-    const { search, debouncedSearch, onChange: onSearch } = useDebouncedSearch()
+    const { search, debouncedSearch, onChange: onSearch } = useSearch()
 
     const { data, isFetching: isLoading, refetch } = useGetWorkoutQuery({ search: debouncedSearch })
 
