@@ -1,11 +1,14 @@
 import { useCallback, useEffect } from "react";
+import { useDebouncedSearch } from "../../hooks/useSearch";
 import { useGetSavedContentQuery, useSaveVideoMutation } from "../../redux/Apis/User";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 
 const useSavedContentController = () => {
 
-    const { data, isFetching: isLoading, refetch } = useGetSavedContentQuery({})
+    const { search, debouncedSearch, onChange: onSearch } = useDebouncedSearch()
+
+    const { data, isFetching: isLoading, refetch } = useGetSavedContentQuery({ search: debouncedSearch })
     const [save, { isSuccess: saveSuccess }] = useSaveVideoMutation()
 
     useEffect(() => {
@@ -26,11 +29,13 @@ const useSavedContentController = () => {
         values: {
             data: data?.data || [],
             isLoading,
+            search
         },
         functions: {
             onReload: refetch,
             onSave,
-            onPress
+            onPress,
+            onSearch
         }
     }
 

@@ -24,7 +24,8 @@ const VideoDetails = () => {
         functions: {
             onPressMovementCorrection,
             onPressVideo,
-            onSave
+            onSave,
+            onPress
         }
     } = useVideoDetailController()
 
@@ -98,6 +99,7 @@ const VideoDetails = () => {
                         image={{ uri: item?.thumbnail }}
                         type="secondary"
                         onSave={() => onSave(item.id)}
+                        onPress={() => onPress(item.id)}
                     />
                 )}
                 showsHorizontalScrollIndicator={false}

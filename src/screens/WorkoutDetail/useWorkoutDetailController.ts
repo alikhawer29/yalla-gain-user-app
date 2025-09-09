@@ -1,5 +1,6 @@
 import { useRoute } from "@react-navigation/native";
 import { useCallback, useEffect } from "react";
+import { useDebouncedSearch } from "../../hooks/useSearch";
 import { useGetVideosByWorkoutQuery, useSaveVideoMutation } from "../../redux/Apis/User";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
@@ -7,8 +8,9 @@ import { ROUTES } from "../../utils/routes";
 const useWorkoutDetailController = () => {
 
     const { params } = useRoute()
+    const { search, debouncedSearch, onChange: onSearch } = useDebouncedSearch()
 
-    const { data, isFetching: isLoading, refetch } = useGetVideosByWorkoutQuery(params?.id)
+    const { data, isFetching: isLoading, refetch } = useGetVideosByWorkoutQuery({ id: params?.id, params: { search: debouncedSearch } })
     const [save, { isSuccess: saveSuccess }] = useSaveVideoMutation()
 
     useEffect(() => {
@@ -29,11 +31,13 @@ const useWorkoutDetailController = () => {
         values: {
             data: data?.data || [],
             isLoading,
+            search
         },
         functions: {
             onReload: refetch,
             onSave,
             onPress,
+            onSearch
         }
     }
 

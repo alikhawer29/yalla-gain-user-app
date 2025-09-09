@@ -1,4 +1,4 @@
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { useCallback, useEffect } from "react";
 import { useStartExerciseMutation } from "../../redux/Apis/MovementCorrection";
 import { useGetVideoDetailsQuery, useSaveVideoMutation } from "../../redux/Apis/User";
@@ -8,8 +8,9 @@ import { ROUTES } from "../../utils/routes";
 const useVideoDetailController = () => {
 
     const { params } = useRoute()
+    const navigation = useNavigation()
 
-    const { data, isLoading, refetch } = useGetVideoDetailsQuery(params?.id)
+    const { data, isFetching: isLoading, refetch } = useGetVideoDetailsQuery(params?.id, { skip: !params })
     const [save, { isSuccess: saveSuccess }] = useSaveVideoMutation()
     const [start, { data: startExerciseData, isLoading: isStartExerciseLoading, isSuccess: isStartExerciseSuccess }] = useStartExerciseMutation()
 
@@ -31,6 +32,10 @@ const useVideoDetailController = () => {
         save(id)
     }, [])
 
+    const onPress = useCallback((id: number) => {
+        navigation.navigate(ROUTES.VIDEO_DETAILS, { id })
+    }, [])
+
     const onPressVideo = useCallback(() => {
         navigate(ROUTES.VIDEO_PLAYER, { video: data?.data?.video })
     }, [data])
@@ -47,6 +52,7 @@ const useVideoDetailController = () => {
         },
         functions: {
             onSave,
+            onPress,
             onPressVideo,
             onPressMovementCorrection
         }
