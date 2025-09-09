@@ -161,15 +161,17 @@ export const userApi = createApi({
             }),
         }),
         getWorkout: builder.query({
-            query: () => ({
+            query: (params) => ({
                 url: `workout-contents`,
                 method: "GET",
+                params
             }),
         }),
         getVideosByWorkout: builder.query({
-            query: (id) => ({
-                url: `workout-content/${id}/videos`,
+            query: (data) => ({
+                url: `workout-content/${data?.id}/videos`,
                 method: "GET",
+                params: data?.params
             }),
         }),
         getVideoDetails: builder.query({
