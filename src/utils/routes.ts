@@ -11,6 +11,7 @@ const NAVIGATORS = {
     HELP_DESK_STACK: "HelpDeskStackNavigator",
     SUBSCRIPTION_STACK: "SubscriptionStackNavigator",
     WORKOUT_STACK: "WorkoutStackNavigator",
+    AVATAR_STACK: "AvatarStackNavigator",
 } as const
 
 const ROUTES = {
@@ -39,6 +40,7 @@ const ROUTES = {
     VIDEO_DETAILS: "VideoDetails",
     VIDEO_PLAYER: "VideoPlayer",
     SAVED_WORKOUT_CONTENT: "SavedWorkoutContent",
+    CREATE_AVATAR: "CreateAvatar",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -173,6 +175,13 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: "Saved Content",
+    },
+    {
+        route_name: ROUTES.CREATE_AVATAR,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "Create Your Body Avatar",
     },
 ] as const
 

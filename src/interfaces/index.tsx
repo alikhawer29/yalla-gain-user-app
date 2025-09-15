@@ -49,6 +49,7 @@ export type RootStackParamList = {
     MovementCorrection: undefined
     MovementCorrectionCamera: undefined
     SavedWorkoutContent: undefined
+    CreateAvatar: undefined
 };
 
 export interface IWrapper {
