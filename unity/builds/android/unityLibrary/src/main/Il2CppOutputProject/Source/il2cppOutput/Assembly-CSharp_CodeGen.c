@@ -1,0 +1,89 @@
+﻿#include "pch-c.h"
+#ifndef _MSC_VER
+# include <alloca.h>
+#else
+# include <malloc.h>
+#endif
+
+
+#include "codegen/il2cpp-codegen-metadata.h"
+
+
+
+
+
+extern void DataFromReact_Awake_m7D5666E836AF8E8AAF7F9FFECD774F1C32388D18 (void);
+extern void DataFromReact_GetDatas_m80C1E4BB4E7BBCC12E61B027A8B4112EED5B7CC4 (void);
+extern void DataFromReact__ctor_mB0A24B90D9D68F02709CC3C46F77A21964D077DB (void);
+extern void JsonObject__ctor_m957916EB2CC9EF5CA2786EDD475D618F125247FE (void);
+extern void NativeAPI__ctor_m18E74AFFE46A30E49D4DFDD14BB1D30EEB609295 (void);
+extern void MessageSent_ButtonPressed_m1D63B9F9EDD171C2E31A1C537530533025560E23 (void);
+extern void MessageSent_CloseGame_mB00DC7ED146A7EF963D0C59B002D066DA441E6AB (void);
+extern void MessageSent__ctor_mF0EAB6DC253B9C5B0D7A9194DFC9F20BEAF1498D (void);
+extern void Quit_Start_m033A99F763D22B87236EB23E02243834B9CCF280 (void);
+extern void Quit_Update_m0ACBFC7352DC28E4E3F0FD0CB563C8E717681F9B (void);
+extern void Quit_CloseGame_m7F1ACBAFD6C38634AD828E1FBF1CEEDEE7A22188 (void);
+extern void Quit__ctor_m3F91DC1CD69CEDC58473E2984694380137C228C0 (void);
+extern void SimpleModelRotator_Update_m4F5EE62C3C2DC7FC9A2A53F63533B8FC065F317C (void);
+extern void SimpleModelRotator__ctor_m858160D9B1948FC40AF0F5A2D2906FDA86FC00FC (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mBEB95BEB954BB63E9710BBC7AD5E78C4CB0A0033 (void);
+extern void UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mE70FB23ACC1EA12ABC948AA22C2E78B2D0AA39B1 (void);
+static Il2CppMethodPointer s_methodPointers[16] = 
+{
+	DataFromReact_Awake_m7D5666E836AF8E8AAF7F9FFECD774F1C32388D18,
+	DataFromReact_GetDatas_m80C1E4BB4E7BBCC12E61B027A8B4112EED5B7CC4,
+	DataFromReact__ctor_mB0A24B90D9D68F02709CC3C46F77A21964D077DB,
+	JsonObject__ctor_m957916EB2CC9EF5CA2786EDD475D618F125247FE,
+	NativeAPI__ctor_m18E74AFFE46A30E49D4DFDD14BB1D30EEB609295,
+	MessageSent_ButtonPressed_m1D63B9F9EDD171C2E31A1C537530533025560E23,
+	MessageSent_CloseGame_mB00DC7ED146A7EF963D0C59B002D066DA441E6AB,
+	MessageSent__ctor_mF0EAB6DC253B9C5B0D7A9194DFC9F20BEAF1498D,
+	Quit_Start_m033A99F763D22B87236EB23E02243834B9CCF280,
+	Quit_Update_m0ACBFC7352DC28E4E3F0FD0CB563C8E717681F9B,
+	Quit_CloseGame_m7F1ACBAFD6C38634AD828E1FBF1CEEDEE7A22188,
+	Quit__ctor_m3F91DC1CD69CEDC58473E2984694380137C228C0,
+	SimpleModelRotator_Update_m4F5EE62C3C2DC7FC9A2A53F63533B8FC065F317C,
+	SimpleModelRotator__ctor_m858160D9B1948FC40AF0F5A2D2906FDA86FC00FC,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1_Get_mBEB95BEB954BB63E9710BBC7AD5E78C4CB0A0033,
+	UnitySourceGeneratedAssemblyMonoScriptTypes_v1__ctor_mE70FB23ACC1EA12ABC948AA22C2E78B2D0AA39B1,
+};
+static const int32_t s_InvokerIndices[16] = 
+{
+	4388,
+	3556,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	4388,
+	6461,
+	4388,
+};
+IL2CPP_EXTERN_C const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule;
+const Il2CppCodeGenModule g_AssemblyU2DCSharp_CodeGenModule = 
+{
+	"Assembly-CSharp.dll",
+	16,
+	s_methodPointers,
+	0,
+	NULL,
+	s_InvokerIndices,
+	0,
+	NULL,
+	0,
+	NULL,
+	0,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+	NULL,
+};
