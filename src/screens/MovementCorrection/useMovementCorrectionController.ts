@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useStartExerciseMutation } from "../../redux/Apis/MovementCorrection";
 import { useGetWorkoutQuery } from "../../redux/Apis/User";
+import { capitalize } from "../../utils/helper";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 import { EXERCISE_SCHEMA } from "../../utils/validators";
@@ -15,16 +16,16 @@ const initial: TData = {
 
 const useMovementCorrectionController = () => {
 
-    const { data: workouts } = useGetWorkoutQuery({})
+    const { data: workouts, isLoading: isDataLoading } = useGetWorkoutQuery({})
     const [start, { data, isLoading, isSuccess }] = useStartExerciseMutation()
 
     useEffect(() => {
         if (isSuccess) {
             if (data?.status === "started") {
-                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: data?.session_id })
+                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: data?.session_id, exercise: capitalize(data?.exercise) })
             }
         }
-    }, [isSuccess, data])
+    }, [isSuccess, data, isLoading])
 
     const onSubmit = (data: TData) => {
         start(JSON.stringify(data))
@@ -36,6 +37,7 @@ const useMovementCorrectionController = () => {
             initial,
             dropdown_data: workouts?.data?.map((item: any) => ({ label: item?.title, value: item?.exercise_key || "barbell biceps curl" })) || [],
             isLoading,
+            isDataLoading
         },
         functions: {
             onSubmit,

@@ -16,7 +16,8 @@ const MovementCorrection = () => {
         values: {
             initial,
             isLoading,
-            dropdown_data
+            dropdown_data,
+            isDataLoading
         },
         functions: {
             onSubmit
@@ -55,9 +56,9 @@ const MovementCorrection = () => {
                                     setFieldValue("exercise", e?.value)
                                 }
                                 error={touched?.exercise && errors?.exercise}
+                                isLoading={isDataLoading}
                             />
                         </View>
-
                         <Button
                             text="Next"
                             onPress={handleSubmit}
