@@ -21,9 +21,21 @@ export const movementCorrectionApi = createApi({
                 }
             }),
         }),
+        stopExercise: builder.mutation({
+            query: (params) => ({
+                url: `stop`,
+                method: "POST",
+                params,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: "application/json"
+                }
+            }),
+        }),
     }),
 })
 
 export const {
-    useStartExerciseMutation
+    useStartExerciseMutation,
+    useStopExerciseMutation
 } = movementCorrectionApi 

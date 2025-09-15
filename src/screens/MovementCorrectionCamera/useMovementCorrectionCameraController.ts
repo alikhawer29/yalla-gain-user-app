@@ -4,6 +4,8 @@ import { Platform } from "react-native"
 import RNFS from "react-native-fs"
 import { Camera, useCameraDevice } from "react-native-vision-camera"
 import usePermissions from "../../hooks/usePermissions"
+import { useStopExerciseMutation } from "../../redux/Apis/MovementCorrection"
+import { goBack } from "../../utils/navigation"
 
 const API_BASE_URL = "https://yalla-ai.onlinetestingserver.com"
 
@@ -12,6 +14,8 @@ const useMovementCorrectionCameraController = () => {
     const { params } = useRoute<any>()
     const cameraRef = useRef<Camera>(null)
     const wsRef = useRef<WebSocket | null>(null)
+
+    const [stop, { isLoading: isStopLoading, isSuccess: isStopSuccess }] = useStopExerciseMutation()
 
     const device = useCameraDevice("front")
 
@@ -23,6 +27,15 @@ const useMovementCorrectionCameraController = () => {
     const [formOk, setFormOk] = useState<boolean | null>(null)
 
     const { ensurePermissions, PERMISSIONS } = usePermissions()
+
+    useEffect(() => {
+        if (isStopSuccess) {
+            if (wsRef?.current && wsRef?.current?.readyState === WebSocket.OPEN) {
+                wsRef?.current?.close()
+            }
+            goBack()
+        }
+    }, [isStopSuccess])
 
     useEffect(() => {
 
@@ -58,8 +71,8 @@ const useMovementCorrectionCameraController = () => {
 
         ws.onmessage = (event) => {
             try {
+                console.log("Socket Data", JSON.parse(event.data))
                 const data = JSON.parse(event.data)
-                console.log("WebSocket connected", data)
                 if (data.reps !== undefined) setReps(data.reps)
                 if (data.form_ok !== undefined) setFormOk(data.form_ok)
                 if (data.feedback) setFeedback(data.feedback)
@@ -120,6 +133,39 @@ const useMovementCorrectionCameraController = () => {
         }
     }
 
+    const onLandmark = (data: any) => {
+
+        if (wsRef?.current && wsRef?.current?.readyState === WebSocket.OPEN) {
+
+            let landmarks = JSON.parse(data)?.landmarks
+
+            console.log("Test", landmarks?.length);
+
+            if (landmarks?.length === 0 || landmarks?.length === undefined) {
+                setFeedback("No person detected")
+                setFormOk(false)
+                wsRef?.current?.send(JSON.stringify({ type: "no_person" }))
+            } else if (landmarks?.length !== 33) {
+                console.log("Not sending, incomplete landmarks", landmarks?.length)
+                return;
+            } else {
+                wsRef?.current?.send(JSON.stringify({
+                    type: "keypoints",
+                    keypoints: landmarks?.map(landmark => [
+                        landmark.x,
+                        landmark.y,
+                        landmark.z || 0,
+                        landmark.visibility || 1.0
+                    ])
+                }))
+            }
+        }
+    }
+
+    const onEnd = () => {
+        stop({ session_id: params?.session_id })
+    }
+
     return {
         refs: {
             cameraRef
@@ -130,10 +176,13 @@ const useMovementCorrectionCameraController = () => {
             formOk,
             device,
             permission_granted: granted,
-            checking
+            checking,
+            isStopLoading
         },
         functions: {
-            captureAndSendFrame
+            captureAndSendFrame,
+            onLandmark,
+            onEnd
         },
     }
 }

@@ -8,7 +8,8 @@ const styles = StyleSheet.create({
     },
     actions_container: {
         width: "100%",
-        padding: 10,
+        paddingVertical: 10,
+        paddingHorizontal: widthPixel(20),
         justifyContent: "space-between",
         position: "absolute",
         bottom: heightPixel(40)
