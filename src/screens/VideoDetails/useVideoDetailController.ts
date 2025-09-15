@@ -23,7 +23,7 @@ const useVideoDetailController = () => {
     useEffect(() => {
         if (isStartExerciseSuccess) {
             if (startExerciseData?.status === "started") {
-                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: startExerciseData?.session_id })
+                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: startExerciseData?.session_id, exercise: startExerciseData?.exercise })
             }
         }
     }, [isStartExerciseSuccess, startExerciseData])

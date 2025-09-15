@@ -139,8 +139,6 @@ const useMovementCorrectionCameraController = () => {
 
             let landmarks = JSON.parse(data)?.landmarks
 
-            console.log("Test", landmarks?.length);
-
             if (landmarks?.length === 0 || landmarks?.length === undefined) {
                 setFeedback("No person detected")
                 setFormOk(false)
@@ -177,7 +175,8 @@ const useMovementCorrectionCameraController = () => {
             device,
             permission_granted: granted,
             checking,
-            isStopLoading
+            isStopLoading,
+            exercise: params?.exercise || "-"
         },
         functions: {
             captureAndSendFrame,

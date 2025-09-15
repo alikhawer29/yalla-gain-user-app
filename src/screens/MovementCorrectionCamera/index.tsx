@@ -21,7 +21,8 @@ const MovementCorrectionCamera = () => {
             device,
             permission_granted,
             checking,
-            isStopLoading
+            isStopLoading,
+            exercise
         },
         functions: {
             onLandmark,
@@ -72,7 +73,7 @@ const MovementCorrectionCamera = () => {
                 />
                 <Button text="Video Recommendation" onPress={onEnd} />
             </Row>
-            <FeedbackCard reps={reps} formOk={formOk} feedback={feedback} />
+            <FeedbackCard exercise={exercise} reps={reps} formOk={formOk} feedback={feedback} />
             {/* <View style={styles.feedback_container}>
                 <Text size={16}>Reps: {reps}</Text>
                 <Text size={16}>

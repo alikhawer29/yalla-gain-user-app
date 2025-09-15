@@ -8,6 +8,7 @@ import useToggle from '../../hooks/useToggle';
 import { heightPixel } from '../../utils/helper';
 
 const Dropdown = props => {
+
   const {
     label,
     placeholder = 'Select',
@@ -21,7 +22,8 @@ const Dropdown = props => {
     zIndex,
     zIndexInverse,
     height = 54,
-    required = false
+    required = false,
+    isLoading = false,
   } = props;
 
   useEffect(() => {
@@ -76,6 +78,7 @@ const Dropdown = props => {
         labelProps={{ allowFontScaling: false }}
         itemProps={{ allowFontScaling: false }}
         arrowIconStyle={{ tintColor: colors.white }}
+        loading={isLoading}
       />
       {error && (
         <Text size={12} color={colors.danger} style={styles.error}>
