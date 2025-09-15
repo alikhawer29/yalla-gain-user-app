@@ -140,7 +140,8 @@ const ROUTES_OPTIONS = [
         left: null,
         right: null,
         logo: false,
-        title: "Movement Correction With Camera"
+        title: "Movement Correction With Camera",
+        transparent: true
     },
     {
         route_name: ROUTES.WORKOUT,

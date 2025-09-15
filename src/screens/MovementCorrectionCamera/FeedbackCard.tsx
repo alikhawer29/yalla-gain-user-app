@@ -2,25 +2,33 @@ import { View, StyleSheet } from "react-native";
 import Text from "../../components/Text";
 import colors from "../../utils/colors";
 
-export default function FeedbackCard({ reps, formOk, feedback }) {
+export default function FeedbackCard({ exercise, reps, formOk, feedback }) {
     return (
         <View style={styles.card}>
+            <View style={styles.row}>
+                <Text style={styles.label}>Exercise:</Text>
+                <Text style={styles.value}>{exercise}</Text>
+            </View>
             <View style={styles.row}>
                 <Text style={styles.label}>Reps:</Text>
                 <Text style={styles.value}>{reps}</Text>
             </View>
+            {
+                feedback === "No person detected" ? null : (
+                    <View style={styles.row}>
+                        <Text style={styles.label}>Form:</Text>
+                        <Text
+                            style={[
+                                styles.value,
+                                formOk === false ? styles.bad : styles.good,
+                            ]}
+                        >
+                            {formOk ? "Good" : formOk === false ? "Fix posture" : "--"}
+                        </Text>
+                    </View>
+                )
+            }
 
-            <View style={styles.row}>
-                <Text style={styles.label}>Form:</Text>
-                <Text
-                    style={[
-                        styles.value,
-                        formOk === false ? styles.bad : styles.good,
-                    ]}
-                >
-                    {formOk ? "Good" : formOk === false ? "Fix posture" : "--"}
-                </Text>
-            </View>
             <View style={styles.feedbackBox}>
                 <Text style={styles.feedback}>{feedback}</Text>
             </View>
