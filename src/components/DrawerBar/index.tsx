@@ -2,10 +2,9 @@ import { DrawerContentScrollView } from "@react-navigation/drawer"
 import { View } from "react-native"
 import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
-import { useAppDispatch } from "../../hooks"
-import { logout } from "../../redux/Slices/AuthSlice"
+import { useAppDispatch, useAppSelector } from "../../hooks"
+import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
-import { USER } from "../../utils/data"
 import { heightPixel } from "../../utils/helper"
 import { navigate } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
@@ -98,6 +97,7 @@ const DRAWER_ROUTES = [
 
 const DrawerBar = (props) => {
 
+    const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
     const { showYesNoModal } = useModal()
 
@@ -116,7 +116,7 @@ const DrawerBar = (props) => {
                     <Icon source={images.dummy} size={50} rounded no_padding />
                 </View>
                 <View>
-                    <Text size={18} weight="bold">{USER.first_name} {USER.last_name}</Text>
+                    <Text size={18} weight="bold">{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>
                         <Text size={14}>10 Yalla Coins</Text>
                         <Icon source={images.coin} size={14} />
