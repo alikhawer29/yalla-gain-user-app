@@ -1,13 +1,14 @@
 import { View, StyleSheet } from "react-native";
 import Text from "../../components/Text";
 import colors from "../../utils/colors";
+import { capitalize } from "../../utils/helper";
 
 export default function FeedbackCard({ exercise, reps, formOk, feedback }) {
     return (
         <View style={styles.card}>
             <View style={styles.row}>
                 <Text style={styles.label}>Exercise:</Text>
-                <Text style={styles.value}>{exercise}</Text>
+                <Text style={styles.value}>{capitalize(exercise)}</Text>
             </View>
             <View style={styles.row}>
                 <Text style={styles.label}>Reps:</Text>
