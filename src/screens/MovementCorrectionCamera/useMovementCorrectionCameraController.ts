@@ -5,6 +5,7 @@ import RNFS from "react-native-fs"
 import { Camera, useCameraDevice } from "react-native-vision-camera"
 import usePermissions from "../../hooks/usePermissions"
 import { useStopExerciseMutation } from "../../redux/Apis/MovementCorrection"
+import { capitalize } from "../../utils/helper"
 import { goBack } from "../../utils/navigation"
 
 const API_BASE_URL = "https://yalla-ai.onlinetestingserver.com"
@@ -176,7 +177,8 @@ const useMovementCorrectionCameraController = () => {
             permission_granted: granted,
             checking,
             isStopLoading,
-            exercise: params?.exercise || "-"
+            exercise: capitalize(params?.exercise) || "-",
+            session_id: params?.session_id || "-",
         },
         functions: {
             captureAndSendFrame,

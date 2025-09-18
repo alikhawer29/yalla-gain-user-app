@@ -1,9 +1,12 @@
 import { RNMediapipe } from '@thinksys/react-native-mediapipe'
 import { View } from "react-native"
+import WebView from 'react-native-webview'
 import Button from "../../components/Button"
 import NoPermission from "../../components/NoPermission"
 import Row from "../../components/Row"
+import Wrapper from '../../components/Wrapper'
 import { vh, vw } from "../../utils/helper"
+import { goBack } from '../../utils/navigation'
 import FeedbackCard from "./FeedbackCard"
 import styles from "./styles"
 import useMovementCorrectionCameraController from "./useMovementCorrectionCameraController"
@@ -22,7 +25,8 @@ const MovementCorrectionCamera = () => {
             permission_granted,
             checking,
             isStopLoading,
-            exercise
+            exercise,
+            session_id
         },
         functions: {
             onLandmark,
@@ -37,6 +41,29 @@ const MovementCorrectionCamera = () => {
     }
 
     if (!device) return null
+    return (
+        <Wrapper no_padding>
+            <WebView
+                source={{
+                    uri: `https://front-end-exercise-nine.vercel.app/?session_id=${session_id}&exercise=${exercise}`,
+                }}
+                style={{ flex: 1, backgroundColor: "transparent" }}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                allowsInlineMediaPlayback={true}
+                mediaPlaybackRequiresUserAction={false}
+                allowFileAccess={true}
+                originWhitelist={['*']}
+                onMessage={(event) => {
+                    let data = JSON.parse(event?.nativeEvent?.data)
+                    if (data?.event === "stop_exercise") {
+                        goBack()
+                    }
+                }}
+                mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
+            />
+        </Wrapper>
+    )
 
     return (
         <View style={styles.container}>

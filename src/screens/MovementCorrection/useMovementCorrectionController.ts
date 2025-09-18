@@ -22,7 +22,7 @@ const useMovementCorrectionController = () => {
     useEffect(() => {
         if (isSuccess) {
             if (data?.status === "started") {
-                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: data?.session_id, exercise: capitalize(data?.exercise) })
+                navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, { session_id: data?.session_id, exercise: data?.exercise })
             }
         }
     }, [isSuccess, data, isLoading])
