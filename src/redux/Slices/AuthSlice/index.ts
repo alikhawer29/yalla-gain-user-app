@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { authApi } from '../../Apis/Auth'
+import { userApi } from '../../Apis/User'
 import { RootState } from '../../Store'
 
 interface AuthState {
@@ -11,6 +12,10 @@ interface AuthState {
 interface LoginResponse {
     token: string
     user: any
+}
+
+interface EditProfileResponse {
+    data: any
 }
 
 const initialState: AuthState = {
@@ -36,6 +41,12 @@ export const auth = createSlice({
                 state.isLoggedIn = true
                 state.token = action?.payload?.token
                 state.user = action?.payload?.user
+            },
+        )
+        builder.addMatcher(
+            userApi.endpoints.updateProfile.matchFulfilled,
+            (state, action: PayloadAction<EditProfileResponse>) => {
+                state.user = action?.payload?.data
             },
         )
     }
