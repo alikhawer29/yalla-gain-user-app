@@ -78,6 +78,7 @@ const Options = (props) => {
   }
 
   return {
+    headerShown: true,
     headerTransparent: route?.transparent || false,
     header: () => (
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
