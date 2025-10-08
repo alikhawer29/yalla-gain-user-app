@@ -24,12 +24,17 @@ export const ModalProvider = ({ children }) => {
         onCancel: () => { },
     });
 
-    const showOkModal = (data, onConfirm) => {
+    const showOkModal = (data, onConfirm, onCancel) => {
         setModalType('ok');
         setModalContent({
             ...data,
             onConfirm: onConfirm ? onConfirm : () => setIsVisible(false),
-            onCancel: () => setIsVisible(false),
+            onCancel: () => {
+                setIsVisible(false)
+                if (onCancel) {
+                    onCancel()
+                }
+            },
         });
         setIsVisible(true);
     };
@@ -54,7 +59,12 @@ export const ModalProvider = ({ children }) => {
         setIsVisible(true);
     };
 
-    const hideModal = () => setIsVisible(false);
+    const hideModal = () => {
+        if (modalContent.onCancel) {
+            modalContent.onCancel()
+        }
+        setIsVisible(false)
+    }
 
     return (
         <ModalContext.Provider
@@ -99,11 +109,11 @@ export const ModalProvider = ({ children }) => {
                                         }} />
                                     ) : modalType === 'info' ? null : (
                                         <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
-                                            <Button text="Yes"  style={{width: "50%", minWidth: 'auto'}} onPress={() => {
+                                            <Button text="Yes" style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 modalContent.onConfirm();
                                                 hideModal();
                                             }} />
-                                            <Button text="No" type='outlined' style={{width: "50%", minWidth: 'auto'}} onPress={() => {
+                                            <Button text="No" type='outlined' style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 if (modalContent?.onCancel) {
                                                     modalContent.onCancel();
                                                 }
