@@ -113,7 +113,7 @@ const DrawerBar = (props) => {
         <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }} showsVerticalScrollIndicator={false}>
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
                 <View>
-                    <Icon source={images.dummy} size={50} rounded no_padding />
+                    <Icon source={{ uri: user?.photo }} size={50} rounded no_padding border={colors.white} resize="cover" />
                 </View>
                 <View>
                     <Text size={18} weight="bold">{user?.first_name} {user?.last_name}</Text>
