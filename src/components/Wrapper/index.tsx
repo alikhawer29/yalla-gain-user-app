@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, View } from "react-native"
 import { IWrapper } from "../../interfaces"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
+import FloatingButton from "../FloatingButton"
 import styles from "./styles"
 
 const Wrapper: FC<IWrapper> = ({
@@ -12,6 +13,7 @@ const Wrapper: FC<IWrapper> = ({
     bottom_bar = false,
     no_padding = false,
     loading = false,
+    floating = false,
 }) => {
 
     const headerHeight = useHeaderHeight()
@@ -25,10 +27,14 @@ const Wrapper: FC<IWrapper> = ({
             //     : headerHeight > 0
             //         ? headerHeight + heightPixel(10)
             //         : StatusBar.currentHeight,
-            paddingBottom: heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT,
+            paddingBottom: (!scrollable ? heightPixel(bottom_bar ? 90 : 0) : 0) + BOTTOMBAR_HEIGHT,
             paddingHorizontal: no_padding ? 0 : widthPixel(20),
         },
     ]
+
+    const content_container_style = {
+        paddingBottom: heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT,
+    }
 
     const renderBody = () =>
         loading ? (
@@ -39,10 +45,14 @@ const Wrapper: FC<IWrapper> = ({
 
     return (
         <View style={container_style}>
+            {
+                floating &&
+                <FloatingButton style={{ right: widthPixel(30), bottom: (heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT) + 10 }} />
+            }
             {scrollable ? (
                 <ScrollView
                     style={styles.scroll}
-                    contentContainerStyle={styles.scroll_content}
+                    contentContainerStyle={[styles.scroll_content, content_container_style]}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
                 >
