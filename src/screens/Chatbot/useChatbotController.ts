@@ -7,7 +7,7 @@ import { TMessage } from "../../interfaces";
 
 const INITIAL_MESSAGE = {
     id: '1',
-    text: "Hi there! 👋 I'm your assistant. How can I help you today?",
+    text: "Hi there! 👋 Yalla AI is here. How can I help you today?",
     sender: 'bot',
     timestamp: null,
 }
