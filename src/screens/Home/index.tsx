@@ -29,7 +29,7 @@ const Home = () => {
     };
 
     return (
-        <Wrapper bottom_bar scrollable>
+        <Wrapper bottom_bar scrollable floating>
             <ProfileHeader />
             <View style={{ marginTop: heightPixel(30) }}>
                 <InfoCard />
