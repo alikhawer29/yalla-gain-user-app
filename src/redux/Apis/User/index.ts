@@ -27,6 +27,13 @@ export const userApi = createApi({
                 body
             }),
         }),
+        updateProfile: builder.mutation({
+            query: (body) => ({
+                url: `profile/update`,
+                method: "POST",
+                body
+            }),
+        }),
         getSubscriptionPlans: builder.query({
             query: () => ({
                 url: `plans`,
@@ -185,6 +192,7 @@ export const userApi = createApi({
 
 export const {
     useChangePasswordMutation,
+    useUpdateProfileMutation,
     useGetSubscriptionPlansQuery,
     useGetSubscriptionLogsQuery,
     useSubscribeMutation,
