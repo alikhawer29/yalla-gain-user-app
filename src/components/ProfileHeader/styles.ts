@@ -3,29 +3,24 @@ import { heightPixel, widthPixel } from "../../utils/helper";
 
 const styles = StyleSheet.create({
     container: {
-        height: heightPixel(50),
+        minHeight: heightPixel(50),
         width: "100%",
     },
     content_container: {
         flex: 0.7,
         height: "100%",
-        gap: widthPixel(10)
     },
     image_container: {
-        height: heightPixel(50),
-        width: heightPixel(50),
-        borderRadius: heightPixel(25)
+        width: "22%",
     },
-    image: {
-        height: "100%",
-        width: "100%",
-        resizeMode: "contain"
+    text_container: {
+        width: "78%",
+        paddingHorizontal: widthPixel(10)
     },
     button_container: {
         flex: 0.3,
-        height: "100%",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
     button: {
         height: heightPixel(35),
