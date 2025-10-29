@@ -1,4 +1,4 @@
-import { RNMediapipe } from '@thinksys/react-native-mediapipe'
+// import { RNMediapipe } from '@thinksys/react-native-mediapipe'
 import { View } from "react-native"
 import WebView from 'react-native-webview'
 import Button from "../../components/Button"
@@ -67,7 +67,7 @@ const MovementCorrectionCamera = () => {
 
     return (
         <View style={styles.container}>
-            <RNMediapipe
+            {/* <RNMediapipe
                 width={vw * 100}
                 height={vh * 100}
                 // face={true}
@@ -82,7 +82,7 @@ const MovementCorrectionCamera = () => {
                 // rightAnkle={true}
                 // face={false}
                 onLandmark={onLandmark}
-            />
+            /> */}
             {/* <Camera
                 ref={cameraRef}
                 device={device}
