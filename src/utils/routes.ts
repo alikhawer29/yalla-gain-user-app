@@ -27,6 +27,7 @@ const ROUTES = {
     CHAT: "Chat",
     MY_PROFILE: "MyProfile",
     CHANGE_PASSWORD: "ChangePassword",
+    EDIT_PROFILE: "EditProfile",
     MUSIC_AUTH: "MusicAuth",
     PLAYLIST_DETAILS: "PlaylistDetails",
     HELP_DESK: "HelpDesk",
@@ -41,6 +42,7 @@ const ROUTES = {
     VIDEO_PLAYER: "VideoPlayer",
     SAVED_WORKOUT_CONTENT: "SavedWorkoutContent",
     CREATE_AVATAR: "CreateAvatar",
+    SCAN: "Scan",
 } as const
 
 const ROUTES_OPTIONS = [
@@ -87,6 +89,14 @@ const ROUTES_OPTIONS = [
         bottom_tab: false
     },
     {
+        route_name: ROUTES.EDIT_PROFILE,
+        left: "back",
+        right: null,
+        logo: false,
+        title: "Edit Profile",
+        bottom_tab: false
+    },
+    {
         route_name: ROUTES.MUSIC_AUTH,
         left: "drawer",
         right: null,
@@ -126,7 +136,7 @@ const ROUTES_OPTIONS = [
         left: "back",
         right: null,
         logo: false,
-        title: "Chat Bot Complain"
+        title: "Yalla Chatbot"
     },
     {
         route_name: ROUTES.MOVEMENT_CORRECTION,
@@ -183,6 +193,14 @@ const ROUTES_OPTIONS = [
         right: null,
         logo: false,
         title: "Create Your Body Avatar",
+    },
+    {
+        route_name: ROUTES.SCAN,
+        transparent: true,
+        left: null,
+        right: null,
+        logo: false,
+        title: null,
     },
 ] as const
 

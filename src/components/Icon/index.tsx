@@ -21,6 +21,7 @@ const Icon: FC<IIcon> = props => {
         less_rounded = false,
         no_padding = false,
         rotate = false,
+        resize = "contain"
     } = props
 
     let default_styles = {
@@ -42,7 +43,7 @@ const Icon: FC<IIcon> = props => {
 
     return (
         <Component onPress={onPress} style={[styles.container, default_styles]}>
-            <Image source={source} style={[styles.icon, icon_style]} />
+            <Image source={source} style={[styles.icon, icon_style]} resize={resize} />
         </Component>
     )
 }

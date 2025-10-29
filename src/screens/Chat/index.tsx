@@ -31,7 +31,7 @@ const Chat = () => {
     )
 
     return (
-        <Wrapper>
+        <Wrapper bottom_bar scrollable floating>
             <FlatList
                 data={CHATS}
                 renderItem={({ item }) => <ChatCard {...item} />}

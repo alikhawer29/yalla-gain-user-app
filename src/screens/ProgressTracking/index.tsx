@@ -11,7 +11,7 @@ import { heightPixel } from "../../utils/helper"
 
 const ProgressTracking = () => {
     return (
-        <Wrapper scrollable bottom_bar>
+        <Wrapper scrollable bottom_bar floating>
             <Row gap={5}>
                 <View style={{ flex: 1 }}>
                     <CardWrapper height={352} padding={10} color={colors.blackish_gray} >

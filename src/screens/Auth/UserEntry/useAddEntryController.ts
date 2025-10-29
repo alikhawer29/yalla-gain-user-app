@@ -40,9 +40,14 @@ const useAddEntryController = () => {
                 type: "success",
                 title: "Success",
                 message: "Account created successfully. Let’s get started!"
+            }, () => {
+                formik_ref.current?.resetForm();
+                setSelected(TABS[0].value)
+            }, () => {
+                formik_ref.current?.resetForm();
+                setSelected(TABS[0].value)
             })
-            formik_ref.current?.resetForm();
-            setSelected(TABS[0].value)
+
         }
     }, [isSignupSuccess])
 
@@ -53,8 +58,6 @@ const useAddEntryController = () => {
         if (selected === "login") {
             login(data)
         } else {
-            console.log("Payload", data);
-
             signup(payload)
         }
 

@@ -15,6 +15,7 @@ export type InputType = 'email' | 'text' | 'password' | 'number' | 'textarea' | 
 export type AppStackParamList = {
     AuthStackNavigator: undefined
     DrawerNavigator: undefined
+    Chatbot: undefined
 };
 
 export type AuthStackParamList = {
@@ -50,6 +51,7 @@ export type RootStackParamList = {
     MovementCorrectionCamera: undefined
     SavedWorkoutContent: undefined
     CreateAvatar: undefined
+    Scan: undefined
 };
 
 export interface IWrapper {
@@ -58,6 +60,7 @@ export interface IWrapper {
     bottom_bar?: boolean
     no_padding?: boolean
     loading?: boolean
+    floating?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -160,7 +163,8 @@ export interface IIcon {
     less_padding?: boolean
     less_rounded?: boolean
     no_padding?: boolean
-    rotate?: boolean
+    rotate?: boolean,
+    resize?: ImageResizeMode
 }
 
 export interface IProgressBar {
@@ -312,4 +316,12 @@ export interface IChatItemCard {
 
 export interface INoPermission {
     message: string
+}
+
+export interface IKeyboardAvoidingWrapper {
+    children: ReactNode
+}
+
+export interface IFloatingButton {
+    style?: StyleProp<ViewStyle>,
 }

@@ -4,7 +4,8 @@ import { View } from "react-native";
 import Button from '../../components/Button';
 import Wrapper from '../../components/Wrapper';
 import { heightPixel } from '../../utils/helper';
-import { goBack } from '../../utils/navigation';
+import { navigateAndSimpleReset } from '../../utils/navigation';
+import { NAVIGATORS, ROUTES } from '../../utils/routes';
 
 const CreateAvatar = () => {
 
@@ -23,7 +24,7 @@ const CreateAvatar = () => {
                 />
             </View>
             <View style={{ flex: 0.2, justifyContent: 'center', }}>
-                <Button text='Finish' onPress={goBack} />
+                <Button text='Finish' onPress={() => navigateAndSimpleReset(NAVIGATORS.BOTTOM, { screen: ROUTES.HOME })} />
             </View>
         </Wrapper>
     )

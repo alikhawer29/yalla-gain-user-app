@@ -22,6 +22,15 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     phone: Yup.string().required('Mobile Number is required'),
 })
 
+export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
+    first_name: Yup.string().required('First Name is required'),
+    last_name: Yup.string().required('Last Name is required'),
+    dialing_code: Yup.string(),
+    country_code: Yup.string(),
+    phone: Yup.string().required('Mobile Number is required'),
+    dob: Yup.string(),
+})
+
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
     via: Yup.string().oneOf(['email', 'phone']).required('Method is required'),
     email: Yup.string().when('via', {
