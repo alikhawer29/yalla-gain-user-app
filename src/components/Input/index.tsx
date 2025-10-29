@@ -19,7 +19,6 @@ const Input: FC<IInput> = props => {
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(type === 'password');
     const [isFocused, setIsFocused] = useState(false);
-    const [loaded, setLoaded] = useState(false)
 
     const togglePasswordVisibility = () => {
         setIsPasswordVisible(!isPasswordVisible);
@@ -30,13 +29,6 @@ const Input: FC<IInput> = props => {
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         }
     }, [error]);
-
-    useEffect(() => {
-        if (type === "phone" && (value || value == null)) {
-            const timeout = setTimeout(() => setLoaded(true), 80)
-            return () => clearTimeout(timeout)
-        }
-    }, [type, value]);
 
     const getKeyboardProps = () => {
         switch (type) {
@@ -62,7 +54,7 @@ const Input: FC<IInput> = props => {
         <View style={styles.container}>
             {label && <Text size={16} weight="semibold" color={isFocused ? colors.white : colors.white} style={styles.label}>{label} {required && <Text size={12} weight="semibold" color={colors.danger} style={styles.label}>*</Text>}</Text>}
             {
-                type === "phone" && (loaded || value === "") ?
+                type === "phone" ?
                     <PhoneInput
                         layout='first'
                         disabled={disabled}
@@ -72,7 +64,7 @@ const Input: FC<IInput> = props => {
                         defaultCode={country}
                         onChangeText={onChangeText}
                         onChangeCountry={onChangeCountry}
-                        containerStyle={[styles.input, { padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
+                        containerStyle={[{ padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
                         textInputStyle={[styles.input, { padding: 0, backgroundColor: colors.transparent, color: colors.white }]}
                         codeTextStyle={{ fontFamily: fonts.sfpro.regular, margin: 0, padding: 0, color: colors.white }}
                         flagButtonStyle={{ backgroundColor: colors.transparent, margin: 0 }}

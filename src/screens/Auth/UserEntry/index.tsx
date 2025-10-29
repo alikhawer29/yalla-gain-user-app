@@ -81,7 +81,6 @@ const UserEntry = () => {
             >
                 {(form) => (
                     <>
-                        {console.log("hello", form?.errors)}
                         {
                             renderForm(form)
                         }

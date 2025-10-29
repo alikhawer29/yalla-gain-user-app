@@ -15,7 +15,6 @@ const HelpDeskStackNavigator = () => {
             <Stack.Screen name={ROUTES.HELP_DESK} component={HelpDesk} />
             <Stack.Screen name={ROUTES.SUBSCRIPTION} component={Subscription} />
             <Stack.Screen name={ROUTES.SUBSCRIPTION_LOGS} component={SubscriptionLogs} />
-            <Stack.Screen name={ROUTES.CHATBOT} component={Chatbot} />
         </Stack.Navigator>
     );
 }

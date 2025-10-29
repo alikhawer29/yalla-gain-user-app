@@ -59,6 +59,7 @@ const images = {
     chatbot: require('./chatbot.png'),
     splash: require('./splash.jpg'),
     movement_correction_cover: require('./movement_correction_cover.png'),
+    camera: require('./camera.png'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
         exercise_two: require('./exercise_two.png'),
