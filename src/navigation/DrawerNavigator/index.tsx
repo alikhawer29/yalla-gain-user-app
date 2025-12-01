@@ -8,6 +8,7 @@ import HelpDeskStackNavigator from '../HelpDeskStackNavigator';
 import MusicPanelStackNavigator from '../MusicPanelStackNavigator';
 import WorkoutStackNavigator from '../WorkoutStackNavigator';
 import AvatarStackNavigator from '../AvatarStackNavigator';
+import ConsultationStackNavigator from '../ConsultationStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
@@ -19,6 +20,7 @@ const DrawerNavigator = () => {
             <Drawer.Screen name={NAVIGATORS.HELP_DESK_STACK} component={HelpDeskStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.WORKOUT_STACK} component={WorkoutStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.AVATAR_STACK} component={AvatarStackNavigator} />
+            <Drawer.Screen name={NAVIGATORS.CONSULTATION_STACK} component={ConsultationStackNavigator} />
         </Drawer.Navigator>
     );
 }
