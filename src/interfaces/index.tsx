@@ -52,6 +52,14 @@ export type RootStackParamList = {
     SavedWorkoutContent: undefined
     CreateAvatar: undefined
     Scan: undefined
+    // Consultation & Booking
+    ConsultantsList: { type: 'doctor' | 'trainer' }
+    ConsultantProfile: { id: number; type: 'doctor' | 'trainer' }
+    ServiceDetails: { id: number; type: 'doctor' | 'trainer' }
+    AppointmentBooking: { serviceId: number; type: 'doctor' | 'trainer'; charges: string }
+    MyBookings: undefined
+    BookingDetails: { id: number }
+    Reviews: { consultant_id: number }
 };
 
 export interface IWrapper {
@@ -118,6 +126,7 @@ export interface IButton {
     type?: "primary" | "secondary" | "outlined" | "custom",
     icon?: ImageSourcePropType,
     loading?: boolean,
+    textColor?: string,
 }
 
 export interface IRow {

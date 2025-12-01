@@ -7,10 +7,11 @@ dependencies {
 }
 
 android {
+    ndkVersion "27.1.12297006"
     // ndkPath "C:/Program Files/Unity/Hub/Editor/2022.3.23f1/Editor/Data/PlaybackEngines/AndroidPlayer/NDK"
 
     compileSdkVersion 34
-    buildToolsVersion '32.0.0'
+    // buildToolsVersion removed - using AGP default (35.0.0)
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -84,18 +85,20 @@ def BuildIl2Cpp(String workingDir, String configuration, String architecture, St
 }
 
 android {
-    task BuildIl2CppTask {
-        doLast {
-              BuildIl2Cpp(projectDir.toString().replaceAll('\\\\', '/'), 'Release', 'armv7', 'armeabi-v7a', [  ] as String[]);
-              BuildIl2Cpp(projectDir.toString().replaceAll('\\\\', '/'), 'Release', 'arm64', 'arm64-v8a', [  ] as String[]);
-        }
-    }
-    afterEvaluate {
-        if (project(':unityLibrary').tasks.findByName('mergeDebugJniLibFolders'))
-            project(':unityLibrary').mergeDebugJniLibFolders.dependsOn BuildIl2CppTask
-        if (project(':unityLibrary').tasks.findByName('mergeReleaseJniLibFolders'))
-            project(':unityLibrary').mergeReleaseJniLibFolders.dependsOn BuildIl2CppTask
-    }
+    ndkVersion "27.1.12297006"
+    // IL2CPP libraries are pre-built, skip BuildIl2CppTask
+    // task BuildIl2CppTask {
+    //     doLast {
+    //           BuildIl2Cpp(projectDir.toString().replaceAll('\\\\', '/'), 'Release', 'armv7', 'armeabi-v7a', [  ] as String[]);
+    //           BuildIl2Cpp(projectDir.toString().replaceAll('\\\\', '/'), 'Release', 'arm64', 'arm64-v8a', [  ] as String[]);
+    //     }
+    // }
+    // afterEvaluate {
+    //     if (project(':unityLibrary').tasks.findByName('mergeDebugJniLibFolders'))
+    //         project(':unityLibrary').mergeDebugJniLibFolders.dependsOn BuildIl2CppTask
+    //     if (project(':unityLibrary').tasks.findByName('mergeReleaseJniLibFolders'))
+    //         project(':unityLibrary').mergeReleaseJniLibFolders.dependsOn BuildIl2CppTask
+    // }
     sourceSets {
         main {
             jni.srcDirs = ["src/main/Il2CppOutputProject"]

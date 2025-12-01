@@ -1,0 +1,137 @@
+import { ScrollView, View } from "react-native";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Row from "../../components/Row";
+import Seperator from "../../components/Seperator";
+import Text from "../../components/Text";
+import Touchable from "../../components/Touchable";
+import Wrapper from "../../components/Wrapper";
+import colors from "../../utils/colors";
+import useAppointmentBookingController from "./useAppointmentBookingController";
+import styles from "./styles";
+
+const AppointmentBooking = () => {
+    const {
+        values: { formData, dates, availableSlots, selectedDate, selectedSlot, isBooking },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, formatTime },
+    } = useAppointmentBookingController();
+
+    const formatDateHeader = (date: Date) => {
+        const day = date.getDate().toString().padStart(2, '0');
+        const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        return { day, dayName: dayNames[date.getDay()] };
+    };
+
+    return (
+        <Wrapper scrollable bottom_bar>
+            {/* Form Inputs */}
+            <Input
+                label="First Name"
+                placeholder="Enter first name"
+                value={formData.first_name}
+                onChangeText={(text) => updateFormData("first_name", text)}
+                required
+            />
+            <Seperator size={15} />
+            <Input
+                label="Last Name"
+                placeholder="Enter last name"
+                value={formData.last_name}
+                onChangeText={(text) => updateFormData("last_name", text)}
+                required
+            />
+            <Seperator size={15} />
+            <Input
+                label="Mobile Number"
+                placeholder="Enter phone number"
+                type="phone"
+                value={formData.phone}
+                onChangeText={(text) => updateFormData("phone", text)}
+                onChangeCountry={onCountryChange}
+                country={formData.country_code}
+                required
+            />
+            <Seperator size={15} />
+            <Input
+                label="Email Address"
+                placeholder="Enter email address"
+                type="email"
+                value={formData.email}
+                onChangeText={(text) => updateFormData("email", text)}
+                required
+            />
+
+            <Seperator size={25} />
+
+            {/* Date Selection */}
+            <Text size={18} weight="semibold">Appointment Date :</Text>
+            <Seperator size={10} />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <Row gap={10}>
+                    {dates.map((date, index) => {
+                        const { day, dayName } = formatDateHeader(date);
+                        const isSelected = selectedDate?.toDateString() === date.toDateString();
+                        return (
+                            <Touchable
+                                key={index}
+                                style={[styles.date_item, isSelected && styles.date_item_selected]}
+                                onPress={() => onDateSelect(date)}
+                            >
+                                <Text size={16} weight="bold" color={isSelected ? colors.white : colors.primary}>
+                                    {day}
+                                </Text>
+                                <Text size={12} color={isSelected ? colors.white : colors.icon_gray}>
+                                    {dayName}
+                                </Text>
+                            </Touchable>
+                        );
+                    })}
+                </Row>
+            </ScrollView>
+
+            <Seperator size={25} />
+
+            {/* Time Slots */}
+            <Text size={18} weight="semibold">Booking Time :</Text>
+            <Seperator size={10} />
+            <View style={styles.slots_container}>
+                {availableSlots.length === 0 ? (
+                    <Text size={14} color={colors.icon_gray}>
+                        {selectedDate ? "No slots available for this day" : "Select a date to see available slots"}
+                    </Text>
+                ) : (
+                    availableSlots.map((slot: any, index: number) => {
+                        const slotData = { start: slot.start_time, end: slot.end_time };
+                        const isSelected = selectedSlot?.start === slot.start_time && selectedSlot?.end === slot.end_time;
+                        const isBooked = slot.is_booked;
+                        return (
+                            <Touchable
+                                key={index}
+                                style={[
+                                    styles.slot_item,
+                                    isSelected && styles.slot_item_selected,
+                                    isBooked && styles.slot_item_booked,
+                                ]}
+                                onPress={() => !isBooked && onSlotSelect(slotData)}
+                                disabled={isBooked}
+                            >
+                                <Text size={14} color={isBooked ? colors.white : colors.white}>
+                                    {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                                </Text>
+
+                            </Touchable>
+                        );
+                    })
+                )}
+            </View>
+
+            <Seperator size={40} />
+
+            {/* Book Button */}
+            <Button text="Book" onPress={onBook} loading={isBooking} />
+        </Wrapper>
+    );
+};
+
+export default AppointmentBooking;
+

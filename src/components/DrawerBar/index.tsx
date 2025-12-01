@@ -59,17 +59,22 @@ const DRAWER_ROUTES = [
             {
                 title: "Consult a Doctor",
                 icon: images.drawer_icons.consult_doctor,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.CONSULTATION_STACK,
+                child: ROUTES.CONSULTANTS_LIST,
+                params: { type: "doctor" }
             },
             {
                 title: "Consult a Trainer",
                 icon: images.drawer_icons.consult_trainer,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.CONSULTATION_STACK,
+                child: ROUTES.CONSULTANTS_LIST,
+                params: { type: "trainer" }
             },
             {
                 title: "My Bookings",
                 icon: images.drawer_icons.my_bookings,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.CONSULTATION_STACK,
+                child: ROUTES.MY_BOOKINGS
             },
         ]
     },
@@ -129,10 +134,10 @@ const DrawerBar = (props) => {
                         <>
                             {item?.title && <Text size={16} color={colors.white} style={styles.drawer_item_header}>{item.title}</Text>}
                             {
-                                item?.children?.map((item) => (
-                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {})}>
-                                        <Icon source={item?.icon} size={24} tint_color={colors.white} />
-                                        <Text size={15} weight="semibold" color={colors.white}>{item.title}</Text>
+                                item?.children?.map((childItem) => (
+                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: childItem?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(childItem.route as any, childItem?.child ? { screen: childItem?.child, params: (childItem as any)?.params } : {})}>
+                                        <Icon source={childItem?.icon} size={24} tint_color={colors.white} />
+                                        <Text size={15} weight="semibold" color={colors.white}>{childItem.title}</Text>
                                     </Row>
                                 ))
                             }
