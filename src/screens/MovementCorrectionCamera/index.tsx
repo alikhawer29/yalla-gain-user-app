@@ -45,7 +45,7 @@ const MovementCorrectionCamera = () => {
         <Wrapper no_padding>
             <WebView
                 source={{
-                    uri: `https://front-end-exercise-nine.vercel.app/?session_id=${session_id}&exercise=${exercise}`,
+                    uri: `https://yalla-movement-correction-file.vercel.app/?session_id=${session_id}&exercise=${exercise}`,
                 }}
                 style={{ flex: 1, backgroundColor: "transparent" }}
                 javaScriptEnabled={true}
