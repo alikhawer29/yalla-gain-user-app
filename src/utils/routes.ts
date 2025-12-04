@@ -52,6 +52,8 @@ const ROUTES = {
   MY_BOOKINGS: 'MyBookings',
   BOOKING_DETAILS: 'BookingDetails',
   REVIEWS: 'Reviews',
+  NETWORK_LOGGER: 'NetworkLogger',
+  CHAT_DETAILS: 'ChatDetails',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -81,6 +83,7 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'Chats',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.MY_PROFILE,
@@ -261,6 +264,21 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Reviews',
+  },
+  {
+    route_name: ROUTES.NETWORK_LOGGER,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Network Logger',
+  },
+  {
+    route_name: ROUTES.CHAT_DETAILS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: '',
+    bottom_tab: false,
   },
 ] as const;
 

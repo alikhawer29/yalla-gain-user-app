@@ -1,29 +1,34 @@
-import { Linking, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
 import Icon from "../../components/Icon";
+import Image from "../../components/Image";
 import RateReviewModal from "../../components/RateReviewModal";
 import ReportModal from "../../components/ReportModal";
 import Row from "../../components/Row";
 import Seperator from "../../components/Seperator";
 import Text from "../../components/Text";
+import TipModal from "../../components/TipModal";
 import Wrapper from "../../components/Wrapper";
 import colors from "../../utils/colors";
-import useBookingDetailsController from "./useBookingDetailsController";
 import styles from "./styles";
+import useBookingDetailsController from "./useBookingDetailsController";
 
 const BookingDetails = () => {
     const {
         values: {
-            booking, service, consultant, isApproving, isRejecting,
-            isCreatingChat, isRating, isReporting, showRateModal, showReportModal
+            booking, service, consultant, isLoading, isApproving, isRejecting,
+            isCreatingChat, isRating, isReporting, isGivingTip, isDownloading,
+            showRateModal, showReportModal, showTipModal
         },
         functions: {
             formatTime, getStatusColor, onApprove, onReject,
-            onStartChat, onJoinSession, onRateBooking, onReportBooking, onGiveTip,
-            setShowRateModal, setShowReportModal
+            onStartChat, onJoinSession, onRateBooking, onReportBooking, onGiveTip, onSubmitTip,
+            setShowRateModal, setShowReportModal, setShowTipModal, onDownloadPrescription
         },
     } = useBookingDetailsController();
+
+    console.log(consultant?.type, 'consultant')
 
     const status = booking?.status?.toLowerCase();
     const isRescheduled = status === 'rescheduled';
@@ -36,6 +41,18 @@ const BookingDetails = () => {
         if (!status) return "";
         return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
     };
+
+    if (isLoading) {
+        return (
+            <Wrapper>
+                <View style={styles.loader_container}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Seperator size={10} />
+                    <Text size={14} color={colors.icon_gray}>Loading booking details...</Text>
+                </View>
+            </Wrapper>
+        );
+    }
 
     return (
         <Wrapper scrollable>
@@ -193,8 +210,15 @@ const BookingDetails = () => {
                         onPress={onStartChat}
                         disabled={isUpcoming || isCreatingChat}
                     >
-                        <Icon source={images.tab_chat} size={24} tint_color={isUpcoming ? colors.icon_gray : colors.white} />
-                        <Text size={16} weight="semibold" color={isUpcoming ? colors.icon_gray : colors.white}>
+                        <View style={styles.circleIcon}>
+                            <Icon source={images.helpdesk.chat} size={20} tint_color="#FFFFFF" />
+                        </View>
+
+                        <Text
+                            size={16}
+                            weight="semibold"
+                            color={isUpcoming ? colors.icon_gray : colors.white}
+                        >
                             Start Chat
                         </Text>
                     </TouchableOpacity>
@@ -231,13 +255,19 @@ const BookingDetails = () => {
                             <Seperator size={10} />
                             <TouchableOpacity
                                 style={styles.document_btn}
-                                onPress={() => Linking.openURL(booking?.prescription_file)}
+                                onPress={onDownloadPrescription}
+                                disabled={isDownloading}
                             >
-                                <View style={styles.pdf_icon}>
-                                    <Text size={10} color={colors.white} weight="bold">PDF</Text>
-                                </View>
+                                {isDownloading ? (
+                                    <ActivityIndicator size="small" color={colors.primary} />
+                                ) : (
+                                    <Image
+                                        source={images.helpdesk.pdf}
+                                        style={styles.pdf_icon}
+                                    />
+                                )}
                                 <Text size={12} color={colors.icon_gray} lines={1} style={styles.document_name}>
-                                    {booking?.prescription_file_name || 'document.pdf'}
+                                    {isDownloading ? 'Downloading...' : (booking?.prescription_file_name || 'document.pdf')}
                                 </Text>
                             </TouchableOpacity>
                             <Seperator size={20} />
@@ -247,26 +277,35 @@ const BookingDetails = () => {
                     <Seperator size={10} />
 
                     {/* Review Booking */}
-                    {booking?.is_rated == 0 ? (
+                    {consultant?.type !== 'trainer' && booking?.is_rated == 0 && (
                         <Button
                             text="Review Booking"
                             onPress={() => setShowRateModal(true)}
                         />
-                    ) : null}
+                    )}
 
                     <Seperator size={15} />
 
                     <Row justify="space-between" gap={15}>
-                        <Button
-                            text="Give Tip"
-                            type="outlined"
-                            style={styles.half_btn}
-                            onPress={onGiveTip}
-                        />
+
+                        {consultant?.type == 'trainer' && booking?.is_rated == 0 ? (
+                            <Button
+                                text="Review Booking"
+                                onPress={() => setShowRateModal(true)}
+                            />
+                        ) : null}
+
+                        {consultant?.type == 'trainer' ? null : (
+                            <Button
+                                text="Give Tip"
+                                type="outlined"
+                                style={styles.half_btn}
+                                onPress={onGiveTip}
+                            />
+                        )}
                         {booking?.is_reported == 1 ? null : (
                             <Button
                                 text="Report"
-                                type="outlined"
                                 style={styles.report_btn}
                                 textColor="#F20000"
                                 onPress={() => setShowReportModal(true)}
@@ -290,6 +329,14 @@ const BookingDetails = () => {
                 onClose={() => setShowReportModal(false)}
                 onSubmit={onReportBooking}
                 loading={isReporting}
+            />
+
+            {/* Tip Modal */}
+            <TipModal
+                visible={showTipModal}
+                onClose={() => setShowTipModal(false)}
+                onSubmit={onSubmitTip}
+                loading={isGivingTip}
             />
         </Wrapper>
     );

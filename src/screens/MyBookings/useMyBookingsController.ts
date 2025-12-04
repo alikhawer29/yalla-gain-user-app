@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useGetMyBookingsQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -23,6 +23,9 @@ const useMyBookingsController = () => {
   const [selectedTab, setSelectedTab] = useState<string>('doctor');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
   const debouncedSearch = useDebounce(search, 500);
 
   const {
@@ -33,6 +36,8 @@ const useMyBookingsController = () => {
     type: selectedTab,
     status: selectedStatus !== 'all' ? selectedStatus : undefined,
     search: debouncedSearch,
+    from_date: fromDate || undefined,
+    to_date: toDate || undefined,
   });
 
   const bookings = data?.data || [];
@@ -55,6 +60,19 @@ const useMyBookingsController = () => {
 
   const onBookingPress = (id: number) => {
     navigate(ROUTES.BOOKING_DETAILS, { id });
+  };
+
+  const onFilterPress = () => {
+    setShowFilterModal(true);
+  };
+
+  const onCloseFilterModal = () => {
+    setShowFilterModal(false);
+  };
+
+  const onApplyFilter = (from: string | null, to: string | null) => {
+    setFromDate(from);
+    setToDate(to);
   };
 
   const getStatusColor = (status: string) => {
@@ -88,6 +106,9 @@ const useMyBookingsController = () => {
       selectedStatus,
       tabs: TAB_OPTIONS,
       statusFilters: STATUS_FILTERS,
+      showFilterModal,
+      fromDate,
+      toDate,
     },
     functions: {
       onReload,
@@ -96,6 +117,9 @@ const useMyBookingsController = () => {
       onStatusChange,
       onBookingPress,
       getStatusColor,
+      onFilterPress,
+      onCloseFilterModal,
+      onApplyFilter,
     },
   };
 };

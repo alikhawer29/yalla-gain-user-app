@@ -9,6 +9,7 @@ export const userApi = createApi({
     'WorkoutVideos',
     'Bookings',
     'Consultants',
+    'Chats',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -254,7 +255,7 @@ export const userApi = createApi({
         url: `my-booking/${id}`,
         method: 'GET',
       }),
-      providesTags: ['Bookings'],
+      providesTags: (result, error, id) => [{ type: 'Bookings', id }],
     }),
     getDoctorReviews: builder.query({
       query: id => ({
@@ -289,6 +290,38 @@ export const userApi = createApi({
         method: 'POST',
         body: { user_id },
       }),
+      invalidatesTags: ['Chats'],
+    }),
+    // Chat APIs
+    getChatList: builder.query({
+      query: () => ({
+        url: 'chat/getChatList',
+        method: 'GET',
+      }),
+      providesTags: ['Chats'],
+      keepUnusedDataFor: 0,
+    }),
+    getChat: builder.query({
+      query: (chatId: number) => ({
+        url: `chat/getChat/${chatId}`,
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    sendMessage: builder.mutation({
+      query: (formData: FormData) => ({
+        url: 'chat/sendMessage',
+        method: 'POST',
+        body: formData,
+        formData: true,
+      }),
+    }),
+    getUnreadChats: builder.query({
+      query: () => ({
+        url: 'chat/getUnread-chats',
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
     }),
     rateBooking: builder.mutation({
       query: ({
@@ -312,6 +345,14 @@ export const userApi = createApi({
         method: 'POST',
         body: formData,
         formData: true,
+      }),
+      invalidatesTags: ['Bookings'],
+    }),
+    giveTip: builder.mutation({
+      query: ({ id, coins }: { id: number; coins: number }) => ({
+        url: `booking/${id}/give-tip`,
+        method: 'POST',
+        body: { coins },
       }),
       invalidatesTags: ['Bookings'],
     }),
@@ -359,4 +400,10 @@ export const {
   useCreateChatMutation,
   useRateBookingMutation,
   useReportBookingMutation,
+  useGiveTipMutation,
+  // Chat APIs
+  useGetChatListQuery,
+  useGetChatQuery,
+  useSendMessageMutation,
+  useGetUnreadChatsQuery,
 } = userApi;

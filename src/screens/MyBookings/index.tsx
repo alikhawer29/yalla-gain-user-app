@@ -1,5 +1,6 @@
 import { FlatList, RefreshControl, ScrollView, View } from "react-native";
 import images from "../../assets/images";
+import DateFilterModal from "../../components/DateFilterModal";
 import Icon from "../../components/Icon";
 import Input from "../../components/Input";
 import Row from "../../components/Row";
@@ -16,8 +17,8 @@ import BookingCard from "./BookingCard";
 
 const MyBookings = () => {
     const {
-        values: { bookings, isLoading, search, selectedTab, selectedStatus, tabs, statusFilters },
-        functions: { onReload, onSearch, onTabChange, onStatusChange, onBookingPress, getStatusColor },
+        values: { bookings, isLoading, search, selectedTab, selectedStatus, tabs, statusFilters, showFilterModal, fromDate, toDate },
+        functions: { onReload, onSearch, onTabChange, onStatusChange, onBookingPress, getStatusColor, onFilterPress, onCloseFilterModal, onApplyFilter },
     } = useMyBookingsController();
 
     return (
@@ -38,9 +39,9 @@ const MyBookings = () => {
                         onChangeText={onSearch}
                     />
                 </View>
-                <View style={{ width: "15%" }}>
-                    <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} />
-                </View>
+                <Touchable style={{ width: "15%" }} onPress={onFilterPress}>
+                    <Icon source={images.filters} size={40} rounded less_rounded border={(fromDate || toDate) ? colors.primary : colors.white} />
+                </Touchable>
             </Row>
 
             {/* Status Filters */}
@@ -90,6 +91,15 @@ const MyBookings = () => {
                 refreshControl={
                     <RefreshControl refreshing={isLoading} onRefresh={onReload} />
                 }
+            />
+
+            {/* Date Filter Modal */}
+            <DateFilterModal
+                visible={showFilterModal}
+                onClose={onCloseFilterModal}
+                onApply={onApplyFilter}
+                initialFromDate={fromDate}
+                initialToDate={toDate}
             />
         </Wrapper>
     );

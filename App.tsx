@@ -7,6 +7,7 @@ import Toast from "react-native-toast-message";
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
+import NetworkLoggerFAB from './src/components/NetworkLoggerFAB';
 import { ModalProvider } from './src/contexts/ModalContext';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
 import { persistor, store } from './src/redux/Store';
@@ -42,6 +43,7 @@ function App() {
             <ModalProvider>
               <NavigationContainer ref={navigationRef} theme={navTheme}>
                 <AppStackNavigator />
+                <NetworkLoggerFAB />
                 <Toast />
               </NavigationContainer>
             </ModalProvider>

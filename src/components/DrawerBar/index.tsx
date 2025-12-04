@@ -21,7 +21,8 @@ const DRAWER_ROUTES = [
             {
                 title: "Home",
                 icon: images.drawer_icons.home,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.BOTTOM,
+                child: NAVIGATORS.HOME_STACK,
             },
             {
                 title: "Movement Correction with Live Camera",
@@ -44,7 +45,8 @@ const DRAWER_ROUTES = [
             {
                 title: "Challenges",
                 icon: images.drawer_icons.challenges,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.BOTTOM,
+                child: NAVIGATORS.HOME_STACK,
             },
             {
                 title: "Help Center",
@@ -84,12 +86,14 @@ const DRAWER_ROUTES = [
             {
                 title: "Smart Watch Connect",
                 icon: images.drawer_icons.watch,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.BOTTOM,
+                child: NAVIGATORS.HOME_STACK,
             },
             {
                 title: "VR Connect",
                 icon: images.drawer_icons.vr,
-                route: NAVIGATORS.BOTTOM
+                route: NAVIGATORS.BOTTOM,
+                child: NAVIGATORS.HOME_STACK,
             },
             {
                 title: "Music Panel",

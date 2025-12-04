@@ -14,9 +14,11 @@ const Wrapper: FC<IWrapper> = ({
     no_padding = false,
     loading = false,
     floating = false,
+    hide_bottom_bar = false,
 }) => {
 
     const headerHeight = useHeaderHeight()
+    const bottomBarPadding = hide_bottom_bar ? 0 : BOTTOMBAR_HEIGHT;
 
     const container_style = [
         styles.container,
@@ -27,13 +29,13 @@ const Wrapper: FC<IWrapper> = ({
             //     : headerHeight > 0
             //         ? headerHeight + heightPixel(10)
             //         : StatusBar.currentHeight,
-            paddingBottom: (!scrollable ? heightPixel(bottom_bar ? 90 : 0) : 0) + BOTTOMBAR_HEIGHT,
+            paddingBottom: (!scrollable ? heightPixel(bottom_bar ? 90 : 0) : 0) + bottomBarPadding,
             paddingHorizontal: no_padding ? 0 : widthPixel(20),
         },
     ]
 
     const content_container_style = {
-        paddingBottom: heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT,
+        paddingBottom: heightPixel(bottom_bar ? 90 : 0) + bottomBarPadding,
     }
 
     const renderBody = () =>
@@ -47,7 +49,7 @@ const Wrapper: FC<IWrapper> = ({
         <View style={container_style}>
             {
                 floating &&
-                <FloatingButton style={{ right: widthPixel(30), bottom: (heightPixel(bottom_bar ? 90 : 0) + BOTTOMBAR_HEIGHT) + 10 }} />
+                <FloatingButton style={{ right: widthPixel(30), bottom: (heightPixel(bottom_bar ? 90 : 0) + bottomBarPadding) + 10 }} />
             }
             {scrollable ? (
                 <ScrollView

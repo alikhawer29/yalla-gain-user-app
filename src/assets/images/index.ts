@@ -1,4 +1,6 @@
 const images = {
+  plus: require('./plus.png'),
+  minus: require('./minus.png'),
   logo: require('./logo.png'),
   header: require('./header.png'),
   left_light: require('./left_light.png'),
@@ -101,6 +103,8 @@ const images = {
     trash: require('./helpdesk/trash.png'),
     wallet: require('./helpdesk/wallet.png'),
     star: require('./helpdesk/star.png'),
+    chat: require('./helpdesk/chat.png'),
+    pdf: require('./helpdesk/pdf.png'),
   },
 };
 
