@@ -1,11 +1,34 @@
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native"
 import { Pressable, View } from "react-native"
 import images from "../../assets/images"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
+import { ROUTES_OPTIONS } from "../../utils/routes"
 import Icon from "../Icon"
 import Row from "../Row"
 
+// Routes where bottom bar should be hidden
+const getActiveRouteName = (route: any): string => {
+    const routeName = getFocusedRouteNameFromRoute(route);
+    return routeName || route?.name || '';
+};
+
+const shouldHideBottomBar = (state: any): boolean => {
+    const focusedRoute = state.routes[state.index];
+    const activeRouteName = getActiveRouteName(focusedRoute);
+
+    const routeOption = ROUTES_OPTIONS.find(
+        (item) => item.route_name === activeRouteName
+    );
+
+    return routeOption?.bottom_tab === false;
+};
+
 const BottomBar = ({ state, descriptors, navigation }) => {
+    // Check if we should hide the bottom bar for the current route
+    if (shouldHideBottomBar(state)) {
+        return null;
+    }
 
     return (
         <View style={{ paddingHorizontal: widthPixel(10), backgroundColor: colors.transparent, paddingVertical: heightPixel(15), position: "absolute", bottom: BOTTOMBAR_HEIGHT, left: widthPixel(10), right: widthPixel(10) }}>

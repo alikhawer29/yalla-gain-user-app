@@ -3,6 +3,11 @@ import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
 
 const styles = StyleSheet.create({
+  loader_container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   header_row: {
     marginBottom: heightPixel(5),
   },
@@ -31,10 +36,16 @@ const styles = StyleSheet.create({
   start_chat_btn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: widthPixel(10),
-    backgroundColor: colors.grayish_black,
-    padding: widthPixel(12),
-    borderRadius: 8,
+    gap: 10,
+  },
+
+  circleIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 45 / 2,
+    backgroundColor: '#003B36', // dark teal (same as screenshot)
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   disabled: {
     opacity: 0.5,
@@ -49,12 +60,9 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   pdf_icon: {
-    width: widthPixel(40),
-    height: heightPixel(45),
-    backgroundColor: '#F20000',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: 28,
+    height: 28,
+    resizeMode: 'contain',
   },
   document_name: {
     maxWidth: widthPixel(150),
@@ -65,7 +73,9 @@ const styles = StyleSheet.create({
   report_btn: {
     flex: 1,
     borderColor: '#F20000',
-    backgroundColor: '#F20000',
+    borderWidth: 2,
+    backgroundColor: '#1A0000', // very dark red/black like screenshot
+    borderRadius: 10,
   },
 });
 

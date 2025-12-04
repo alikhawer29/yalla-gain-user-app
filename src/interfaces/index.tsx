@@ -60,6 +60,14 @@ export type RootStackParamList = {
     MyBookings: undefined
     BookingDetails: { id: number }
     Reviews: { consultant_id: number }
+    // Chat
+    ChatDetails: {
+        chatId: number;
+        name: string;
+        image: string;
+        userRole: string;
+        userId: number;
+    }
 };
 
 export interface IWrapper {
@@ -69,6 +77,7 @@ export interface IWrapper {
     no_padding?: boolean
     loading?: boolean
     floating?: boolean
+    hide_bottom_bar?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -333,4 +342,35 @@ export interface IKeyboardAvoidingWrapper {
 
 export interface IFloatingButton {
     style?: StyleProp<ViewStyle>,
+}
+
+// Chat interfaces
+export interface IChatMessage {
+    id: number;
+    chat_id: number;
+    user_id: number;
+    user_name: string;
+    image: string;
+    message: string;
+    read_at: string | null;
+    date: string;
+    time: string;
+    file: any[];
+    is_mine: boolean;
+}
+
+export interface IChat {
+    id: number;
+    type: string;
+    name: string;
+    image: string;
+    user_id: number;
+    user_role: string;
+    unread: number;
+    last_message: IChatMessage | null;
+}
+
+export interface IChatListCard {
+    chat: IChat;
+    onPress: () => void;
 }

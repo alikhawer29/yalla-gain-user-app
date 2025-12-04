@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { Platform } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import RNFS from 'react-native-fs';
+import Toast from 'react-native-toast-message';
 import {
   useGetBookingDetailsQuery,
   useApproveRescheduleMutation,
@@ -7,6 +10,7 @@ import {
   useCreateChatMutation,
   useRateBookingMutation,
   useReportBookingMutation,
+  useGiveTipMutation,
 } from '../../redux/Apis/User';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
@@ -20,6 +24,8 @@ const useBookingDetailsController = () => {
 
   const [showRateModal, setShowRateModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const {
     data,
@@ -35,6 +41,7 @@ const useBookingDetailsController = () => {
   const [rateBooking, { isLoading: isRating }] = useRateBookingMutation();
   const [reportBooking, { isLoading: isReporting }] =
     useReportBookingMutation();
+  const [_giveTip, { isLoading: isGivingTip }] = useGiveTipMutation();
 
   const booking = data?.data;
   const service = booking?.service;
@@ -193,9 +200,21 @@ const useBookingDetailsController = () => {
   const onStartChat = async () => {
     if (!consultant?.id) return;
     try {
-      await createChat(consultant.id).unwrap();
-      // Navigate to chat screen
-      navigate(ROUTES.CHAT);
+      const response = await createChat(consultant.id).unwrap();
+      // Navigate to chat details screen with chat info
+      const chatData = response?.data;
+      if (chatData?.id) {
+        navigate(ROUTES.CHAT_DETAILS, {
+          chatId: chatData.id,
+          name: consultant.name || 'Chat',
+          image: consultant.image || '',
+          userRole: consultant.type || 'doctor',
+          userId: consultant.id,
+        });
+      } else {
+        // Fallback to chat list if no chat data
+        navigate(ROUTES.CHAT);
+      }
     } catch (err: any) {
       showOkModal({
         type: 'error',
@@ -292,12 +311,82 @@ const useBookingDetailsController = () => {
   };
 
   const onGiveTip = () => {
-    // TODO: Implement give tip functionality
-    showOkModal({
-      type: 'info',
-      title: 'Give Tip',
-      message: 'Give tip functionality will be implemented soon.',
-    });
+    setShowTipModal(true);
+  };
+
+  const onSubmitTip = async (coins: number) => {
+    // API is under development, so we don't hit it for now
+    // Just log the tip data
+    console.log('Give tip - Booking ID:', id, 'Coins:', coins);
+    // When API is ready, uncomment this:
+    // try {
+    //   await giveTip({ id, coins }).unwrap();
+    //   setShowTipModal(false);
+    //   showOkModal({
+    //     type: 'success',
+    //     title: 'Successfully',
+    //     message: 'Tip Has Been Sent Successfully',
+    //   }, () => refetch());
+    // } catch (err: any) {
+    //   showOkModal({
+    //     type: 'error',
+    //     title: 'Error',
+    //     message: err?.data?.message || 'Failed to send tip.',
+    //   });
+    // }
+  };
+
+  const onDownloadPrescription = async () => {
+    if (!booking?.prescription_file) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'No prescription file available',
+      });
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      const fileUrl = booking.prescription_file;
+      const fileName =
+        booking.prescription_file_name || `prescription_${booking.id}.pdf`;
+
+      // Get download directory
+      const downloadDir =
+        Platform.OS === 'android'
+          ? RNFS.DownloadDirectoryPath
+          : RNFS.DocumentDirectoryPath;
+
+      const filePath = `${downloadDir}/${fileName}`;
+
+      // Download the file
+      const downloadResult = await RNFS.downloadFile({
+        fromUrl: fileUrl,
+        toFile: filePath,
+      }).promise;
+
+      if (downloadResult.statusCode === 200) {
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: `File saved to ${
+            Platform.OS === 'android' ? 'Downloads' : 'Documents'
+          } folder`,
+        });
+      } else {
+        throw new Error('Download failed');
+      }
+    } catch (err: any) {
+      console.error('Download error:', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: err?.message || 'Failed to download file',
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return {
@@ -311,8 +400,11 @@ const useBookingDetailsController = () => {
       isCreatingChat,
       isRating,
       isReporting,
+      isGivingTip,
+      isDownloading,
       showRateModal,
       showReportModal,
+      showTipModal,
     },
     functions: {
       onReload,
@@ -326,8 +418,11 @@ const useBookingDetailsController = () => {
       onRateBooking,
       onReportBooking,
       onGiveTip,
+      onSubmitTip,
+      onDownloadPrescription,
       setShowRateModal,
       setShowReportModal,
+      setShowTipModal,
     },
   };
 };
