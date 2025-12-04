@@ -35,14 +35,14 @@ const styles = StyleSheet.create({
   tailLeft: {
     position: 'absolute',
     top: 0,
-    left: -16,
+    left: -10,
     transform: [{ rotate: '180deg' }],
     zIndex: 99,
   },
   tailRight: {
     position: 'absolute',
     top: 0,
-    right: -16,
+    right: -10,
     transform: [{ rotate: '180deg' }],
     zIndex: 99,
   },

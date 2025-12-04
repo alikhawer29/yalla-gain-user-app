@@ -1,9 +1,9 @@
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native"
+import { CommonActions, getFocusedRouteNameFromRoute } from "@react-navigation/native"
 import { Pressable, View } from "react-native"
 import images from "../../assets/images"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
-import { ROUTES_OPTIONS } from "../../utils/routes"
+import { NAVIGATORS, ROUTES_OPTIONS } from "../../utils/routes"
 import Icon from "../Icon"
 import Row from "../Row"
 
@@ -50,7 +50,17 @@ const BottomBar = ({ state, descriptors, navigation }) => {
                         });
 
                         if (!isFocused && !event.defaultPrevented) {
-                            navigation.navigate(route.name, route.params);
+                            // Reset stack for Chat tab to go back to Chat list
+                            if (route.name === NAVIGATORS.CHAT_STACK) {
+                                navigation.dispatch(
+                                    CommonActions.reset({
+                                        index: 0,
+                                        routes: [{ name: route.name }],
+                                    })
+                                );
+                            } else {
+                                navigation.navigate(route.name, route.params);
+                            }
                         }
                     };
 

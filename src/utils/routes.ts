@@ -220,14 +220,14 @@ const ROUTES_OPTIONS = [
     left: 'drawer',
     right: null,
     logo: false,
-    title: 'Consult a Doctor',
+    title: null, // Dynamic based on type param
   },
   {
     route_name: ROUTES.CONSULTANT_PROFILE,
     left: 'back',
     right: null,
     logo: false,
-    title: 'Doctor Profile',
+    title: null, // Dynamic based on type param
   },
   {
     route_name: ROUTES.SERVICE_DETAILS,

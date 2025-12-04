@@ -1,3 +1,4 @@
+import { CommonActions } from "@react-navigation/native"
 import { DrawerContentScrollView } from "@react-navigation/drawer"
 import { View } from "react-native"
 import images from "../../assets/images"
@@ -6,7 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
+import { navigationRef } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
@@ -63,14 +64,14 @@ const DRAWER_ROUTES = [
                 icon: images.drawer_icons.consult_doctor,
                 route: NAVIGATORS.CONSULTATION_STACK,
                 child: ROUTES.CONSULTANTS_LIST,
-                params: { type: "doctor" }
+                params: { type: "doctor", title: "Consult a Doctor" }
             },
             {
                 title: "Consult a Trainer",
                 icon: images.drawer_icons.consult_trainer,
                 route: NAVIGATORS.CONSULTATION_STACK,
                 child: ROUTES.CONSULTANTS_LIST,
-                params: { type: "trainer" }
+                params: { type: "trainer", title: "Consult a Trainer" }
             },
             {
                 title: "My Bookings",
@@ -118,6 +119,37 @@ const DrawerBar = (props) => {
         }, () => dispatch(logout()))
     }
 
+    const handleNavigation = (childItem: any) => {
+        if (navigationRef.isReady()) {
+            // For screens that need fresh params (like ConsultantsList with different types)
+            // we use navigate with a unique key to force re-mount
+            if (childItem?.child && childItem?.params) {
+                navigationRef.dispatch(
+                    CommonActions.navigate({
+                        name: childItem.route,
+                        params: {
+                            screen: childItem.child,
+                            params: childItem.params,
+                            initial: false,
+                        },
+                        key: `${childItem.route}-${childItem.child}-${JSON.stringify(childItem.params)}`,
+                    })
+                );
+            } else if (childItem?.child) {
+                navigationRef.dispatch(
+                    CommonActions.navigate({
+                        name: childItem.route,
+                        params: { screen: childItem.child },
+                    })
+                );
+            } else {
+                navigationRef.dispatch(
+                    CommonActions.navigate({ name: childItem.route })
+                );
+            }
+        }
+    }
+
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }} showsVerticalScrollIndicator={false}>
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
@@ -139,7 +171,7 @@ const DrawerBar = (props) => {
                             {item?.title && <Text size={16} color={colors.white} style={styles.drawer_item_header}>{item.title}</Text>}
                             {
                                 item?.children?.map((childItem) => (
-                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: childItem?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(childItem.route as any, childItem?.child ? { screen: childItem?.child, params: (childItem as any)?.params } : {})}>
+                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: childItem?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => handleNavigation(childItem)}>
                                         <Icon source={childItem?.icon} size={24} tint_color={colors.white} />
                                         <Text size={15} weight="semibold" color={colors.white}>{childItem.title}</Text>
                                     </Row>

@@ -134,6 +134,7 @@ const ChatDetails = () => {
             ItemSeparatorComponent={() => <Seperator size={10} />}
             showsVerticalScrollIndicator={false}
             style={styles.messages_container}
+            contentContainerStyle={styles.messages_content}
             onContentSizeChange={() => flatlistRef.current?.scrollToEnd()}
           />
         )}
