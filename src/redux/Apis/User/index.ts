@@ -255,7 +255,11 @@ export const userApi = createApi({
         url: `my-booking/${id}`,
         method: 'GET',
       }),
-      providesTags: (result, error, id) => [{ type: 'Bookings', id }],
+      // Disable caching by not providing tags
+      // providesTags: (result, error, id) => [{ type: 'Bookings', id }],
+
+      // Alternative: Set cache time to 0
+      keepUnusedDataFor: 0, // Immediately remove from cache when unused
     }),
     getDoctorReviews: builder.query({
       query: id => ({

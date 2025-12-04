@@ -28,13 +28,11 @@ const BookingDetails = () => {
         },
     } = useBookingDetailsController();
 
-    console.log(consultant?.type, 'consultant')
-
     const status = booking?.status?.toLowerCase();
     const isRescheduled = status === 'rescheduled';
     const isRejected = status === 'rejected';
     const isUpcoming = status === 'upcoming';
-    const isInProgress = status === 'in_progress' || status === 'inprogress';
+    const isInProgress = status === 'in-progress' || status === 'inprogress';
     const isPast = status === 'past' || status === 'completed';
 
     const formatStatus = (status: string) => {

@@ -29,6 +29,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: heightPixel(15),
   },
+  messages_content: {
+    paddingBottom: heightPixel(20),
+  },
   loading_container: {
     flex: 1,
     justifyContent: 'center',

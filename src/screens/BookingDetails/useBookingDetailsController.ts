@@ -14,7 +14,7 @@ import {
 } from '../../redux/Apis/User';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
-import { ROUTES } from '../../utils/routes';
+import { NAVIGATORS, ROUTES } from '../../utils/routes';
 
 const useBookingDetailsController = () => {
   const route = useRoute();
@@ -105,7 +105,7 @@ const useBookingDetailsController = () => {
         return '#9747FF'; // orange
       case 'pending':
         return '#D59C00'; // yellow
-      case 'in_progress':
+      case 'in-progress':
       case 'inprogress':
         return '#118076'; // blue
       case 'past':
@@ -204,16 +204,25 @@ const useBookingDetailsController = () => {
       // Navigate to chat details screen with chat info
       const chatData = response?.data;
       if (chatData?.id) {
-        navigate(ROUTES.CHAT_DETAILS, {
-          chatId: chatData.id,
-          name: consultant.name || 'Chat',
-          image: consultant.image || '',
-          userRole: consultant.type || 'doctor',
-          userId: consultant.id,
+        // Navigate through nested navigators: Drawer -> Bottom -> ChatStack -> ChatDetails
+        navigate(NAVIGATORS.BOTTOM as any, {
+          screen: NAVIGATORS.CHAT_STACK,
+          params: {
+            screen: ROUTES.CHAT_DETAILS,
+            params: {
+              chatId: chatData.id,
+              name: consultant.name || 'Chat',
+              image: consultant.image || '',
+              userRole: consultant.type || 'doctor',
+              userId: consultant.id,
+            },
+          },
         });
       } else {
         // Fallback to chat list if no chat data
-        navigate(ROUTES.CHAT);
+        navigate(NAVIGATORS.BOTTOM as any, {
+          screen: NAVIGATORS.CHAT_STACK,
+        });
       }
     } catch (err: any) {
       showOkModal({

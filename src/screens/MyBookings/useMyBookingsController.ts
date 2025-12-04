@@ -83,7 +83,7 @@ const useMyBookingsController = () => {
         return '#9747FF'; // orange
       case 'pending':
         return '#D59C00'; // yellow
-      case 'in_progress':
+      case 'in-progress':
       case 'inprogress':
         return '#118076'; // blue
       case 'past':
