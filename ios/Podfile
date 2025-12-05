@@ -1,3 +1,5 @@
+ENV['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+
 def node_require(script)
   # Resolve script with node to allow for hoisting
   require Pod::Executable.execute_command('node', ['-p',
@@ -10,7 +12,7 @@ end
 node_require('react-native/scripts/react_native_pods.rb')
 node_require('react-native-permissions/scripts/setup.rb')
 
-platform :ios, min_ios_version_supported
+platform :ios, '15.1'
 prepare_react_native_project!
 
 setup_permissions([
@@ -35,7 +37,7 @@ target 'YallaGain' do
   )
 
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+    # React Native post install
     react_native_post_install(
       installer,
       config[:reactNativePath],
@@ -43,14 +45,20 @@ target 'YallaGain' do
       # :ccache_enabled => true
     )
     
-    # Exclude react-native-unity's RNUnityView and RNUnityViewManager files since we're using our own implementations
+    # Set deployment target for all pods
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.1'
+      end
+    end
+    
+    # Exclude react-native-unity's RNUnityView and RNUnityViewManager files
     installer.pods_project.targets.each do |target|
       if target.name == 'react-native-unity'
         files_to_remove = []
         target.source_build_phase.files.each do |file|
           file_ref_path = file.file_ref.path.to_s rescue ''
           file_ref_name = file.file_ref.name.to_s rescue ''
-          # Remove all RNUnityView and RNUnityViewManager implementation files from the package
           if file_ref_name.include?('RNUnityView.mm') || 
              file_ref_name.include?('RNUnityViewManager.mm') ||
              file_ref_path.include?('RNUnityView.mm') ||
@@ -65,17 +73,14 @@ target 'YallaGain' do
       end
     end
     
-    # Exclude UnityFramework from simulator builds (it's only built for device/arm64)
-    # Modify xcconfig files to exclude UnityFramework for simulator
+    # Exclude UnityFramework from simulator builds
     Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', '**', '*.xcconfig')).each do |xcconfig_path|
       xcconfig = File.read(xcconfig_path)
       if xcconfig.include?('-framework "UnityFramework"')
-        # Add simulator-specific exclusion: remove UnityFramework for simulator builds
         xcconfig_mod = xcconfig.dup
         other_ldflags_match = xcconfig_mod.match(/^(OTHER_LDFLAGS\s*=\s*)(.+)$/)
         if other_ldflags_match
           flags = other_ldflags_match[2]
-          # Create simulator-specific flags without UnityFramework
           simulator_flags = flags.gsub(/-framework "UnityFramework"/, '')
           xcconfig_mod += "\nOTHER_LDFLAGS[sdk=iphonesimulator*] = #{simulator_flags.strip}\n"
           File.write(xcconfig_path, xcconfig_mod)
@@ -83,11 +88,10 @@ target 'YallaGain' do
       end
     end
     
-    # Modify frameworks install script to skip UnityFramework for simulator
+    # Modify frameworks install script
     Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', '**', '*-frameworks.sh')).each do |script_path|
       script = File.read(script_path)
       if script.include?('install_framework') && script.include?('UnityFramework')
-        # Wrap UnityFramework install in a condition to skip for simulator
         script.gsub!(/(.*install_framework\s+"[^"]*UnityFramework\.framework".*)/) do |match|
           "if [ \"${PLATFORM_NAME}\" != \"iphonesimulator\" ]; then\n  #{match}\nfi"
         end
