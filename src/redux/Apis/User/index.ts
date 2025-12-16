@@ -360,6 +360,35 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Bookings'],
     }),
+    //GET Coins
+    getWalletCoins: builder.query({
+      query: () => ({
+        url: 'wallet',
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    transferYallaCoin: builder.mutation({
+      query: (payload) => ({
+        url: 'transfer-yalla-coin',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    buyYallaCoin: builder.mutation({
+      query: (payload) => ({
+        url: 'buy-yalla-coin',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
+    confirmPayment: builder.mutation({
+      query: (payload) => ({
+        url: 'buy-yalla-coin/after-payment',
+        method: 'POST',
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -410,4 +439,8 @@ export const {
   useGetChatQuery,
   useSendMessageMutation,
   useGetUnreadChatsQuery,
+  useGetWalletCoinsQuery,
+  useTransferYallaCoinMutation,
+  useBuyYallaCoinMutation,
+  useConfirmPaymentMutation
 } = userApi;

@@ -52,7 +52,9 @@ const DRAWER_ROUTES = [
             {
                 title: "Help Center",
                 icon: images.drawer_icons.help_center,
-                route: NAVIGATORS.HELP_DESK_STACK
+                route: NAVIGATORS.HELP_DESK_STACK,
+                child: ROUTES.HELP_DESK,
+                reset: true
             }
         ]
     },
@@ -123,7 +125,25 @@ const DrawerBar = (props) => {
         if (navigationRef.isReady()) {
             // For screens that need fresh params (like ConsultantsList with different types)
             // we use navigate with a unique key to force re-mount
-            if (childItem?.child && childItem?.params) {
+            if (childItem?.reset) {
+                navigationRef.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [
+                            {
+                                name: childItem.route,
+                                state: {
+                                    routes: [
+                                        {
+                                            name: childItem.child,
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    })
+                );
+            } else if (childItem?.child && childItem?.params) {
                 navigationRef.dispatch(
                     CommonActions.navigate({
                         name: childItem.route,

@@ -13,6 +13,7 @@ const NAVIGATORS = {
   WORKOUT_STACK: 'WorkoutStackNavigator',
   AVATAR_STACK: 'AvatarStackNavigator',
   CONSULTATION_STACK: 'ConsultationStackNavigator',
+  WALLET_STACK: 'WalletStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -54,6 +55,8 @@ const ROUTES = {
   REVIEWS: 'Reviews',
   NETWORK_LOGGER: 'NetworkLogger',
   CHAT_DETAILS: 'ChatDetails',
+  WALLET: 'Wallet',
+  TRANSFER: 'Transfer',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -91,6 +94,20 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'My Profile',
+  },
+  {
+    route_name: ROUTES.WALLET,
+    left: 'drawer',
+    right: null,
+    logo: false,
+    title: 'Wallet',
+  },
+  {
+    route_name: ROUTES.TRANSFER,
+    left: 'back',
+    right: 'null',
+    logo: false,
+    title: 'Transfer',
   },
   {
     route_name: ROUTES.CHANGE_PASSWORD,

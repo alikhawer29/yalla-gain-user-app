@@ -19,6 +19,11 @@ const colors = {
   transparent_primary: 'rgba(17, 128, 118, 0.7)',
   light_transparent_primary: 'rgba(17, 128, 118, 0.1)',
   error: '#FF0000',
+  border: '#333333',
+  inputBackground: '#1F1F1F',
+  placeholder: '#999999',
+  cardBackground: '#1F1F1F',
+  success: '#32cd32',
 };
 
 export default colors;
