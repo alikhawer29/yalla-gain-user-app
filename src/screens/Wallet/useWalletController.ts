@@ -6,7 +6,7 @@ import { useGetWalletCoinsQuery, useBuyYallaCoinMutation, useConfirmPaymentMutat
 import { useStripe } from '@stripe/stripe-react-native';
 
 const useWalletController = () => {
-    const { data, isLoading } = useGetWalletCoinsQuery({})
+    const { data, isLoading, refetch: refetchWallet } = useGetWalletCoinsQuery({})
     const [buyCoins, { isLoading: isBuyCoinsLoading }] = useBuyYallaCoinMutation()
     const [confirmPayment] = useConfirmPaymentMutation()
     const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -88,6 +88,9 @@ const useWalletController = () => {
 
                     console.log('Payment confirmation response:', confirmResponse);
 
+                    // Refetch wallet data to show updated coin balance
+                    refetchWallet();
+
                     setShowPaymentModal(false);
                     showOkModal({
                         type: "success",
@@ -96,7 +99,8 @@ const useWalletController = () => {
                     });
                 } catch (confirmError: any) {
                     console.error('Payment confirmation error:', confirmError);
-                    // Still show success but with a warning
+                    // Still show success but with a warning and refetch wallet
+                    refetchWallet();
                     setShowPaymentModal(false);
                     showOkModal({
                         type: "success",
@@ -113,7 +117,7 @@ const useWalletController = () => {
                 message: error?.data?.message || error?.message || "Failed to process payment. Please try again."
             });
         }
-    }, [buyCoins, confirmPayment, showOkModal, initializePaymentSheet, openPaymentSheet]);
+    }, [buyCoins, confirmPayment, showOkModal, initializePaymentSheet, openPaymentSheet, refetchWallet]);
 
     const handleAddCoins = useCallback(() => {
         setShowPaymentModal(true)
