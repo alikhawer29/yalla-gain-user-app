@@ -5,12 +5,12 @@ import Seperator from "../../components/Seperator"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import { navigate } from "../../utils/navigation"
-import { ROUTES } from "../../utils/routes"
+import { ROUTES, NAVIGATORS } from "../../utils/routes"
 
 const HELPDESK = [
     { icon: images.helpdesk.faq, title: "FAQ's" },
     { icon: images.helpdesk.complaint, title: "Yalla Chatbot", onPress: () => navigate(ROUTES.CHATBOT) },
-    { icon: images.helpdesk.wallet, title: "Wallet" },
+    { icon: images.helpdesk.wallet, title: "Wallet", onPress: () => navigate(NAVIGATORS.WALLET_STACK) },
     { icon: images.helpdesk.basic_details, title: "Basic Details" },
     { icon: images.helpdesk.languages, title: "Choose Language" },
     { icon: images.helpdesk.rate, title: "Rate App" },

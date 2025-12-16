@@ -16,6 +16,7 @@ export type AppStackParamList = {
     AuthStackNavigator: undefined
     DrawerNavigator: undefined
     Chatbot: undefined
+    WalletStackNavigator: undefined
 };
 
 export type AuthStackParamList = {
@@ -68,6 +69,9 @@ export type RootStackParamList = {
         userRole: string;
         userId: number;
     }
+    // Wallet
+    Wallet: undefined;
+    Transfer: undefined;
 };
 
 export interface IWrapper {
