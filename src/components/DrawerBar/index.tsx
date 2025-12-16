@@ -5,6 +5,7 @@ import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
+import { useGetWalletCoinsQuery } from "../../redux/Apis/User"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
 import { navigationRef } from "../../utils/navigation"
@@ -112,6 +113,7 @@ const DrawerBar = (props) => {
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
     const { showYesNoModal } = useModal()
+    const { data: walletData } = useGetWalletCoinsQuery({})
 
     const onPressLogout = () => {
         showYesNoModal({
@@ -179,7 +181,7 @@ const DrawerBar = (props) => {
                 <View>
                     <Text size={18} weight="bold">{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>
-                        <Text size={14}>10 Yalla Coins</Text>
+                        <Text size={14}>{walletData?.my_coins || 0} Yalla Coins</Text>
                         <Icon source={images.coin} size={14} />
                     </Row>
                 </View>
