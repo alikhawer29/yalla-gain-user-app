@@ -3,6 +3,30 @@ import colors from "./colors";
 import Toast from "react-native-toast-message";
 
 const openInAppBrowser = async (link: string) => {
+    // Validate the link before attempting to open
+    if (!link || typeof link !== 'string') {
+        console.error('Error opening In-App Browser: Invalid URL provided', link);
+        Toast.show({
+            type: "error",
+            text1: "Error!",
+            text2: 'Invalid payment URL received.'
+        });
+        return;
+    }
+
+    // Ensure the link is a valid URL format
+    try {
+        new URL(link);
+    } catch (urlError) {
+        console.error('Error opening In-App Browser: Invalid URL format', link);
+        Toast.show({
+            type: "error",
+            text1: "Error!",
+            text2: 'Invalid payment URL format.'
+        });
+        return;
+    }
+
     if (await InAppBrowser.isAvailable()) {
         try {
             await InAppBrowser.open(link, {
@@ -22,6 +46,11 @@ const openInAppBrowser = async (link: string) => {
             })
         } catch (err) {
             console.error('Error opening In-App Browser:', err);
+            Toast.show({
+                type: "error",
+                text1: "Error!",
+                text2: 'Failed to open payment page.'
+            });
         }
     } else {
         Toast.show({
