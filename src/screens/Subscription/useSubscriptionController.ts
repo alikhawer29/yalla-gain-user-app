@@ -1,19 +1,46 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGetSubscriptionPlansQuery, useSubscribeMutation } from "../../redux/Apis/User";
-import { openInAppBrowser } from "../../utils/browser";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
 
 const useSubscriptionController = () => {
+    const [alertModal, setAlertModal] = useState({
+        visible: false,
+        type: 'success' as 'success' | 'error',
+        title: '',
+        message: ''
+    });
 
     const { data, isLoading } = useGetSubscriptionPlansQuery({})
     const [subscribe, { data: subscribeData, isSuccess: isSubscribeSuccess, isLoading: isSubscribeLoading }] = useSubscribeMutation()
 
     useEffect(() => {
         if (isSubscribeSuccess) {
-            openInAppBrowser(subscribeData?.url)
+            console.log('Subscribe response data:', subscribeData);
+            
+            if (subscribeData?.status) {
+                setAlertModal({
+                    visible: true,
+                    type: 'success',
+                    title: 'Successfully',
+                    message: 'Payment has been Made Successfully.'
+                });
+            } else {
+                setAlertModal({
+                    visible: true,
+                    type: 'error',
+                    title: 'Unsuccessful!',
+                    message: subscribeData?.message || 'Payment was Unsuccessful.\nPlease try again.'
+                });
+            }
         }
     }, [isSubscribeSuccess, subscribeData])
+
+    const handleModalOk = () => {
+        if (subscribeData?.status) {
+            navigate(ROUTES.SUBSCRIPTION_LOGS);
+        }
+    }
 
     const onChoosePlan = useCallback((plan_id: number) => {
         subscribe({ plan_id })
@@ -27,11 +54,14 @@ const useSubscriptionController = () => {
         values: {
             data: data?.data || [],
             isLoading,
-            isSubscribeLoading
+            isSubscribeLoading,
+            alertModal
         },
         functions: {
             onChoosePlan,
-            onSubscriptionLogs
+            onSubscriptionLogs,
+            handleModalOk,
+            setAlertModal
         }
     }
 

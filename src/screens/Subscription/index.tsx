@@ -3,6 +3,7 @@ import Button from "../../components/Button"
 import SubscriptionCarousel from "../../components/SubscriptionCarousel"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
+import AlertModal from "../../components/AlertModal"
 import { LOREM } from "../../utils/data"
 import { heightPixel } from "../../utils/helper"
 import useSubscriptionController from "./useSubscriptionController"
@@ -14,11 +15,14 @@ const Subscription = () => {
         values: {
             data,
             isLoading,
-            isSubscribeLoading
+            isSubscribeLoading,
+            alertModal
         },
         functions: {
             onChoosePlan,
-            onSubscriptionLogs
+            onSubscriptionLogs,
+            handleModalOk,
+            setAlertModal
         }
     } = useSubscriptionController()
 
@@ -32,6 +36,15 @@ const Subscription = () => {
                 isLoading ? <Loader /> :
                     <SubscriptionCarousel data={data} onChoosePlan={onChoosePlan} isLoading={isSubscribeLoading} />
             }
+
+            <AlertModal
+                visible={alertModal.visible}
+                type={alertModal.type}
+                title={alertModal.title}
+                message={alertModal.message}
+                onClose={() => setAlertModal({ ...alertModal, visible: false })}
+                onOk={handleModalOk}
+            />
         </Wrapper>
     )
 }
