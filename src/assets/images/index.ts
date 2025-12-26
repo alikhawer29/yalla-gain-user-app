@@ -55,6 +55,7 @@ const images = {
   video_play: require('./video_play.png'),
   pause: require('./pause.png'),
   modal_check: require('./modal_check.png'),
+  close_button: require('./close_button.png'),
   modal_cross: require('./modal_cross.png'),
   post_comment: require('./post_comment.png'),
   cross: require('./cross.png'),

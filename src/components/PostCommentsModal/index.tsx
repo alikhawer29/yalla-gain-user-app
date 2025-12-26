@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useState, useRef } from "react";
 import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
@@ -6,6 +6,7 @@ import Text from "../Text";
 import images from "../../assets/images";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel, font } from "../../utils/helper";
+import ReactionPicker from "../ReactionPicker";
 
 interface IPostCommentsModal {
     visible: boolean;
@@ -14,8 +15,16 @@ interface IPostCommentsModal {
     comment_count: number;
 }
 
+interface CommentReaction {
+    [commentId: number]: 'like' | 'heart' | null;
+}
+
 const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count }) => {
     const [commentText, setCommentText] = useState("");
+    const [commentReactions, setCommentReactions] = useState<CommentReaction>({});
+    const [showReactionPicker, setShowReactionPicker] = useState<number | null>(null);
+    const [reactionButtonPositions, setReactionButtonPositions] = useState<{ [key: number]: { x: number, y: number } }>({});
+    const reactionButtonRefs = useRef<{ [key: number]: View | null }>({});
 
     // Mock data - replace with actual API call
     const comments = [
@@ -64,6 +73,24 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
         }
     };
 
+    const handleReaction = (commentId: number, reaction: 'like' | 'heart') => {
+        setCommentReactions(prev => ({
+            ...prev,
+            [commentId]: prev[commentId] === reaction ? null : reaction
+        }));
+    };
+
+    const toggleReaction = (commentId: number) => {
+        const currentReaction = commentReactions[commentId];
+        if (currentReaction) {
+            // Remove reaction if already reacted
+            setCommentReactions(prev => ({ ...prev, [commentId]: null }));
+        } else {
+            // Quick like
+            setCommentReactions(prev => ({ ...prev, [commentId]: 'like' }));
+        }
+    };
+
     const renderCommentItem = ({ item }: { item: any }) => (
         <View style={{
             paddingVertical: heightPixel(15),
@@ -93,13 +120,64 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                         {item.comment}
                     </Text>
 
-                    <Row align="center" gap={4} style={{ marginTop: heightPixel(8) }}>
-                        {/* Using peace/victory hand sign if available, else heart/like. 
-                            The image showed a V sign. Using 'like' as placeholder for V sign if specific asset missing. */}
-                        <Icon source={images.like} size={14} tint_color={colors.primary} />
-                        <Text size={12} color={colors.icon_gray}>
-                            {item.reaction_count}
-                        </Text>
+                    <Row align="center" gap={15} style={{ marginTop: heightPixel(8) }}>
+                        {/* Reaction Button */}
+                        <View
+                            ref={(ref) => {
+                                if (ref) {
+                                    reactionButtonRefs.current[item.id] = ref;
+                                }
+                            }}
+                        >
+                            <TouchableOpacity
+                                onPress={() => toggleReaction(item.id)}
+                                onLongPress={() => {
+                                    reactionButtonRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
+                                        // Calculate centered position above the Like button
+                                        // Picker width is approximately 110px (2 icons * 35px + padding)
+                                        const pickerWidth = 110;
+                                        const centeredX = x + (width / 2) - (pickerWidth / 2);
+                                        const topY = y - 60; // 60px above the button
+                                        setReactionButtonPositions(prev => ({
+                                            ...prev,
+                                            [item.id]: { x: centeredX, y: topY }
+                                        }));
+                                    });
+                                    setShowReactionPicker(item.id);
+                                }}
+                                delayLongPress={100}
+                            >
+                                <Row align="center" gap={4}>
+                                    <Icon
+                                        source={
+                                            commentReactions[item.id] === 'heart' ? images.heart :
+                                                images.post_like
+                                        }
+                                        size={14}
+                                        tint_color={
+                                            commentReactions[item.id] === 'heart' ? colors.danger :
+                                                commentReactions[item.id] === 'like' ? colors.primary :
+                                                    colors.icon_gray
+                                        }
+                                    />
+                                    <Text
+                                        size={12}
+                                        color={commentReactions[item.id] ? colors.primary : colors.icon_gray}
+                                        weight={commentReactions[item.id] ? "semibold" : "regular"}
+                                    >
+                                        {commentReactions[item.id] === 'heart' ? 'Love' : 'Like'}
+                                    </Text>
+                                </Row>
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Reaction Count */}
+                        <Row align="center" gap={4}>
+                            <Icon source={images.heart} size={12} tint_color={colors.icon_gray} />
+                            <Text size={12} color={colors.icon_gray}>
+                                {item.reaction_count}
+                            </Text>
+                        </Row>
                     </Row>
                 </View>
             </Row>
@@ -124,17 +202,17 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
             >
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    style={{ flex: 1, maxHeight: '90%' }}
                 >
                     <TouchableOpacity
                         activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
                         style={{
                             backgroundColor: colors.blackish_gray,
                             borderTopLeftRadius: heightPixel(20),
                             borderTopRightRadius: heightPixel(20),
-                            height: '90%', // Increased height to match design
-                            marginTop: heightPixel(90),
+                            flex: 1,
                         }}
-                        onPress={(e) => e.stopPropagation()}
                     >
                         {/* Header */}
                         <View style={{
@@ -149,7 +227,7 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                 </TouchableOpacity>
                                 <Row align="center" gap={8}>
                                     {/* Matches the 'V 200' style in image */}
-                                    <Icon source={images.like} size={20} tint_color={colors.primary} />
+                                    <Icon source={images.post_like} size={20} tint_color={colors.primary} />
                                     <Text weight="semibold" size={16}>
                                         {comment_count || comments.length}
                                     </Text>
@@ -157,19 +235,20 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                             </Row>
                         </View>
 
-                        {/* List of comments */}
+                        {/* List of comments - Scrollable */}
                         <FlatList
                             data={comments}
                             renderItem={renderCommentItem}
                             keyExtractor={(item) => item.id.toString()}
                             contentContainerStyle={{
                                 paddingHorizontal: widthPixel(20),
-                                paddingBottom: heightPixel(20)
+                                paddingBottom: heightPixel(100) // Extra padding for input area
                             }}
                             showsVerticalScrollIndicator={true}
+                            style={{ flex: 1 }}
                         />
 
-                        {/* Comment Input */}
+                        {/* Comment Input - Fixed at Bottom */}
                         <View style={{
                             paddingHorizontal: widthPixel(20),
                             paddingVertical: heightPixel(15),
@@ -181,7 +260,7 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                 <View style={{
                                     flex: 1,
                                     backgroundColor: colors.blackish_gray,
-                                    borderRadius: heightPixel(10), // More squared as per image
+                                    borderRadius: heightPixel(10),
                                     paddingHorizontal: widthPixel(15),
                                     paddingVertical: heightPixel(12),
                                     borderWidth: 1,
@@ -192,9 +271,10 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                             color: colors.white,
                                             fontSize: font(14),
                                             padding: 0,
+                                            maxHeight: heightPixel(100),
                                         }}
                                         placeholder="Write Comment"
-                                        placeholderTextColor={colors.white} // Brighter placeholder
+                                        placeholderTextColor={colors.white}
                                         value={commentText}
                                         onChangeText={setCommentText}
                                         multiline
@@ -218,6 +298,19 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                     </TouchableOpacity>
                 </KeyboardAvoidingView>
             </TouchableOpacity>
+
+            {/* Reaction Picker */}
+            {showReactionPicker !== null && (
+                <ReactionPicker
+                    visible={showReactionPicker !== null}
+                    onClose={() => setShowReactionPicker(null)}
+                    onSelectReaction={(reaction) => {
+                        handleReaction(showReactionPicker, reaction);
+                        setShowReactionPicker(null);
+                    }}
+                    position={reactionButtonPositions[showReactionPicker]}
+                />
+            )}
         </Modal>
     );
 };
