@@ -151,25 +151,48 @@ export const AUTH_TYPES = [
 
 export const NEWSFEED = [
     {
+        id: 1,
         user: USER,
         content: LOREM,
         reaction_count: 60,
         comment_count: 60,
     },
     {
+        id: 2,
         user: USER,
         content: LOREM,
-        media: images.workout.workout_one,
+        media: [
+            { type: 'image' as const, source: images.workout.workout_one },
+            { type: 'image' as const, source: images.workout.workout_two }
+        ],
         reaction_count: 60,
         comment_count: 60,
     },
     {
+        id: 3,
         user: USER,
-        content: LOREM,
-        media: images.workout.workout_one,
-        reaction_count: 60,
-        comment_count: 60,
+        poll: {
+            question: "Do you think that street A is Safe?",
+            options: [
+                { id: 1, label: "Yes", percentage: 90, is_selected: true },
+                { id: 2, label: "No", percentage: 10 }
+            ],
+            total_votes: 150
+        },
+        reaction_count: 150,
+        comment_count: 20,
     },
+    {
+        id: 4,
+        user: USER,
+        measurements: {
+            height: "174 cm",
+            weight: "720 lbs", // Copied from image, seems high but follows design
+            image: images.avatar.slim
+        },
+        reaction_count: 150,
+        comment_count: 20,
+    }
 ]
 
 export const CHATS = [

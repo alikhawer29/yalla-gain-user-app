@@ -57,6 +57,7 @@ const ROUTES = {
   CHAT_DETAILS: 'ChatDetails',
   WALLET: 'Wallet',
   TRANSFER: 'Transfer',
+  CREATE_POST: 'CreatePost',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -72,6 +73,7 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'News Feed',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.PROGRESS_TRACKING,
@@ -295,6 +297,14 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: '',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.CREATE_POST,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Create Post',
     bottom_tab: false,
   },
 ] as const;

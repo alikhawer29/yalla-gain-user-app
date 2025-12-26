@@ -17,11 +17,22 @@ const shouldHideBottomBar = (state: any): boolean => {
     const focusedRoute = state.routes[state.index];
     const activeRouteName = getActiveRouteName(focusedRoute);
 
+    // Check if the active route (nested screen) should hide bottom tab
     const routeOption = ROUTES_OPTIONS.find(
         (item) => item.route_name === activeRouteName
     );
 
-    return routeOption?.bottom_tab === false;
+    // If we found a route option with bottom_tab: false, hide the bar
+    if (routeOption?.bottom_tab === false) {
+        return true;
+    }
+
+    // Also check if the stack navigator name matches (for cases where nested route name isn't found)
+    const stackOption = ROUTES_OPTIONS.find(
+        (item) => item.route_name === focusedRoute.name
+    );
+
+    return stackOption?.bottom_tab === false;
 };
 
 const BottomBar = ({ state, descriptors, navigation }) => {
