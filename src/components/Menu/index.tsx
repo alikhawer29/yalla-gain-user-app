@@ -1,4 +1,5 @@
 import { FC, memo, useCallback } from "react"
+import { ViewStyle } from "react-native"
 import { MenuOption, MenuOptions, MenuTrigger, Menu as PopupMenu } from "react-native-popup-menu"
 import images from "../../assets/images"
 import colors from "../../utils/colors"
@@ -6,7 +7,12 @@ import Icon from "../Icon"
 import Text from "../Text"
 import { heightPixel, widthPixel } from "../../utils/helper"
 
-const Menu: FC = ({ dropdown_items = [], style = {} }) => {
+interface IMenu {
+    dropdown_items?: Array<{ label: string; onPress?: () => void; color?: string }>;
+    style?: ViewStyle;
+}
+
+const Menu: FC<IMenu> = ({ dropdown_items = [], style = {} }) => {
 
     const ITEMS = [
         ...dropdown_items,

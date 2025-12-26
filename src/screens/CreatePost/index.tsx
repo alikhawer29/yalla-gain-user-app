@@ -39,6 +39,7 @@ const CreatePost = () => {
         <Wrapper scrollable>
             <View style={styles.contentContainer}>
 
+
                 {/* Main Content Area */}
                 <View style={styles.inputContainer}>
                     {/* User Info and Input Field - Side by Side */}

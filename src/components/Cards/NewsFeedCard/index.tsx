@@ -1,4 +1,4 @@
-import { FC, memo, useState } from "react";
+import { FC, memo, useState, useRef } from "react";
 import { View, TouchableOpacity, ImageBackground } from "react-native";
 import images from "../../../assets/images";
 import { INewsFeedCard } from "../../../interfaces";
@@ -12,10 +12,42 @@ import Row from "../../Row";
 import Text from "../../Text";
 import PostReactionsModal from "../../PostReactionsModal";
 import PostCommentsModal from "../../PostCommentsModal";
+import ReactionPicker from "../../ReactionPicker";
+import ReportConfirmModal from "../../ReportConfirmModal";
+import ReportReasonModal from "../../ReportReasonModal";
+import ReportSuccessModal from "../../ReportSuccessModal";
 
-const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurements, reaction_count = 0, comment_count = 0, user, created_at }) => {
+const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurements, reaction_count = 0, comment_count = 0, user, created_at, is_liked }) => {
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showCommentsModal, setShowCommentsModal] = useState(false);
+    const [showReactionPicker, setShowReactionPicker] = useState(false);
+    const [userReaction, setUserReaction] = useState<'like' | 'heart' | null>(is_liked ? 'like' : null);
+    const [likeButtonPosition, setLikeButtonPosition] = useState({ x: 0, y: 0 });
+    const likeButtonRef = useRef<View>(null);
+
+    // Report modals state
+    const [showReportConfirm, setShowReportConfirm] = useState(false);
+    const [showReportReason, setShowReportReason] = useState(false);
+    const [showReportSuccess, setShowReportSuccess] = useState(false);
+
+    const handleReportClick = () => {
+        setShowReportConfirm(true);
+    };
+
+    const handleReportConfirm = () => {
+        setShowReportConfirm(false);
+        setShowReportReason(true);
+    };
+
+    const handleReportSubmit = (reason: string) => {
+        console.log("Report reason:", reason);
+        setShowReportReason(false);
+        setShowReportSuccess(true);
+    };
+
+    const handleReportSuccessClose = () => {
+        setShowReportSuccess(false);
+    };
 
     const renderMedia = () => {
         if (!media || media.length === 0) return null;
@@ -125,13 +157,20 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
             <Row align="center" gap={12}>
                 <Row style={{ flex: 0.9 }} align="center" gap={12}>
-                    <Icon source={user?.image || images.dummy} size={45} rounded />
+                    <Icon
+                        source={user?.image || images.dummy}
+                        size={45}
+                        rounded
+                        no_padding
+                        border={colors.white}
+                        resize="cover"
+                    />
                     <View>
                         <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
                         <Text size={12} color={colors.icon_gray}>{created_at || "2 days ago"}</Text>
                     </View>
                 </Row>
-                <Menu dropdown_items={[{ label: "Report" }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
+                <Menu dropdown_items={[{ label: "Report", onPress: handleReportClick }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
             </Row>
             <View style={{ marginVertical: heightPixel(15) }}>
                 {content && <Text style={{ marginBottom: heightPixel(10) }}>{content}</Text>}
@@ -154,12 +193,50 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                 </TouchableOpacity>
             </Row>
             <Row justify="space-between" style={{ borderTopWidth: 1, borderColor: colors.dark_gray, paddingTop: heightPixel(10), marginTop: heightPixel(10) }}>
-                <TouchableOpacity onPress={() => {/* TODO: Handle like */ }}>
-                    <Row align="center" gap={8}>
-                        <Icon source={images.like} size={18} />
-                        <Text size={12} color={colors.icon_gray}>Like</Text>
-                    </Row>
-                </TouchableOpacity>
+                <View ref={likeButtonRef}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            if (userReaction) {
+                                // Remove reaction if already reacted
+                                setUserReaction(null);
+                            } else {
+                                // Quick like
+                                setUserReaction('like');
+                            }
+                        }}
+                        onLongPress={() => {
+                            likeButtonRef.current?.measureInWindow((x, y, width, height) => {
+                                // Calculate centered position above the Like button
+                                // Picker width is approximately 110px (2 icons * 35px + padding)
+                                const pickerWidth = 110;
+                                const centeredX = x + (width / 2) - (pickerWidth / 2);
+                                const topY = y - 60; // 60px above the button
+                                setLikeButtonPosition({ x: centeredX, y: topY });
+                            });
+                            setShowReactionPicker(true);
+                        }}
+                        delayLongPress={100}
+                    >
+                        <Row align="center" gap={8}>
+                            <Icon
+                                source={userReaction === 'heart' ? images.heart : images.post_like}
+                                size={18}
+                                tint_color={
+                                    userReaction === 'heart' ? colors.danger :
+                                        userReaction === 'like' ? colors.primary :
+                                            colors.icon_gray
+                                }
+                            />
+                            <Text
+                                size={12}
+                                color={userReaction ? colors.primary : colors.icon_gray}
+                                weight={userReaction ? "semibold" : "regular"}
+                            >
+                                {userReaction === 'heart' ? 'Love' : 'Like'}
+                            </Text>
+                        </Row>
+                    </TouchableOpacity>
+                </View>
                 <TouchableOpacity onPress={() => setShowCommentsModal(true)}>
                     <Row align="center" gap={8} style={{ marginRight: 20 }}>
                         <Icon source={images.comment} size={18} />
@@ -180,6 +257,29 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                 onClose={() => setShowCommentsModal(false)}
                 post_id={id}
                 comment_count={comment_count}
+            />
+            <ReactionPicker
+                visible={showReactionPicker}
+                onClose={() => setShowReactionPicker(false)}
+                onSelectReaction={(reaction) => setUserReaction(reaction)}
+                position={likeButtonPosition}
+            />
+
+            {/* Report Modals */}
+            <ReportConfirmModal
+                visible={showReportConfirm}
+                onClose={() => setShowReportConfirm(false)}
+                onConfirm={handleReportConfirm}
+            />
+            <ReportReasonModal
+                visible={showReportReason}
+                onClose={() => setShowReportReason(false)}
+                onSubmit={handleReportSubmit}
+            />
+            <ReportSuccessModal
+                visible={showReportSuccess}
+                onClose={handleReportSuccessClose}
+                userName={`${user?.first_name || 'User'} ${user?.last_name || 'Abc'}`}
             />
         </CardWrapper>
     )

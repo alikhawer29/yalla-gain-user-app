@@ -85,8 +85,8 @@ android {
         applicationId "com.blitzapp.yallagain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
-        versionName "0.0.12"
+        versionCode 13
+        versionName "0.0.13"
     }
     signingConfigs {
         debug {

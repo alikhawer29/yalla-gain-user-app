@@ -6,6 +6,7 @@ import PaymentModal from "../../components/PaymentModal"
 import { heightPixel, widthPixel } from "../../utils/helper"
 import useWalletController from "./useWalletController"
 import styles from "./styles"
+import images from "../../assets/images"
 
 const Wallet = () => {
     const {
@@ -30,7 +31,7 @@ const Wallet = () => {
                 <View style={styles.content}>
                     <View style={styles.coinContainer}>
                         <Image
-                            source={require("../../assets/images/coins.png")}
+                            source={images.coin}
                             style={styles.coinImage}
                         />
 
