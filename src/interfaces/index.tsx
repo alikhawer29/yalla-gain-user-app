@@ -72,6 +72,7 @@ export type RootStackParamList = {
     // Wallet
     Wallet: undefined;
     Transfer: undefined;
+    CreatePost: { initialTab?: 'photo' | 'video' | 'poll' };
 };
 
 export interface IWrapper {
@@ -235,11 +236,29 @@ export interface ITrackingCard extends IProgressBar {
     subtext: string
 }
 
+
+
+// ...
+
 export interface INewsFeedCard {
-    title: string
-    user?: any
-    reaction_count: number
-    comment_count: number
+    id?: string | number;
+    content?: string;
+    media?: { type: 'image' | 'video', source: any, thumbnail?: any }[];
+    poll?: {
+        question: string;
+        options: { id: string | number, label: string, percentage: number, is_selected?: boolean }[];
+        total_votes?: number;
+    };
+    measurements?: {
+        height: string;
+        weight: string;
+        image: any;
+    };
+    user?: any;
+    reaction_count?: number;
+    comment_count?: number;
+    created_at?: string;
+    is_liked?: boolean;
 }
 
 export interface IChatCard {
