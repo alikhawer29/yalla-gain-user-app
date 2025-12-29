@@ -1,66 +1,93 @@
-import { FlatList, View, TouchableOpacity, ActivityIndicator } from "react-native"
+import { FlatList, View, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native"
 import React from "react"
 import Wrapper from "../../components/Wrapper"
 import { heightPixel, widthPixel } from "../../utils/helper"
 import colors from "../../utils/colors"
 import Text from "../../components/Text"
 import Row from "../../components/Row"
-
-// Mock data - replace with actual API call
-const mockBlockedUsers = [
-    { id: 1, username: 'Abc' },
-    { id: 2, username: 'Abc' },
-    { id: 3, username: 'Abc' },
-    { id: 4, username: 'Abc' },
-    { id: 5, username: 'Abc' },
-    { id: 6, username: 'Abc' },
-    { id: 7, username: 'Abc' },
-    { id: 8, username: 'Abc' },
-    { id: 9, username: 'Abc' },
-];
+import { useGetBlockedUsersQuery, useUnblockUserMutation } from "../../redux/Apis/User"
+import { useModal } from "../../contexts/ModalContext"
 
 const BlockedUsers = () => {
-    const [blockedUsers, setBlockedUsers] = React.useState(mockBlockedUsers);
-    const [loading, setLoading] = React.useState(false);
+    const { data, isLoading, isFetching, refetch } = useGetBlockedUsersQuery();
+    const [unblockUser, { isLoading: isUnblocking }] = useUnblockUserMutation();
+    const { showYesNoModal, showOkModal } = useModal();
+    const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-    const handleUnblock = (userId: number) => {
-        // TODO: Call unblock API
-        setBlockedUsers(prev => prev.filter(user => user.id !== userId));
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await refetch();
+        setIsRefreshing(false);
     };
 
-    const renderItem = ({ item, index }: { item: any; index: number }) => (
-        <Row 
-            justify="space-between" 
-            align="center"
-            style={{ 
-                paddingVertical: heightPixel(15),
-                paddingHorizontal: widthPixel(20),
-                borderBottomWidth: 1,
-                borderBottomColor: colors.dark_gray
-            }}
-        >
-            <Text size={14} style={{ flex: 0.15 }}>{index + 1}</Text>
-            <Text size={14} style={{ flex: 0.5 }}>{item.username}</Text>
-            <TouchableOpacity
-                onPress={() => handleUnblock(item.id)}
+    const handleUnblock = (userId: number, userName: string) => {
+        showYesNoModal(
+            {
+                type: "error",
+                title: "Unblock User",
+                message: `Are you sure you want to unblock ${userName}?`
+            },
+            async () => {
+                try {
+                    await unblockUser(userId).unwrap();
+                    showOkModal({
+                        type: "success",
+                        title: "Success",
+                        message: "User has been unblocked successfully"
+                    });
+                } catch (error: any) {
+                    console.error('Unblock user error:', error);
+                    showOkModal({
+                        type: "error",
+                        title: "Error",
+                        message: error?.data?.message || "Failed to unblock user"
+                    });
+                }
+            }
+        );
+    };
+
+    const renderItem = ({ item, index }: { item: any; index: number }) => {
+        const blockedUser = item?.to_user;
+        const userName = blockedUser ? `${blockedUser.first_name} ${blockedUser.last_name}` : 'Unknown User';
+        const userId = blockedUser?.id;
+
+        return (
+            <Row
+                justify="space-between"
+                align="center"
                 style={{
-                    flex: 0.35,
-                    backgroundColor: colors.primary,
-                    paddingVertical: heightPixel(8),
-                    paddingHorizontal: widthPixel(15),
-                    borderRadius: heightPixel(6),
-                    alignItems: 'center'
+                    paddingVertical: heightPixel(15),
+                    paddingHorizontal: widthPixel(20),
+                    borderBottomWidth: 1,
+                    borderBottomColor: colors.dark_gray
                 }}
             >
-                <Text size={12} weight="semibold">Unblock</Text>
-            </TouchableOpacity>
-        </Row>
-    );
+                <Text size={14} style={{ flex: 0.15 }}>{index + 1}</Text>
+                <Text size={14} style={{ flex: 0.5 }}>{userName}</Text>
+                <TouchableOpacity
+                    onPress={() => handleUnblock(userId, userName)}
+                    disabled={isUnblocking}
+                    style={{
+                        flex: 0.35,
+                        backgroundColor: colors.primary,
+                        paddingVertical: heightPixel(8),
+                        paddingHorizontal: widthPixel(15),
+                        borderRadius: heightPixel(6),
+                        alignItems: 'center',
+                        opacity: isUnblocking ? 0.6 : 1
+                    }}
+                >
+                    <Text size={12} weight="semibold">Unblock</Text>
+                </TouchableOpacity>
+            </Row>
+        );
+    };
 
     const renderHeader = () => (
-        <Row 
-            justify="space-between" 
-            style={{ 
+        <Row
+            justify="space-between"
+            style={{
                 paddingVertical: heightPixel(15),
                 paddingHorizontal: widthPixel(20),
                 backgroundColor: colors.blackish_gray,
@@ -74,21 +101,60 @@ const BlockedUsers = () => {
         </Row>
     );
 
-    const renderEmpty = () => (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
-            <Text size={16} color={colors.icon_gray}>No blocked users</Text>
-        </View>
-    );
+    const renderEmpty = () => {
+        if (isLoading) {
+            return (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            );
+        }
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                <Text size={16} color={colors.icon_gray}>No blocked users</Text>
+            </View>
+        );
+    };
+
+    const renderFooter = () => {
+        if (!isFetching) return null;
+        return (
+            <View style={{ paddingVertical: heightPixel(20) }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    };
+
+    // Show loader only on initial load
+    const hasData = data && 'data' in data && Array.isArray(data.data) && data.data.length > 0;
+    if (isLoading && !hasData) {
+        return (
+            <Wrapper>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            </Wrapper>
+        );
+    }
 
     return (
         <Wrapper>
             <FlatList
-                data={blockedUsers}
+                data={data?.data || []}
                 renderItem={renderItem}
-                keyExtractor={(item) => `blocked-user-${item.id}`}
+                keyExtractor={(item, index) => `blocked-user-${item.id}-${index}`}
                 ListHeaderComponent={renderHeader}
                 ListEmptyComponent={renderEmpty}
+                ListFooterComponent={renderFooter}
                 showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={handleRefresh}
+                        tintColor={colors.primary}
+                        colors={[colors.primary]}
+                    />
+                }
             />
         </Wrapper>
     )
