@@ -12,6 +12,7 @@ import Text from "../../components/Text"
 const NewsFeed = () => {
     const navigation = useNavigation()
     const [page, setPage] = useState(1)
+    const [isRefreshing, setIsRefreshing] = useState(false)
 
     const { data, isLoading, isFetching, refetch } = useGetFeedsQuery({ page })
 
@@ -30,9 +31,11 @@ const NewsFeed = () => {
         }, [refetch])
     )
 
-    const handleRefresh = () => {
+    const handleRefresh = async () => {
+        setIsRefreshing(true)
         setPage(1)
-        refetch()
+        await refetch()
+        setIsRefreshing(false)
     }
 
     const handleLoadMore = () => {
@@ -65,6 +68,18 @@ const NewsFeed = () => {
         )
     }
 
+    // Show loader only on initial load, not when refreshing
+    const hasData = data && 'data' in data && Array.isArray(data.data) && data.data.length > 0;
+    if (isLoading && !hasData) {
+        return (
+            <Wrapper scrollable>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            </Wrapper>
+        )
+    }
+
     return (
         <Wrapper scrollable>
             <FlatList
@@ -79,7 +94,7 @@ const NewsFeed = () => {
                 ListEmptyComponent={renderEmpty}
                 refreshControl={
                     <RefreshControl
-                        refreshing={isLoading}
+                        refreshing={isRefreshing}
                         onRefresh={handleRefresh}
                         tintColor={colors.primary}
                         colors={[colors.primary]}

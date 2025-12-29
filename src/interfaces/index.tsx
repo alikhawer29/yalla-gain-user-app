@@ -73,6 +73,10 @@ export type RootStackParamList = {
     Wallet: undefined;
     Transfer: undefined;
     CreatePost: { initialTab?: 'photo' | 'video' | 'poll' };
+    EditPost: { postData: any };
+    MyPosts: undefined;
+    UserProfile: { userId: number };
+    BlockedUsers: undefined;
 };
 
 export interface IWrapper {
@@ -266,6 +270,7 @@ export interface INewsFeedCard {
     is_liked?: boolean;
     is_reacted?: boolean;
     reaction_type?: string;
+    isMyPost?: boolean;
 }
 
 export interface IChatCard {
