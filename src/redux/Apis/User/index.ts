@@ -11,6 +11,7 @@ export const userApi = createApi({
     'Consultants',
     'Chats',
     'Posts',
+    'BlockedUsers',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -308,10 +309,25 @@ export const userApi = createApi({
     }),
     blockUser: builder.mutation({
       query: (user_id: number) => ({
-        url: 'user/block',
+        url: `block/${user_id}`,
         method: 'POST',
-        body: { user_id },
       }),
+      invalidatesTags: ['BlockedUsers'],
+    }),
+    getBlockedUsers: builder.query({
+      query: () => ({
+        url: 'block/users',
+        method: 'GET',
+      }),
+      providesTags: ['BlockedUsers'],
+      keepUnusedDataFor: 0,
+    }),
+    unblockUser: builder.mutation({
+      query: (user_id: number) => ({
+        url: `block/${user_id}`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['BlockedUsers'],
     }),
     // Chat APIs
     getChatList: builder.query({
@@ -449,6 +465,8 @@ export const {
   useRejectRescheduleMutation,
   useCreateChatMutation,
   useBlockUserMutation,
+  useGetBlockedUsersQuery,
+  useUnblockUserMutation,
   useRateBookingMutation,
   useReportBookingMutation,
   useGiveTipMutation,
