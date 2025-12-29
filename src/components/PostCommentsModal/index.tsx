@@ -1,5 +1,5 @@
-import { FC, useState, useRef } from "react";
-import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from "react-native";
+import { FC, useState, useRef, useMemo } from "react";
+import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
 import Text from "../Text";
@@ -7,118 +7,135 @@ import images from "../../assets/images";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel, font } from "../../utils/helper";
 import ReactionPicker from "../ReactionPicker";
+import { useGetCommentsQuery, usePostCommentMutation, useReactCommentMutation } from "../../redux/Apis/User";
 
 interface IPostCommentsModal {
     visible: boolean;
     onClose: () => void;
     post_id?: string | number;
     comment_count: number;
+    onCommentAdded?: () => void;
 }
 
 interface CommentReaction {
     [commentId: number]: 'like' | 'heart' | null;
 }
 
-const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count }) => {
+const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count, onCommentAdded }) => {
     const [commentText, setCommentText] = useState("");
     const [commentReactions, setCommentReactions] = useState<CommentReaction>({});
     const [showReactionPicker, setShowReactionPicker] = useState<number | null>(null);
     const [reactionButtonPositions, setReactionButtonPositions] = useState<{ [key: number]: { x: number, y: number } }>({});
     const reactionButtonRefs = useRef<{ [key: number]: View | null }>({});
 
-    // Mock data - replace with actual API call
-    const comments = [
-        {
-            id: 1,
-            user: { first_name: "Marvel", last_name: "Edward", image: images.dummy },
-            comment: "It is a long established fact that a reader will be distracted by the readable content of a page",
-            reaction_count: "1.25k",
-            created_at: "2 days ago"
-        },
-        {
-            id: 2,
-            user: { first_name: "Medvin", last_name: "Hardy", image: images.dummy },
-            comment: "It is a long established fact that a reader will be distracted by the readable content of a page",
-            reaction_count: "1.25k",
-            created_at: "2 days ago"
-        },
-        {
-            id: 3,
-            user: { first_name: "Juliana", last_name: "John", image: images.dummy },
-            comment: "It is a long established fact that a reader will be distracted by the readable content of a page",
-            reaction_count: "1.25k",
-            created_at: "2 days ago"
-        },
-        {
-            id: 4,
-            user: { first_name: "Roy", last_name: "David", image: images.dummy },
-            comment: "It is a long established fact that a reader will be distracted by the readable content of a page",
-            reaction_count: "1.25k",
-            created_at: "2 days ago"
-        },
-        {
-            id: 5,
-            user: { first_name: "Khawer", last_name: "David", image: images.dummy },
-            comment: "It is a long established fact that a reader will be distracted by the readable content of a page",
-            reaction_count: "1.25k",
-            created_at: "2 days ago"
-        },
-    ];
+    // API hooks
+    const { data, isLoading, isFetching, refetch } = useGetCommentsQuery(post_id, {
+        skip: !visible || !post_id, // Skip query if modal is not visible or no post_id
+    });
+    const [postComment, { isLoading: isPostingComment }] = usePostCommentMutation();
+    const [reactComment] = useReactCommentMutation();
 
-    const handleSendComment = () => {
-        if (commentText.trim()) {
-            // TODO: Send comment to API
-            console.log("Sending comment:", commentText);
-            setCommentText("");
+    // Map API response to component structure
+    const comments = useMemo(() => {
+        if (!data?.data) return [];
+        return data.data.map((item: any) => ({
+            id: item.id,
+            user: item.user,
+            comment: item.comment,
+            reaction_count: item.reactions?.length || 0,
+            reactions: item.reactions || [],
+            created_at: item.created_at
+        }));
+    }, [data]);
+
+    const handleSendComment = async () => {
+        if (commentText.trim() && post_id) {
+            try {
+                await postComment({
+                    id: post_id,
+                    body: { comment: commentText }
+                }).unwrap();
+                setCommentText("");
+                refetch(); // Refresh comments list
+                onCommentAdded?.(); // Notify parent to increment count
+            } catch (error) {
+                console.error('Post comment error:', error);
+            }
         }
     };
 
-    const handleReaction = (commentId: number, reaction: 'like' | 'heart') => {
+    const handleReaction = async (commentId: number, reaction: 'like' | 'heart') => {
+        const previousReaction = commentReactions[commentId];
+        // Optimistic update
         setCommentReactions(prev => ({
             ...prev,
             [commentId]: prev[commentId] === reaction ? null : reaction
         }));
-    };
-
-    const toggleReaction = (commentId: number) => {
-        const currentReaction = commentReactions[commentId];
-        if (currentReaction) {
-            // Remove reaction if already reacted
-            setCommentReactions(prev => ({ ...prev, [commentId]: null }));
-        } else {
-            // Quick like
-            setCommentReactions(prev => ({ ...prev, [commentId]: 'like' }));
+        
+        try {
+            await reactComment({
+                id: commentId,
+                body: { reaction: reaction === 'heart' ? 'love' : 'like' }
+            }).unwrap();
+        } catch (error) {
+            // Revert on error
+            setCommentReactions(prev => ({ ...prev, [commentId]: previousReaction }));
+            console.error('React comment error:', error);
         }
     };
 
-    const renderCommentItem = ({ item }: { item: any }) => (
-        <View style={{
-            paddingVertical: heightPixel(15),
-            borderBottomWidth: 1,
-            borderBottomColor: colors.dark_gray,
-        }}>
-            <Row align="flex-start" gap={12}>
-                <Icon
-                    source={item.user?.image || images.dummy}
-                    size={45}
-                    rounded
-                    no_padding
-                    border={colors.white}
-                    resize="cover"
-                />
-                <View style={{ flex: 1 }}>
-                    <Row justify="space-between" align="center" style={{ marginBottom: heightPixel(5) }}>
-                        <Text weight="semibold" size={15}>
-                            {item.user?.first_name} {item.user?.last_name}
-                        </Text>
-                        <TouchableOpacity>
-                            <Icon source={images.dots} size={15} tint_color={colors.white} />
-                        </TouchableOpacity>
-                    </Row>
+    const toggleReaction = async (commentId: number) => {
+        const currentReaction = commentReactions[commentId];
+        if (currentReaction) {
+            // Remove reaction if already reacted
+            const previousReaction = currentReaction;
+            setCommentReactions(prev => ({ ...prev, [commentId]: null }));
+            try {
+                await reactComment({
+                    id: commentId,
+                    body: { reaction: previousReaction === 'heart' ? 'love' : 'like' }
+                }).unwrap();
+            } catch (error) {
+                setCommentReactions(prev => ({ ...prev, [commentId]: previousReaction }));
+            }
+        } else {
+            // Quick like
+            handleReaction(commentId, 'like');
+        }
+    };
 
-                    <Text size={13} color={colors.icon_gray} style={{ lineHeight: 20 }}>
-                        {item.comment}
-                    </Text>
+    const renderCommentItem = ({ item }: { item: any }) => {
+        const userPhoto = item.user?.photo || item.user?.image
+        const photoSource = userPhoto ? { uri: userPhoto } : images.dummy
+        
+        return (
+            <View style={{
+                paddingVertical: heightPixel(15),
+                borderBottomWidth: 1,
+                borderBottomColor: colors.dark_gray,
+            }}>
+                <Row align="flex-start" gap={12}>
+                    <Icon
+                        source={photoSource}
+                        size={45}
+                        rounded
+                        no_padding
+                        border={colors.white}
+                        resize="cover"
+                    />
+                    <View style={{ flex: 1 }}>
+                        <Row justify="space-between" align="center" style={{ marginBottom: heightPixel(5) }}>
+                            <Text weight="semibold" size={15}>
+                                {item.user?.first_name} {item.user?.last_name}
+                            </Text>
+                            <TouchableOpacity>
+                                <Icon source={images.dots} size={15} tint_color={colors.white} />
+                            </TouchableOpacity>
+                        </Row>
+
+                        <Text size={13} color={colors.icon_gray} style={{ lineHeight: 20 }}>
+                            {item.comment}
+                        </Text>
 
                     <Row align="center" gap={15} style={{ marginTop: heightPixel(8) }}>
                         {/* Reaction Button */}
@@ -182,7 +199,8 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                 </View>
             </Row>
         </View>
-    );
+        )
+    };
 
     return (
         <Modal
@@ -236,17 +254,27 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                         </View>
 
                         {/* List of comments - Scrollable */}
-                        <FlatList
-                            data={comments}
-                            renderItem={renderCommentItem}
-                            keyExtractor={(item) => item.id.toString()}
-                            contentContainerStyle={{
-                                paddingHorizontal: widthPixel(20),
-                                paddingBottom: heightPixel(100) // Extra padding for input area
-                            }}
-                            showsVerticalScrollIndicator={true}
-                            style={{ flex: 1 }}
-                        />
+                        {isLoading || isFetching ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(50) }}>
+                                <ActivityIndicator size="large" color={colors.primary} />
+                            </View>
+                        ) : comments.length === 0 ? (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(50) }}>
+                                <Text size={14} color={colors.icon_gray}>No comments yet</Text>
+                            </View>
+                        ) : (
+                            <FlatList
+                                data={comments}
+                                renderItem={renderCommentItem}
+                                keyExtractor={(item) => item.id.toString()}
+                                contentContainerStyle={{
+                                    paddingHorizontal: widthPixel(20),
+                                    paddingBottom: heightPixel(100) // Extra padding for input area
+                                }}
+                                showsVerticalScrollIndicator={true}
+                                style={{ flex: 1 }}
+                            />
+                        )}
 
                         {/* Comment Input - Fixed at Bottom */}
                         <View style={{
@@ -282,16 +310,22 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                 </View>
                                 <TouchableOpacity
                                     onPress={handleSendComment}
+                                    disabled={isPostingComment || !commentText.trim()}
                                     style={{
                                         width: 45,
                                         height: 45,
                                         borderRadius: 25,
                                         backgroundColor: colors.primary,
                                         justifyContent: 'center',
-                                        alignItems: 'center'
+                                        alignItems: 'center',
+                                        opacity: (isPostingComment || !commentText.trim()) ? 0.5 : 1
                                     }}
                                 >
-                                    <Icon source={images.send} size={20} tint_color={colors.white} />
+                                    {isPostingComment ? (
+                                        <ActivityIndicator color={colors.white} size="small" />
+                                    ) : (
+                                        <Icon source={images.send} size={20} tint_color={colors.white} />
+                                    )}
                                 </TouchableOpacity>
                             </Row>
                         </View>

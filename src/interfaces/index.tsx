@@ -242,13 +242,17 @@ export interface ITrackingCard extends IProgressBar {
 
 export interface INewsFeedCard {
     id?: string | number;
+    title?: string;
     content?: string;
     media?: { type: 'image' | 'video', source: any, thumbnail?: any }[];
+    post_media?: { id?: number, path?: string, media_url?: string, media_type?: 'image' | 'video' }[];
     poll?: {
         question: string;
-        options: { id: string | number, label: string, percentage: number, is_selected?: boolean }[];
+        options: { id: string | number, label: string, option?: string, percentage: number, is_selected?: boolean }[];
         total_votes?: number;
     };
+    poll_options?: any[];
+    is_poll?: boolean;
     measurements?: {
         height: string;
         weight: string;
@@ -258,7 +262,10 @@ export interface INewsFeedCard {
     reaction_count?: number;
     comment_count?: number;
     created_at?: string;
+    time_ago?: string;
     is_liked?: boolean;
+    is_reacted?: boolean;
+    reaction_type?: string;
 }
 
 export interface IChatCard {

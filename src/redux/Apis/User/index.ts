@@ -10,6 +10,7 @@ export const userApi = createApi({
     'Bookings',
     'Consultants',
     'Chats',
+    'Posts',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -75,6 +76,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Posts'],
     }),
     updateFeed: builder.mutation({
       query: ({ id, body }) => ({
@@ -95,6 +97,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Posts'],
     }),
     reactComment: builder.mutation({
       query: ({ id, body }) => ({
@@ -109,6 +112,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Posts'],
     }),
     deleteComment: builder.mutation({
       query: id => ({
@@ -135,6 +139,7 @@ export const userApi = createApi({
         method: 'GET',
         query,
       }),
+      providesTags: ['Posts'],
     }),
     getFeedById: builder.query({
       query: id => ({

@@ -11,13 +11,17 @@ import Input from "../../Input";
 import Row from "../../Row";
 
 import { navigate } from "../../../utils/navigation";
+import { useAppSelector } from "../../../hooks";
+import { selectUser } from "../../../redux/Slices/AuthSlice";
 
 const CreatePostCard: FC = () => {
+    const user = useAppSelector(selectUser)
+
     return (
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
             <Row gap={12} align="center">
                 <View style={{ flex: 0.15 }}>
-                    <Icon source={images.dummy} size={50} />
+                    <Icon source={user?.photo ? { uri: user.photo } : user?.image || images.dummy} size={50} rounded no_padding border={colors.white} resize="cover" />
                 </View>
                 <View style={{ flex: 0.85 }}>
                     <TouchableOpacity onPress={() => navigate('CreatePost')} activeOpacity={0.8} style={{ width: '100%' }}>

@@ -1,33 +1,92 @@
-import { FlatList, View } from "react-native"
+import { FlatList, View, ActivityIndicator, RefreshControl } from "react-native"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
+import React, { useState } from "react"
 import CreatePostCard from "../../components/Cards/CreatePostCard"
 import NewsFeedCard from "../../components/Cards/NewsFeedCard"
 import Wrapper from "../../components/Wrapper"
-import { NEWSFEED } from "../../utils/data"
 import { heightPixel } from "../../utils/helper"
+import { useGetFeedsQuery } from "../../redux/Apis/User"
+import colors from "../../utils/colors"
+import Text from "../../components/Text"
 
 const NewsFeed = () => {
     const navigation = useNavigation()
+    const [page, setPage] = useState(1)
 
-    useFocusEffect(() => {
-        // Hide bottom tab bar when screen is focused
-        const parent = navigation.getParent()
-        if (parent) {
-            parent.setOptions({
-                tabBarStyle: { display: 'none' }
-            })
+    const { data, isLoading, isFetching, refetch } = useGetFeedsQuery({ page })
+
+    useFocusEffect(
+        React.useCallback(() => {
+            // Hide bottom tab bar when screen is focused
+            const parent = navigation.getParent()
+            if (parent) {
+                parent.setOptions({
+                    tabBarStyle: { display: 'none' }
+                })
+            }
+
+            // Refetch posts when screen is focused (only once)
+            refetch()
+        }, [refetch])
+    )
+
+    const handleRefresh = () => {
+        setPage(1)
+        refetch()
+    }
+
+    const handleLoadMore = () => {
+        if (data?.meta?.current_page < data?.meta?.last_page && !isFetching) {
+            setPage(prevPage => prevPage + 1)
         }
-    })
+    }
+
+    const renderFooter = () => {
+        if (!isFetching) return null
+        return (
+            <View style={{ paddingVertical: heightPixel(20) }}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        )
+    }
+
+    const renderEmpty = () => {
+        if (isLoading) {
+            return (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            )
+        }
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                <Text size={16} color={colors.icon_gray}>No posts available</Text>
+            </View>
+        )
+    }
 
     return (
         <Wrapper scrollable>
             <FlatList
-                data={NEWSFEED}
+                data={data?.data || []}
                 renderItem={({ item }) => <NewsFeedCard {...item} />}
+                keyExtractor={(item, index) => `post-${item.id}-${index}`}
                 ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
                 showsVerticalScrollIndicator={false}
                 ListHeaderComponent={() => <CreatePostCard />}
                 ListHeaderComponentStyle={{ marginBottom: heightPixel(10) }}
+                ListFooterComponent={renderFooter}
+                ListEmptyComponent={renderEmpty}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isLoading}
+                        onRefresh={handleRefresh}
+                        tintColor={colors.primary}
+                        colors={[colors.primary]}
+                    />
+                }
+                onEndReached={handleLoadMore}
+                onEndReachedThreshold={0.5}
             />
         </Wrapper>
     )
