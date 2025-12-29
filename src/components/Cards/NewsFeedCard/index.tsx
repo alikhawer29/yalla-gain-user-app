@@ -1,4 +1,4 @@
-import { FC, memo, useState, useRef } from "react";
+import { FC, memo, useState, useRef, useEffect } from "react";
 import { View, TouchableOpacity, ImageBackground } from "react-native";
 import images from "../../../assets/images";
 import { INewsFeedCard } from "../../../interfaces";
@@ -16,19 +16,90 @@ import ReactionPicker from "../../ReactionPicker";
 import ReportConfirmModal from "../../ReportConfirmModal";
 import ReportReasonModal from "../../ReportReasonModal";
 import ReportSuccessModal from "../../ReportSuccessModal";
+import MediaViewerModal from "../../MediaViewerModal";
+import { useReactFeedMutation, useReportFeedMutation } from "../../../redux/Apis/User";
+import { useAppSelector } from "../../../hooks";
+import { selectUser } from "../../../redux/Slices/AuthSlice";
+import Video from 'react-native-video';
 
-const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurements, reaction_count = 0, comment_count = 0, user, created_at, is_liked }) => {
+
+const NewsFeedCard: FC<INewsFeedCard> = ({
+    id,
+    title,
+    content,
+    media,
+    post_media,
+    poll,
+    poll_options,
+    is_poll,
+    measurements,
+    reaction_count = 0,
+    comment_count = 0,
+    user,
+    created_at,
+    time_ago,
+    is_liked,
+    is_reacted,
+    reaction_type
+}) => {
+    const currentUser = useAppSelector(selectUser);
+    const [reactFeed] = useReactFeedMutation();
+    const [reportFeed] = useReportFeedMutation();
+
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showCommentsModal, setShowCommentsModal] = useState(false);
     const [showReactionPicker, setShowReactionPicker] = useState(false);
-    const [userReaction, setUserReaction] = useState<'like' | 'heart' | null>(is_liked ? 'like' : null);
+    // Initialize user reaction from API response
+    const getInitialReaction = () => {
+        if (is_reacted && reaction_type) {
+            return reaction_type === 'love' ? 'heart' : 'like'
+        }
+        return is_liked ? 'like' : null
+    }
+
+    const [userReaction, setUserReaction] = useState<'like' | 'heart' | null>(getInitialReaction());
     const [likeButtonPosition, setLikeButtonPosition] = useState({ x: 0, y: 0 });
     const likeButtonRef = useRef<View>(null);
+
+    // Local counts for optimistic updates
+    const [localReactionCount, setLocalReactionCount] = useState(reaction_count);
+    const [localCommentCount, setLocalCommentCount] = useState(comment_count);
 
     // Report modals state
     const [showReportConfirm, setShowReportConfirm] = useState(false);
     const [showReportReason, setShowReportReason] = useState(false);
     const [showReportSuccess, setShowReportSuccess] = useState(false);
+
+    // Media viewer state
+    const [showMediaViewer, setShowMediaViewer] = useState(false);
+    const [selectedMedia, setSelectedMedia] = useState({ url: '', isVideo: false });
+
+    // Check if this is user's own post
+    const isOwnPost = currentUser?.id === user?.id;
+
+    const handleReaction = async (reaction: 'like' | 'heart') => {
+        const previousReaction = userReaction;
+        const previousCount = localReactionCount;
+
+        // Optimistic update
+        setUserReaction(reaction);
+        if (!previousReaction) {
+            // Adding new reaction
+            setLocalReactionCount(prev => prev + 1);
+        }
+
+        try {
+            await reactFeed({
+                id,
+                body: { reaction: reaction === 'heart' ? 'love' : 'like' }
+            }).unwrap();
+        } catch (error) {
+            // Revert on error
+            setUserReaction(previousReaction);
+            setLocalReactionCount(previousCount);
+            console.error('React error:', error);
+        }
+    };
 
     const handleReportClick = () => {
         setShowReportConfirm(true);
@@ -39,60 +110,144 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
         setShowReportReason(true);
     };
 
-    const handleReportSubmit = (reason: string) => {
-        console.log("Report reason:", reason);
-        setShowReportReason(false);
-        setShowReportSuccess(true);
+    const handleReportSubmit = async (reason: string) => {
+        try {
+            await reportFeed({
+                id,
+                body: { reason }
+            }).unwrap();
+
+            setShowReportReason(false);
+            setShowReportSuccess(true);
+        } catch (error: any) {
+            console.error('Report error:', error);
+            setShowReportReason(false);
+        }
     };
 
     const handleReportSuccessClose = () => {
         setShowReportSuccess(false);
     };
 
-    const renderMedia = () => {
-        if (!media || media.length === 0) return null;
+    const handleMediaPress = (mediaUrl: string, isVideo: boolean) => {
+        console.log('Media pressed:', mediaUrl, 'isVideo:', isVideo);
+        setSelectedMedia({ url: mediaUrl, isVideo });
+        setShowMediaViewer(true);
+    };
 
-        if (media.length === 1) {
-            const item = media[0];
+    const isVideoFile = (url: string) => {
+        if (!url) return false;
+        const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'];
+        const lowerUrl = url.toLowerCase();
+        return videoExtensions.some(ext => lowerUrl.includes(ext));
+    };
+
+    const renderMedia = () => {
+        // Use post_media from API or fallback to media
+        const mediaItems = post_media && post_media.length > 0 ? post_media : media
+
+        if (!mediaItems || mediaItems.length === 0) return null;
+
+        if (mediaItems.length === 1) {
+            const item = mediaItems[0];
+
+            // Get the media URL - handle different API response formats
+            let sourceUri: string | undefined;
+            if ('path' in item) {
+                // API format: { path: "url" }
+                sourceUri = item.path;
+            } else if ('media_url' in item) {
+                // Alternative format: { media_url: "url" }
+                sourceUri = item.media_url;
+            } else if ('source' in item) {
+                // Local format: { source: { uri: "url" } } or { source: "url" }
+                sourceUri = typeof item.source === 'string' ? item.source : item.source?.uri;
+            }
+
+            // Detect if it's a video from file extension
+            const isVideo = isVideoFile(sourceUri || '');
+
             return (
-                <View style={{ height: heightPixel(250), borderRadius: heightPixel(10), overflow: "hidden", marginTop: heightPixel(10) }}>
-                    <Image source={item.source} resize="cover" style={{ width: '100%', height: '100%' }} />
-                    {item.type === 'video' && (
+                <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => handleMediaPress(sourceUri || '', isVideo)}
+                    style={{ height: heightPixel(250), borderRadius: heightPixel(10), overflow: "hidden", marginTop: heightPixel(10) }}
+                >
+                    <Image source={{ uri: sourceUri }} resize="cover" style={{ width: '100%', height: '100%' }} />
+                    {isVideo && (
                         <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-                            <Icon source={images.play} size={40} color={colors.white} />
+                            <Video
+                                source={{ uri: sourceUri }}
+                                style={{ width: '100%', height: '100%' }}
+                                controls
+                                paused={true}
+                            />
                         </View>
                     )}
-                </View>
+                </TouchableOpacity>
             );
         }
 
         return (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: heightPixel(10) }}>
-                {media.map((item, index) => (
-                    <View key={index} style={{
-                        width: media.length === 2 ? '48%' : '31%',
-                        height: heightPixel(150),
-                        borderRadius: heightPixel(8),
-                        overflow: 'hidden'
-                    }}>
-                        <Image source={item.source} resize="cover" style={{ width: '100%', height: '100%' }} />
-                        {item.type === 'video' && (
-                            <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-                                <Icon source={images.play} size={30} color={colors.white} />
-                            </View>
-                        )}
-                    </View>
-                ))}
+                {mediaItems.map((item, index) => {
+                    // Get the media URL - handle different API response formats
+                    let sourceUri: string | undefined;
+                    if ('path' in item) {
+                        // API format: { path: "url" }
+                        sourceUri = item.path;
+                    } else if ('media_url' in item) {
+                        // Alternative format: { media_url: "url" }
+                        sourceUri = item.media_url;
+                    } else if ('source' in item) {
+                        // Local format: { source: { uri: "url" } } or { source: "url" }
+                        sourceUri = typeof item.source === 'string' ? item.source : item.source?.uri;
+                    }
+
+                    // Detect if it's a video from file extension
+                    const isVideo = isVideoFile(sourceUri || '');
+
+                    return (
+                        <TouchableOpacity
+                            key={index}
+                            activeOpacity={0.9}
+                            onPress={() => handleMediaPress(sourceUri || '', isVideo)}
+                            style={{
+                                width: mediaItems.length === 2 ? '48%' : '31%',
+                                height: heightPixel(150),
+                                borderRadius: heightPixel(8),
+                                overflow: 'hidden'
+                            }}
+                        >
+                            <Image source={{ uri: sourceUri }} resize="cover" style={{ width: '100%', height: '100%' }} />
+                            {isVideo && (
+                                <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+                                    <Video
+                                        source={{ uri: sourceUri }}
+                                        style={{ width: '100%', height: '100%' }}
+                                        controls
+                                        paused={true}
+                                    />                                </View>
+                            )}
+                        </TouchableOpacity>
+                    )
+                })}
             </View>
         );
     };
 
     const renderPoll = () => {
-        if (!poll) return null;
+        // Check if it's a poll from API
+        if (!is_poll && !poll) return null;
+
+        const pollData = poll || { question: title, options: poll_options || [] }
+
+        if (!pollData.options || pollData.options.length === 0) return null;
+
         return (
             <View style={{ marginTop: heightPixel(10), gap: heightPixel(10) }}>
-                <Text weight="semibold">{poll.question}</Text>
-                {poll.options.map((option: any) => (
+                <Text weight="semibold">{pollData.question || title}</Text>
+                {pollData.options.map((option: any) => (
                     <View key={option.id} style={{ marginBottom: heightPixel(5) }}>
                         <View style={{
                             backgroundColor: colors.gray,
@@ -102,14 +257,14 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                             justifyContent: 'center'
                         }}>
                             <View style={{
-                                width: `${option.percentage}%`,
+                                width: `${option.percentage || 0}%`,
                                 backgroundColor: option.is_selected ? colors.primary : colors.dark_gray,
                                 height: '100%',
                                 position: 'absolute'
                             }} />
                             <Row justify="space-between" style={{ paddingHorizontal: widthPixel(10) }}>
-                                <Text size={12} weight="regular">{option.label}</Text>
-                                <Text size={12} weight="regular">{option.percentage}%</Text>
+                                <Text size={12} weight="regular">{option.label || option.option}</Text>
+                                <Text size={12} weight="regular">{option.percentage || 0}%</Text>
                             </Row>
                         </View>
                         {option.is_selected && (
@@ -158,7 +313,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
             <Row align="center" gap={12}>
                 <Row style={{ flex: 0.9 }} align="center" gap={12}>
                     <Icon
-                        source={user?.image || images.dummy}
+                        source={user?.photo ? { uri: user.photo } : user?.image || images.dummy}
                         size={45}
                         rounded
                         no_padding
@@ -167,13 +322,15 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                     />
                     <View>
                         <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
-                        <Text size={12} color={colors.icon_gray}>{created_at || "2 days ago"}</Text>
+                        <Text size={12} color={colors.icon_gray}>{time_ago || created_at || "2 days ago"}</Text>
                     </View>
                 </Row>
-                <Menu dropdown_items={[{ label: "Report", onPress: handleReportClick }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
+                {!isOwnPost && (
+                    <Menu dropdown_items={[{ label: "Report", onPress: handleReportClick }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
+                )}
             </Row>
             <View style={{ marginVertical: heightPixel(15) }}>
-                {content && <Text style={{ marginBottom: heightPixel(10) }}>{content}</Text>}
+                {(title || content) && <Text style={{ marginBottom: heightPixel(10) }}>{title || content}</Text>}
                 {renderMedia()}
                 {renderPoll()}
                 {renderMeasurements()}
@@ -181,27 +338,44 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
             <Row justify="space-between">
                 <TouchableOpacity onPress={() => setShowReactionsModal(true)}>
                     <Row align="center" gap={4}>
-                        <Icon source={images.heart} size={15} />
-                        <Text size={12}>{reaction_count}</Text>
+                        {/* Show user's reaction icon if they reacted, otherwise show heart */}
+                        <Icon
+                            source={userReaction === 'like' ? images.post_like : images.heart}
+                            size={15}
+                            tint_color={userReaction === 'like' ? colors.primary : userReaction === 'heart' ? colors.danger : colors.icon_gray}
+                        />
+                        <Text size={12}>{localReactionCount}</Text>
                     </Row>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => setShowCommentsModal(true)}>
                     <Row align="center" gap={4}>
                         <Icon source={images.comment} size={15} />
-                        <Text size={12}>{comment_count}</Text>
+                        <Text size={12}>{localCommentCount}</Text>
                     </Row>
                 </TouchableOpacity>
             </Row>
             <Row justify="space-between" style={{ borderTopWidth: 1, borderColor: colors.dark_gray, paddingTop: heightPixel(10), marginTop: heightPixel(10) }}>
                 <View ref={likeButtonRef}>
                     <TouchableOpacity
-                        onPress={() => {
+                        onPress={async () => {
                             if (userReaction) {
                                 // Remove reaction if already reacted
+                                const previousReaction = userReaction;
+                                const previousCount = localReactionCount;
                                 setUserReaction(null);
+                                setLocalReactionCount(prev => Math.max(0, prev - 1));
+                                try {
+                                    await reactFeed({
+                                        id,
+                                        body: { reaction: previousReaction === 'heart' ? 'love' : 'like' }
+                                    }).unwrap();
+                                } catch (error) {
+                                    setUserReaction(previousReaction);
+                                    setLocalReactionCount(previousCount);
+                                }
                             } else {
                                 // Quick like
-                                setUserReaction('like');
+                                handleReaction('like');
                             }
                         }}
                         onLongPress={() => {
@@ -257,11 +431,15 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                 onClose={() => setShowCommentsModal(false)}
                 post_id={id}
                 comment_count={comment_count}
+                onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
             />
             <ReactionPicker
                 visible={showReactionPicker}
                 onClose={() => setShowReactionPicker(false)}
-                onSelectReaction={(reaction) => setUserReaction(reaction)}
+                onSelectReaction={(reaction) => {
+                    handleReaction(reaction);
+                    setShowReactionPicker(false);
+                }}
                 position={likeButtonPosition}
             />
 
@@ -280,6 +458,14 @@ const NewsFeedCard: FC<INewsFeedCard> = ({ id, content, media, poll, measurement
                 visible={showReportSuccess}
                 onClose={handleReportSuccessClose}
                 userName={`${user?.first_name || 'User'} ${user?.last_name || 'Abc'}`}
+            />
+
+            {/* Media Viewer Modal */}
+            <MediaViewerModal
+                visible={showMediaViewer}
+                mediaUrl={selectedMedia.url}
+                isVideo={selectedMedia.isVideo}
+                onClose={() => setShowMediaViewer(false)}
             />
         </CardWrapper>
     )

@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, TextInput, ScrollView, TouchableOpacity } from "react-native";
+import { View, TextInput, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import useCreatePostController from "./useCreatePostController";
@@ -22,7 +22,7 @@ const CreatePost = () => {
     const { initialTab } = route.params || {};
 
     const { values, functions } = useCreatePostController(initialTab);
-    const { content, media, pollQuestion, pollOptions, activeTab, user_image } = values;
+    const { content, media, pollQuestion, pollOptions, activeTab, user_image, isLoading } = values;
     const { setContent, setPollQuestion, handlePickMedia, removeMedia, addPollOption, removePollOption, updatePollOption, handlePost, goBack, setActiveTab } = functions;
 
     useFocusEffect(() => {
@@ -167,8 +167,16 @@ const CreatePost = () => {
                 </View>
 
                 {/* Post Button */}
-                <TouchableOpacity style={styles.postButton} onPress={handlePost}>
-                    <Text style={styles.postButtonText}>Post</Text>
+                <TouchableOpacity
+                    style={[styles.postButton, isLoading && { opacity: 0.6 }]}
+                    onPress={handlePost}
+                    disabled={isLoading}
+                >
+                    {isLoading ? (
+                        <ActivityIndicator color={colors.white} />
+                    ) : (
+                        <Text style={styles.postButtonText}>Post</Text>
+                    )}
                 </TouchableOpacity>
 
             </View>

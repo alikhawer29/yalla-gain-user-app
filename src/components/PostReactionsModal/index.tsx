@@ -1,11 +1,12 @@
 import { FC, useState, useMemo } from "react";
-import { Modal, View, FlatList, TouchableOpacity, ScrollView } from "react-native";
+import { Modal, View, FlatList, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
 import Text from "../Text";
 import images from "../../assets/images";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel } from "../../utils/helper";
+import { useGetReactsQuery } from "../../redux/Apis/User";
 
 interface IPostReactionsModal {
     visible: boolean;
@@ -19,81 +20,86 @@ type ReactionType = 'all' | 'like' | 'heart';
 const PostReactionsModal: FC<IPostReactionsModal> = ({ visible, onClose, post_id, reaction_count }) => {
     const [selectedTab, setSelectedTab] = useState<ReactionType>('all');
 
-    // Mock data - replace with actual API call
-    const reactions = [
-        { id: 1, user: { first_name: "Marvel", last_name: "Edward", image: images.dummy }, reaction_type: 'like' as const },
-        { id: 2, user: { first_name: "Madvin", last_name: "", image: images.dummy }, reaction_type: 'heart' as const },
-        { id: 3, user: { first_name: "Marvel", last_name: "Edward", image: images.dummy }, reaction_type: 'like' as const },
-        { id: 4, user: { first_name: "Juliana", last_name: "David", image: images.dummy }, reaction_type: 'heart' as const },
-        { id: 5, user: { first_name: "Roy", last_name: "Rose", image: images.dummy }, reaction_type: 'like' as const },
-        { id: 6, user: { first_name: "Marvel", last_name: "Edward", image: images.dummy }, reaction_type: 'heart' as const },
-        { id: 7, user: { first_name: "Colin", last_name: "Shaien", image: images.dummy }, reaction_type: 'like' as const },
-        { id: 8, user: { first_name: "Juliana", last_name: "David", image: images.dummy }, reaction_type: 'heart' as const },
-        { id: 9, user: { first_name: "Roy", last_name: "Rose", image: images.dummy }, reaction_type: 'like' as const },
-        { id: 10, user: { first_name: "Marvel", last_name: "Edward", image: images.dummy }, reaction_type: 'heart' as const },
-        { id: 11, user: { first_name: "Colin", last_name: "Shaien", image: images.dummy }, reaction_type: 'like' as const },
-    ];
+    // Fetch reactions from API
+    const { data, isLoading, isFetching } = useGetReactsQuery(post_id, {
+        skip: !visible || !post_id, // Skip query if modal is not visible or no post_id
+    });
+
+    // Map API response to match our component structure
+    const reactions = useMemo(() => {
+        if (!data?.data) return [];
+        return data.data.map((item: any) => ({
+            id: item.id,
+            user: item.user,
+            reaction_type: item.reaction === 'love' ? 'heart' : 'like' as 'like' | 'heart'
+        }));
+    }, [data]);
 
     // Filter reactions based on selected tab
     const filteredReactions = useMemo(() => {
         if (selectedTab === 'all') return reactions;
-        return reactions.filter(r => r.reaction_type === selectedTab);
-    }, [selectedTab]);
+        return reactions.filter((r: any) => r.reaction_type === selectedTab);
+    }, [selectedTab, reactions]);
 
     // Count reactions by type
     const reactionCounts = useMemo(() => {
         const counts = { all: reactions.length, like: 0, heart: 0 };
-        reactions.forEach(r => {
+        reactions.forEach((r: any) => {
             if (r.reaction_type === 'like') counts.like++;
             if (r.reaction_type === 'heart') counts.heart++;
         });
         return counts;
-    }, []);
+    }, [reactions]);
 
-    const renderReactionItem = ({ item }: { item: any }) => (
-        <View style={{
-            paddingVertical: heightPixel(15),
-            borderBottomWidth: 1,
-            borderBottomColor: colors.dark_gray,
-        }}>
-            <Row align="center" gap={15}>
-                {/* User Avatar with Reaction Badge */}
-                <View style={{ position: 'relative' }}>
-                    <Icon
-                        source={item.user?.image || images.dummy}
-                        size={45}
-                        rounded
-                        no_padding
-                        border={colors.white}
-                        resize="cover"
-                    />
-                    {/* Reaction Badge - Bottom Right Corner */}
-                    <View style={{
-                        position: 'absolute',
-                        bottom: -2,
-                        right: -2,
-                        backgroundColor: colors.light_primary,
-                        borderRadius: 12,
-                        width: 24,
-                        height: 24,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderWidth: 2,
-                        borderColor: colors.light_primary,
-                    }}>
+    const renderReactionItem = ({ item }: { item: any }) => {
+        const userPhoto = item.user?.photo || item.user?.image
+        const photoSource = userPhoto ? { uri: userPhoto } : images.dummy
+
+        return (
+            <View style={{
+                paddingVertical: heightPixel(15),
+                borderBottomWidth: 1,
+                borderBottomColor: colors.dark_gray,
+            }}>
+                <Row align="center" gap={15}>
+                    {/* User Avatar with Reaction Badge */}
+                    <View style={{ position: 'relative' }}>
                         <Icon
-                            source={item.reaction_type === 'heart' ? images.heart : images.post_like}
-                            size={16}
-                            tint_color={item.reaction_type === 'heart' ? colors.danger : colors.primary}
+                            source={photoSource}
+                            size={45}
+                            rounded
+                            no_padding
+                            border={colors.white}
+                            resize="cover"
                         />
+                        {/* Reaction Badge - Bottom Right Corner */}
+                        <View style={{
+                            position: 'absolute',
+                            bottom: -2,
+                            right: -2,
+                            backgroundColor: colors.light_primary,
+                            borderRadius: 12,
+                            width: 24,
+                            height: 24,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderWidth: 2,
+                            borderColor: colors.light_primary,
+                        }}>
+                            <Icon
+                                source={item.reaction_type === 'heart' ? images.heart : images.post_like}
+                                size={16}
+                                tint_color={item.reaction_type === 'heart' ? colors.danger : colors.primary}
+                            />
+                        </View>
                     </View>
-                </View>
-                <Text weight="semibold" size={15}>
-                    {item.user?.first_name} {item.user?.last_name}
-                </Text>
-            </Row>
-        </View>
-    );
+                    <Text weight="semibold" size={15}>
+                        {item.user?.first_name} {item.user?.last_name}
+                    </Text>
+                </Row>
+            </View>
+        )
+    };
 
     return (
         <Modal
@@ -212,17 +218,27 @@ const PostReactionsModal: FC<IPostReactionsModal> = ({ visible, onClose, post_id
                     </View>
 
                     {/* List of people who reacted */}
-                    <FlatList
-                        data={filteredReactions}
-                        renderItem={renderReactionItem}
-                        keyExtractor={(item) => item.id.toString()}
-                        contentContainerStyle={{
-                            paddingHorizontal: widthPixel(20),
-                            paddingBottom: heightPixel(20),
-                        }}
-                        showsVerticalScrollIndicator={true}
-                        style={{ flex: 1 }}
-                    />
+                    {isLoading || isFetching ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(50) }}>
+                            <ActivityIndicator size="large" color={colors.primary} />
+                        </View>
+                    ) : filteredReactions.length === 0 ? (
+                        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(50) }}>
+                            <Text size={14} color={colors.icon_gray}>No reactions yet</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={filteredReactions}
+                            renderItem={renderReactionItem}
+                            keyExtractor={(item) => item.id.toString()}
+                            contentContainerStyle={{
+                                paddingHorizontal: widthPixel(20),
+                                paddingBottom: heightPixel(20),
+                            }}
+                            showsVerticalScrollIndicator={true}
+                            style={{ flex: 1 }}
+                        />
+                    )}
                 </TouchableOpacity>
             </TouchableOpacity>
         </Modal>
