@@ -104,6 +104,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   sideSpace: {
+    // width: widthPixel(40),
     width: widthPixel(40),
     justifyContent: "center",
     alignItems: "center",
