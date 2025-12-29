@@ -58,6 +58,10 @@ const ROUTES = {
   WALLET: 'Wallet',
   TRANSFER: 'Transfer',
   CREATE_POST: 'CreatePost',
+  EDIT_POST: 'EditPost',
+  MY_POSTS: 'MyPosts',
+  USER_PROFILE: 'UserProfile',
+  BLOCKED_USERS: 'BlockedUsers',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -306,6 +310,38 @@ const ROUTES_OPTIONS = [
     logo: false,
     title: 'Create Post',
     bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.MY_POSTS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'My Posts',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.EDIT_POST,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Edit Post',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.USER_PROFILE,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'User Profile',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.BLOCKED_USERS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Block Users',
+    bottom_tab: true,
   },
 ] as const;
 

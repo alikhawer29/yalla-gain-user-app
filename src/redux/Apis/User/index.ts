@@ -84,12 +84,14 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Posts'],
     }),
     deleteFeed: builder.mutation({
       query: id => ({
         url: `post/${id}/delete`,
         method: 'POST',
       }),
+      invalidatesTags: ['Posts'],
     }),
     reactFeed: builder.mutation({
       query: ({ id, body }) => ({
@@ -149,10 +151,12 @@ export const userApi = createApi({
       }),
     }),
     getMyFeeds: builder.query({
-      query: () => ({
+      query: (query) => ({
         url: `posts/my/get`,
         method: 'GET',
+        params: query,
       }),
+      providesTags: ['Posts'],
     }),
     getComments: builder.query({
       query: id => ({
@@ -302,6 +306,13 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Chats'],
     }),
+    blockUser: builder.mutation({
+      query: (user_id: number) => ({
+        url: 'user/block',
+        method: 'POST',
+        body: { user_id },
+      }),
+    }),
     // Chat APIs
     getChatList: builder.query({
       query: () => ({
@@ -437,6 +448,7 @@ export const {
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
   useCreateChatMutation,
+  useBlockUserMutation,
   useRateBookingMutation,
   useReportBookingMutation,
   useGiveTipMutation,

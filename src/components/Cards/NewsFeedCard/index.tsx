@@ -17,9 +17,12 @@ import ReportConfirmModal from "../../ReportConfirmModal";
 import ReportReasonModal from "../../ReportReasonModal";
 import ReportSuccessModal from "../../ReportSuccessModal";
 import MediaViewerModal from "../../MediaViewerModal";
-import { useReactFeedMutation, useReportFeedMutation, useVotePollMutation } from "../../../redux/Apis/User";
+import { useReactFeedMutation, useReportFeedMutation, useVotePollMutation, useDeleteFeedMutation } from "../../../redux/Apis/User";
 import { useAppSelector } from "../../../hooks";
 import { selectUser } from "../../../redux/Slices/AuthSlice";
+import { useModal } from "../../../contexts/ModalContext";
+import { navigate } from "../../../utils/navigation";
+import { ROUTES } from "../../../utils/routes";
 import Video from 'react-native-video';
 
 
@@ -40,12 +43,15 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     time_ago,
     is_liked,
     is_reacted,
-    reaction_type
+    reaction_type,
+    isMyPost = false
 }) => {
     const currentUser = useAppSelector(selectUser);
+    const { showOkModal, showYesNoModal } = useModal();
     const [reactFeed] = useReactFeedMutation();
     const [reportFeed] = useReportFeedMutation();
     const [votePoll] = useVotePollMutation();
+    const [deleteFeed] = useDeleteFeedMutation();
 
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -78,6 +84,13 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     // Poll voting state - local optimistic update
     const [localPollOptions, setLocalPollOptions] = useState(poll_options);
     const [hasVoted, setHasVoted] = useState(false);
+
+    // Sync localPollOptions with poll_options when props update (after refetch)
+    useEffect(() => {
+        if (poll_options) {
+            setLocalPollOptions(poll_options);
+        }
+    }, [poll_options]);
 
     // Check if this is user's own post
     const isOwnPost = currentUser?.id === user?.id;
@@ -166,10 +179,62 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         setShowReportSuccess(false);
     };
 
+    const handleEditPost = () => {
+        navigate(ROUTES.EDIT_POST, { 
+            postId: id,
+            postData: {
+                id,
+                title,
+                content,
+                media,
+                post_media,
+                poll_options,
+                is_poll
+            }
+        });
+    };
+
+    const handleDeletePost = () => {
+        showYesNoModal(
+            {
+                type: "error",
+                title: "Remove Post",
+                message: "Are You Sure You Wish To Remove This Post?"
+            },
+            async () => {
+                try {
+                    await deleteFeed(id).unwrap();
+                    showOkModal({
+                        type: "success",
+                        title: "Successfully",
+                        message: "Post Has Been Removed Successfully"
+                    });
+                } catch (error: any) {
+                    console.error('Delete post error:', error);
+                    showOkModal({
+                        type: "error",
+                        title: "Error",
+                        message: error?.data?.message || "Failed to delete post"
+                    });
+                }
+            }
+        );
+    };
+
     const handleMediaPress = (mediaUrl: string, isVideo: boolean) => {
         console.log('Media pressed:', mediaUrl, 'isVideo:', isVideo);
         setSelectedMedia({ url: mediaUrl, isVideo });
         setShowMediaViewer(true);
+    };
+
+    const handleUserProfileClick = () => {
+        if (isMyPost || isOwnPost) {
+            // Navigate to My Posts
+            navigate(ROUTES.MY_POSTS);
+        } else if (user?.id) {
+            // Navigate to User Profile
+            navigate(ROUTES.USER_PROFILE, { userId: user.id });
+        }
     };
 
     const isVideoFile = (url: string) => {
@@ -400,21 +465,35 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     return (
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
             <Row align="center" gap={12}>
-                <Row style={{ flex: 0.9 }} align="center" gap={12}>
-                    <Icon
-                        source={user?.photo ? { uri: user.photo } : user?.image || images.dummy}
-                        size={45}
-                        rounded
-                        no_padding
-                        border={colors.white}
-                        resize="cover"
+                <TouchableOpacity 
+                    style={{ flex: 0.9 }} 
+                    onPress={handleUserProfileClick}
+                    activeOpacity={0.7}
+                >
+                    <Row align="center" gap={12}>
+                        <Icon
+                            source={user?.photo ? { uri: user.photo } : user?.image || images.dummy}
+                            size={45}
+                            rounded
+                            no_padding
+                            border={colors.white}
+                            resize="cover"
+                        />
+                        <View>
+                            <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
+                            <Text size={12} color={colors.icon_gray}>{time_ago || created_at || "2 days ago"}</Text>
+                        </View>
+                    </Row>
+                </TouchableOpacity>
+                {isMyPost || isOwnPost ? (
+                    <Menu 
+                        dropdown_items={[
+                            { label: "Edit", onPress: handleEditPost },
+                            { label: "Remove", onPress: handleDeletePost }
+                        ]} 
+                        style={{ flex: 0.1, alignItems: "flex-end" }} 
                     />
-                    <View>
-                        <Text weight="semibold">{user?.first_name} {user?.last_name}</Text>
-                        <Text size={12} color={colors.icon_gray}>{time_ago || created_at || "2 days ago"}</Text>
-                    </View>
-                </Row>
-                {!isOwnPost && (
+                ) : (
                     <Menu dropdown_items={[{ label: "Report", onPress: handleReportClick }]} style={{ flex: 0.1, alignItems: "flex-end" }} />
                 )}
             </Row>
