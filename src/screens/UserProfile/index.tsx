@@ -114,11 +114,18 @@ const UserProfile = () => {
             async () => {
                 try {
                     await blockUser(userId).unwrap();
-                    showOkModal({
-                        type: "success",
-                        title: "Successfully",
-                        message: "User Has Been Blocked Successfully"
-                    });
+                    // Show success message and navigate to NewsFeed after user closes the modal
+                    showOkModal(
+                        {
+                            type: "success",
+                            title: "Successfully",
+                            message: "User Has Been Blocked Successfully"
+                        },
+                        () => {
+                            // Navigate to NewsFeed after user closes the success modal
+                            navigate(ROUTES.NEWSFEED);
+                        }
+                    );
                 } catch (error: any) {
                     console.error('Block user error:', error);
                     showOkModal({

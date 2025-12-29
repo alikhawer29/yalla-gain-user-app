@@ -312,7 +312,7 @@ export const userApi = createApi({
         url: `block/${user_id}`,
         method: 'POST',
       }),
-      invalidatesTags: ['BlockedUsers'],
+      invalidatesTags: ['BlockedUsers', 'Posts'],
     }),
     getBlockedUsers: builder.query({
       query: () => ({
