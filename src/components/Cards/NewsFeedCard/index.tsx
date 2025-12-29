@@ -131,14 +131,21 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleVotePoll = async (optionId: string | number) => {
-        // Prevent voting twice
-        if (hasVoted) return;
-
         const previousOptions = localPollOptions;
+        const previousHasVoted = hasVoted;
 
         try {
-            // Optimistic update
+            // Optimistic update - mark the selected option
             setHasVoted(true);
+
+            // Update local poll options to show the new selection
+            if (localPollOptions && localPollOptions.length > 0) {
+                const updatedOptions = localPollOptions.map((opt: any) => ({
+                    ...opt,
+                    is_selected: opt.id === optionId
+                }));
+                setLocalPollOptions(updatedOptions);
+            }
 
             // Call API
             await votePoll({
@@ -146,11 +153,11 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                 option_id: optionId
             }).unwrap();
 
-            console.log('Poll vote successful');
+            console.log('Poll vote successful for option:', optionId);
         } catch (error: any) {
             console.error('Vote poll error:', error);
             // Revert on error
-            setHasVoted(false);
+            setHasVoted(previousHasVoted);
             setLocalPollOptions(previousOptions);
         }
     };
@@ -294,9 +301,8 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                         <TouchableOpacity
                             key={option.id}
                             style={{ marginBottom: heightPixel(10) }}
-                            onPress={() => !userHasVoted && handleVotePoll(option.id)}
-                            disabled={userHasVoted}
-                            activeOpacity={userHasVoted ? 1 : 0.7}
+                            onPress={() => handleVotePoll(option.id)}
+                            activeOpacity={0.7}
                         >
                             <View style={{
                                 backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',
