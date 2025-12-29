@@ -15,8 +15,8 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
     const user = useAppSelector(selectUser)
     
     const [content, setContent] = useState("");
+    console.log("content", content);
     const [media, setMedia] = useState<any[]>([]);
-    const [pollQuestion, setPollQuestion] = useState("");
     const [pollOptions, setPollOptions] = useState([{ id: 1, text: "" }, { id: 2, text: "" }]);
     const [activeTab, setActiveTab] = useState<'text' | 'photo' | 'video' | 'poll'>(initialTab || 'text');
 
@@ -60,7 +60,7 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
         try {
             // Validate input
             if (activeTab === 'poll') {
-                if (!pollQuestion.trim()) {
+                if (!content.trim()) {
                     showOkModal({
                         type: "error",
                         title: "Error",
@@ -90,16 +90,15 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
             const formData = new FormData();
 
             // Add title/content
+            formData.append('title', content);
+            
+            // Add poll options if this is a poll
             if (activeTab === 'poll') {
-                formData.append('title', pollQuestion);
-                // Add poll options
                 pollOptions.forEach((option, index) => {
                     if (option.text.trim()) {
                         formData.append(`poll[${index}]`, option.text);
                     }
                 });
-            } else {
-                formData.append('title', content);
             }
 
             // Add media files
@@ -133,7 +132,7 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
                 message: error?.data?.message || "Failed to create post. Please try again."
             });
         }
-    }, [content, media, pollQuestion, pollOptions, activeTab, createFeed, showOkModal]);
+    }, [content, media, pollOptions, activeTab, createFeed, showOkModal]);
     
     // Auto trigger picker if initialTab is photo or video (Optional, but user might expect UI to open)
     // For now we just set the tab.
@@ -144,14 +143,12 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
             user_image: user?.photo,
             content,
             media,
-            pollQuestion,
             pollOptions,
             activeTab,
             isLoading
         },
         functions: {
             setContent,
-            setPollQuestion,
             setActiveTab,
             handlePickMedia,
             removeMedia,

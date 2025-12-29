@@ -129,9 +129,10 @@ export const userApi = createApi({
     }),
     votePoll: builder.mutation({
       query: ({ post_id, option_id }) => ({
-        url: `post/${post_id}/${option_id}/report`,
+        url: `post/${post_id}/${option_id}/poll`,
         method: 'POST',
       }),
+      invalidatesTags: ['Posts'],
     }),
     getFeeds: builder.query({
       query: query => ({
