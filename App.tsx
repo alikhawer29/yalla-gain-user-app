@@ -47,7 +47,7 @@ function App() {
               <ModalProvider>
                 <NavigationContainer ref={navigationRef} theme={navTheme}>
                   <AppStackNavigator />
-                  {/* <NetworkLoggerFAB /> */}
+                  <NetworkLoggerFAB />
                   <Toast />
                 </NavigationContainer>
               </ModalProvider>

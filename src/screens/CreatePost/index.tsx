@@ -22,8 +22,8 @@ const CreatePost = () => {
     const { initialTab } = route.params || {};
 
     const { values, functions } = useCreatePostController(initialTab);
-    const { content, media, pollQuestion, pollOptions, activeTab, user_image, isLoading } = values;
-    const { setContent, setPollQuestion, handlePickMedia, removeMedia, addPollOption, removePollOption, updatePollOption, handlePost, goBack, setActiveTab } = functions;
+    const { content, media, pollOptions, activeTab, user_image, isLoading } = values;
+    const { setContent, handlePickMedia, removeMedia, addPollOption, removePollOption, updatePollOption, handlePost, goBack, setActiveTab } = functions;
 
     useFocusEffect(() => {
         // Hide bottom tab bar when screen is focused
@@ -47,7 +47,7 @@ const CreatePost = () => {
                         <Icon source={user_image ? { uri: user_image } : images.dummy} size={50} rounded no_padding border={colors.white} resize="cover" />
                         <TextInput
                             style={styles.input}
-                            placeholder="What's on your mind?"
+                            placeholder={activeTab === 'poll' ? "Ask a question..." : "What's on your mind?"}
                             placeholderTextColor={colors.placeholder}
                             multiline
                             value={content}
@@ -107,13 +107,6 @@ const CreatePost = () => {
                     {/* Poll Creator */}
                     {activeTab === 'poll' && (
                         <View style={styles.pollContainer}>
-                            <TextInput
-                                style={styles.pollInput}
-                                placeholder="Ask a question..."
-                                placeholderTextColor={colors.placeholder}
-                                value={pollQuestion}
-                                onChangeText={setPollQuestion}
-                            />
                             {pollOptions.map((option, index) => (
                                 <View key={option.id} style={styles.optionRow}>
                                     <TextInput
@@ -125,7 +118,7 @@ const CreatePost = () => {
                                     />
                                     {pollOptions.length > 2 && (
                                         <TouchableOpacity onPress={() => removePollOption(option.id)}>
-                                            <Icon source={images.cross} size={20} color={colors.danger} />
+                                            <Icon source={images.modal_cross} size={20} />
                                         </TouchableOpacity>
                                     )}
                                 </View>

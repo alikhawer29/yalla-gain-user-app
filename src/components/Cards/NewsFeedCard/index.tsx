@@ -17,7 +17,7 @@ import ReportConfirmModal from "../../ReportConfirmModal";
 import ReportReasonModal from "../../ReportReasonModal";
 import ReportSuccessModal from "../../ReportSuccessModal";
 import MediaViewerModal from "../../MediaViewerModal";
-import { useReactFeedMutation, useReportFeedMutation } from "../../../redux/Apis/User";
+import { useReactFeedMutation, useReportFeedMutation, useVotePollMutation } from "../../../redux/Apis/User";
 import { useAppSelector } from "../../../hooks";
 import { selectUser } from "../../../redux/Slices/AuthSlice";
 import Video from 'react-native-video';
@@ -45,6 +45,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     const currentUser = useAppSelector(selectUser);
     const [reactFeed] = useReactFeedMutation();
     const [reportFeed] = useReportFeedMutation();
+    const [votePoll] = useVotePollMutation();
 
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -73,6 +74,10 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     // Media viewer state
     const [showMediaViewer, setShowMediaViewer] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState({ url: '', isVideo: false });
+
+    // Poll voting state - local optimistic update
+    const [localPollOptions, setLocalPollOptions] = useState(poll_options);
+    const [hasVoted, setHasVoted] = useState(false);
 
     // Check if this is user's own post
     const isOwnPost = currentUser?.id === user?.id;
@@ -122,6 +127,31 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         } catch (error: any) {
             console.error('Report error:', error);
             setShowReportReason(false);
+        }
+    };
+
+    const handleVotePoll = async (optionId: string | number) => {
+        // Prevent voting twice
+        if (hasVoted) return;
+
+        const previousOptions = localPollOptions;
+
+        try {
+            // Optimistic update
+            setHasVoted(true);
+
+            // Call API
+            await votePoll({
+                post_id: id,
+                option_id: optionId
+            }).unwrap();
+
+            console.log('Poll vote successful');
+        } catch (error: any) {
+            console.error('Vote poll error:', error);
+            // Revert on error
+            setHasVoted(false);
+            setLocalPollOptions(previousOptions);
         }
     };
 
@@ -240,41 +270,94 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         // Check if it's a poll from API
         if (!is_poll && !poll) return null;
 
-        const pollData = poll || { question: title, options: poll_options || [] }
+        const pollData = poll || { question: title, options: localPollOptions || [] }
 
         if (!pollData.options || pollData.options.length === 0) return null;
 
+        // Calculate total votes from all options
+        const totalVotes = pollData.options.reduce((sum: number, opt: any) => {
+            return sum + (opt.votes || 0);
+        }, 0);
+
+        // Check if user has already voted
+        const userHasVoted = pollData.options.some((opt: any) => opt.is_selected) || hasVoted;
+
         return (
-            <View style={{ marginTop: heightPixel(10), gap: heightPixel(10) }}>
-                <Text weight="semibold">{pollData.question || title}</Text>
-                {pollData.options.map((option: any) => (
-                    <View key={option.id} style={{ marginBottom: heightPixel(5) }}>
-                        <View style={{
-                            backgroundColor: colors.gray,
-                            borderRadius: heightPixel(5),
-                            overflow: 'hidden',
-                            height: heightPixel(35),
-                            justifyContent: 'center'
-                        }}>
+            <View style={{ marginTop: heightPixel(10) }}>
+                {pollData.options.map((option: any, index: number) => {
+                    // Calculate percentage
+                    const votes = option.votes || 0;
+                    const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                    const optionText = option.option_text || option.label || option.option || '';
+
+                    return (
+                        <TouchableOpacity
+                            key={option.id}
+                            style={{ marginBottom: heightPixel(10) }}
+                            onPress={() => !userHasVoted && handleVotePoll(option.id)}
+                            disabled={userHasVoted}
+                            activeOpacity={userHasVoted ? 1 : 0.7}
+                        >
                             <View style={{
-                                width: `${option.percentage || 0}%`,
-                                backgroundColor: option.is_selected ? colors.primary : colors.dark_gray,
-                                height: '100%',
-                                position: 'absolute'
-                            }} />
-                            <Row justify="space-between" style={{ paddingHorizontal: widthPixel(10) }}>
-                                <Text size={12} weight="regular">{option.label || option.option}</Text>
-                                <Text size={12} weight="regular">{option.percentage || 0}%</Text>
-                            </Row>
-                        </View>
-                        {option.is_selected && (
-                            <View style={{ position: 'absolute', left: 10, top: 10, display: 'none' }}>
-                                <Icon source={images.check} size={15} color={colors.white} />
+                                backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',
+                                borderRadius: heightPixel(2),
+                                overflow: 'hidden',
+                                height: heightPixel(26.59),
+                                justifyContent: 'center',
+                                borderWidth: option.is_selected ? 1 : 0,
+                                borderColor: option.is_selected ? colors.primary : 'transparent',
+                                position: 'relative'
+                            }}>
+                                {/* Progress bar background - fills from left */}
+                                <View style={{
+                                    width: `${percentage}%`,
+                                    backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.4)' : 'rgba(80, 80, 80, 0.6)',
+                                    height: '100%',
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    borderRadius: heightPixel(2)
+                                }} />
+
+                                <View style={{ paddingHorizontal: widthPixel(12), zIndex: 1 }}>
+                                    <Row justify="space-between" align="center">
+                                        <Row align="center" gap={10}>
+                                            {/* Number */}
+                                            <Text size={14} weight="semibold" color={option.is_selected ? colors.primary : colors.icon_gray}>
+                                                {index + 1}.
+                                            </Text>
+
+                                            {/* Checkmark for selected */}
+                                            {option.is_selected && (
+                                                <Icon source={images.check} size={18} />
+                                            )}
+
+                                            {/* Option text */}
+                                            <Text size={14} weight={option.is_selected ? "semibold" : "regular"} color={colors.white}>
+                                                {optionText}
+                                            </Text>
+                                        </Row>
+
+                                        {/* Percentage */}
+                                        <Text size={14} weight="semibold" color={colors.white}>
+                                            {percentage}%
+                                        </Text>
+                                    </Row>
+                                </View>
                             </View>
-                        )}
-                        {/* display none for check as design uses color to indicate selection */}
-                    </View>
-                ))}
+                        </TouchableOpacity>
+                    );
+                })}
+
+                {/* Total votes counter */}
+                {/* {userHasVoted && (
+                    <Row align="center" gap={5} style={{ marginTop: heightPixel(5) }}>
+                        <Icon source={images.post_like} size={16} color={colors.icon_gray} />
+                        <Text size={12} color={colors.icon_gray}>
+                            {totalVotes}
+                        </Text>
+                    </Row>
+                )} */}
             </View>
         )
     };
