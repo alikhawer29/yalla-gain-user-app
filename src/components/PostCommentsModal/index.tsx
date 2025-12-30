@@ -1,4 +1,4 @@
-import { FC, useState, useRef, useMemo } from "react";
+import { FC, useState, useRef, useMemo, useEffect } from "react";
 import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
@@ -8,6 +8,8 @@ import colors from "../../utils/colors";
 import { heightPixel, widthPixel, font } from "../../utils/helper";
 import ReactionPicker from "../ReactionPicker";
 import { useGetCommentsQuery, usePostCommentMutation, useReactCommentMutation } from "../../redux/Apis/User";
+import { useAppSelector } from "../../hooks";
+import { selectUser } from "../../redux/Slices/AuthSlice";
 
 interface IPostCommentsModal {
     visible: boolean;
@@ -24,6 +26,10 @@ interface CommentReaction {
 const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count, onCommentAdded }) => {
     const [commentText, setCommentText] = useState("");
     const [commentReactions, setCommentReactions] = useState<CommentReaction>({});
+    const [isUpdatingReaction, setIsUpdatingReaction] = useState(false);
+    const currentUser = useAppSelector(selectUser);
+    const currentUserId = currentUser?.id;
+
     const [showReactionPicker, setShowReactionPicker] = useState<number | null>(null);
     const [reactionButtonPositions, setReactionButtonPositions] = useState<{ [key: number]: { x: number, y: number } }>({});
     const reactionButtonRefs = useRef<{ [key: number]: View | null }>({});
@@ -48,6 +54,27 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
         }));
     }, [data]);
 
+    // Initialize comment reactions from API response
+    useEffect(() => {
+        if (currentUserId && data?.data) {
+            const reactions: CommentReaction = {};
+            // Process all comments from API data
+            data.data.forEach((item: any) => {
+                // Find current user's reaction
+                const userReaction = item.reactions?.find((r: any) => r.user?.id === currentUserId);
+                if (userReaction) {
+                    // Map API reaction type to component reaction type
+                    reactions[item.id] = userReaction.reaction === 'love' ? 'heart' : 'like';
+                } else {
+                    // Explicitly set to null if user has no reaction
+                    reactions[item.id] = null;
+                }
+            });
+            // Always update to ensure removed reactions are cleared
+            setCommentReactions(reactions);
+        }
+    }, [data, currentUserId]);
+
     const handleSendComment = async () => {
         if (commentText.trim() && post_id) {
             try {
@@ -66,21 +93,28 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
 
     const handleReaction = async (commentId: number, reaction: 'like' | 'heart') => {
         const previousReaction = commentReactions[commentId];
+        const isRemoving = previousReaction === reaction;
+
         // Optimistic update
         setCommentReactions(prev => ({
             ...prev,
-            [commentId]: prev[commentId] === reaction ? null : reaction
+            [commentId]: isRemoving ? null : reaction
         }));
-        
+
+        setIsUpdatingReaction(true);
         try {
             await reactComment({
                 id: commentId,
                 body: { reaction: reaction === 'heart' ? 'love' : 'like' }
             }).unwrap();
+            // Refetch to get updated reactions and wait for it to complete
+            await refetch();
         } catch (error) {
             // Revert on error
             setCommentReactions(prev => ({ ...prev, [commentId]: previousReaction }));
             console.error('React comment error:', error);
+        } finally {
+            setIsUpdatingReaction(false);
         }
     };
 
@@ -90,13 +124,19 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
             // Remove reaction if already reacted
             const previousReaction = currentReaction;
             setCommentReactions(prev => ({ ...prev, [commentId]: null }));
+            setIsUpdatingReaction(true);
             try {
                 await reactComment({
                     id: commentId,
                     body: { reaction: previousReaction === 'heart' ? 'love' : 'like' }
                 }).unwrap();
+                // Refetch to get updated reactions and wait for it to complete
+                await refetch();
             } catch (error) {
                 setCommentReactions(prev => ({ ...prev, [commentId]: previousReaction }));
+                console.error('Unreact comment error:', error);
+            } finally {
+                setIsUpdatingReaction(false);
             }
         } else {
             // Quick like
@@ -107,7 +147,24 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
     const renderCommentItem = ({ item }: { item: any }) => {
         const userPhoto = item.user?.photo || item.user?.image
         const photoSource = userPhoto ? { uri: userPhoto } : images.dummy
-        
+
+        // Calculate reaction types and counts
+        const hasReactions = item.reactions && item.reactions.length > 0;
+        const userReaction = commentReactions[item.id];
+
+        // Count reaction types (excluding current user's reaction to avoid double counting)
+        const likeCount = item.reactions?.filter((r: any) => r.reaction === 'like').length || 0;
+        const heartCount = item.reactions?.filter((r: any) => r.reaction === 'love').length || 0;
+        const totalReactions = item.reaction_count || 0;
+
+        // Determine which icons to show (like Facebook)
+        // Show like icon if: there are likes from others OR user has liked
+        const showLikeIcon = likeCount > 0 || (userReaction === 'like');
+        // Show heart icon if: there are hearts from others OR user has heart reacted
+        const showHeartIcon = heartCount > 0 || (userReaction === 'heart');
+        // Show both icons if both conditions are true
+        const showBothIcons = showLikeIcon && showHeartIcon;
+
         return (
             <View style={{
                 paddingVertical: heightPixel(15),
@@ -137,68 +194,90 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                             {item.comment}
                         </Text>
 
-                    <Row align="center" gap={15} style={{ marginTop: heightPixel(8) }}>
-                        {/* Reaction Button */}
-                        <View
-                            ref={(ref) => {
-                                if (ref) {
-                                    reactionButtonRefs.current[item.id] = ref;
-                                }
-                            }}
-                        >
-                            <TouchableOpacity
-                                onPress={() => toggleReaction(item.id)}
-                                onLongPress={() => {
-                                    reactionButtonRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
-                                        // Calculate centered position above the Like button
-                                        // Picker width is approximately 110px (2 icons * 35px + padding)
-                                        const pickerWidth = 110;
-                                        const centeredX = x + (width / 2) - (pickerWidth / 2);
-                                        const topY = y - 60; // 60px above the button
-                                        setReactionButtonPositions(prev => ({
-                                            ...prev,
-                                            [item.id]: { x: centeredX, y: topY }
-                                        }));
-                                    });
-                                    setShowReactionPicker(item.id);
+                        <Row align="center" gap={15} style={{ marginTop: heightPixel(8) }}>
+                            {/* Reaction Button */}
+                            <View
+                                ref={(ref) => {
+                                    if (ref) {
+                                        reactionButtonRefs.current[item.id] = ref;
+                                    }
                                 }}
-                                delayLongPress={100}
                             >
+                                <TouchableOpacity
+                                    onPress={() => toggleReaction(item.id)}
+                                    onLongPress={() => {
+                                        reactionButtonRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
+                                            // Calculate centered position above the Like button
+                                            // Picker width is approximately 110px (2 icons * 35px + padding)
+                                            const pickerWidth = 110;
+                                            const centeredX = x + (width / 2) - (pickerWidth / 2);
+                                            const topY = y - 60; // 60px above the button
+                                            setReactionButtonPositions(prev => ({
+                                                ...prev,
+                                                [item.id]: { x: centeredX, y: topY }
+                                            }));
+                                        });
+                                        setShowReactionPicker(item.id);
+                                    }}
+                                    delayLongPress={100}
+                                >
+                                    <Row align="center" gap={4}>
+                                        {/* <Icon
+                                            source={userReaction === 'heart' ? images.heart : images.post_like}
+                                            size={14}
+                                            tint_color={userReaction ? (userReaction === 'heart' ? colors.danger : colors.primary) : colors.icon_gray}
+                                        /> */}
+                                        <Text
+                                            size={12}
+                                            color={userReaction ? (userReaction === 'heart' ? colors.danger : colors.primary) : colors.icon_gray}
+                                            weight={userReaction ? "semibold" : "regular"}
+                                        >
+                                            {userReaction === 'heart' ? 'Love' : 'Like'}
+                                        </Text>
+                                    </Row>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Reaction Count - Show icons like Facebook */}
+                            {hasReactions && totalReactions > 0 && (
                                 <Row align="center" gap={4}>
-                                    <Icon
-                                        source={
-                                            commentReactions[item.id] === 'heart' ? images.heart :
-                                                images.post_like
-                                        }
-                                        size={14}
-                                        tint_color={
-                                            commentReactions[item.id] === 'heart' ? colors.danger :
-                                                commentReactions[item.id] === 'like' ? colors.primary :
-                                                    colors.icon_gray
-                                        }
-                                    />
-                                    <Text
-                                        size={12}
-                                        color={commentReactions[item.id] ? colors.primary : colors.icon_gray}
-                                        weight={commentReactions[item.id] ? "semibold" : "regular"}
-                                    >
-                                        {commentReactions[item.id] === 'heart' ? 'Love' : 'Like'}
+                                    {showBothIcons && (
+                                        <>
+                                            <Icon
+                                                source={images.heart}
+                                                size={14}
+                                                tint_color={colors.danger}
+                                            />
+                                            <Icon
+                                                source={images.post_like}
+                                                size={14}
+                                                tint_color={colors.primary}
+                                            />
+                                        </>
+                                    )}
+                                    {!showBothIcons && showHeartIcon && (
+                                        <Icon
+                                            source={images.heart}
+                                            size={14}
+                                            tint_color={colors.danger}
+                                        />
+                                    )}
+                                    {!showBothIcons && showLikeIcon && !showHeartIcon && (
+                                        <Icon
+                                            source={images.post_like}
+                                            size={14}
+                                            tint_color={colors.primary}
+                                        />
+                                    )}
+                                    <Text size={12} color={colors.icon_gray}>
+                                        {totalReactions}
                                     </Text>
                                 </Row>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Reaction Count */}
-                        <Row align="center" gap={4}>
-                            <Icon source={images.heart} size={12} tint_color={colors.icon_gray} />
-                            <Text size={12} color={colors.icon_gray}>
-                                {item.reaction_count}
-                            </Text>
+                            )}
                         </Row>
-                    </Row>
-                </View>
-            </Row>
-        </View>
+                    </View>
+                </Row>
+            </View>
         )
     };
 
@@ -254,7 +333,7 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                         </View>
 
                         {/* List of comments - Scrollable */}
-                        {isLoading || isFetching ? (
+                        {isLoading || (isFetching && !isUpdatingReaction) ? (
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(50) }}>
                                 <ActivityIndicator size="large" color={colors.primary} />
                             </View>
