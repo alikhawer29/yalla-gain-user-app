@@ -12,6 +12,7 @@ export const userApi = createApi({
     'Chats',
     'Posts',
     'BlockedUsers',
+    'Wallet',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -63,6 +64,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Wallet'],
     }),
     cancelSubscription: builder.mutation({
       query: id => ({
@@ -400,6 +402,7 @@ export const userApi = createApi({
         method: 'GET',
       }),
       keepUnusedDataFor: 0,
+      providesTags: ['Wallet'],
     }),
     transferYallaCoin: builder.mutation({
       query: (payload) => ({
