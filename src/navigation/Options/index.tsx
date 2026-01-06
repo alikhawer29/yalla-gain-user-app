@@ -1,6 +1,7 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
+import { StackNavigationOptions } from "@react-navigation/stack"
 import images from "../../assets/images"
 import Icon from "../../components/Icon"
 import Image from "../../components/Image"
@@ -11,7 +12,19 @@ import { heightPixel, widthPixel } from "../../utils/helper"
 import { goBack } from "../../utils/navigation"
 import { ROUTES_OPTIONS } from "../../utils/routes"
 
-const Options = (props) => {
+interface OptionsProps {
+  route?: {
+    name?: string
+    params?: {
+      title?: string
+    }
+  }
+  navigation?: {
+    openDrawer: () => void
+  }
+}
+
+const Options = (props: OptionsProps): StackNavigationOptions => {
 
   const route = ROUTES_OPTIONS.find(item => item.route_name === props?.route?.name)
 
@@ -19,12 +32,13 @@ const Options = (props) => {
     if (route?.left === "back") {
       goBack()
     } else if (route?.left === "drawer") {
-      props?.navigation.openDrawer()
+      props?.navigation?.openDrawer()
     }
   }
 
   const renderLeft = () => {
-    const icon_source = route?.left ? images[route?.left] : null
+    const leftKey = route?.left
+    const icon_source = leftKey && leftKey !== null ? images[leftKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
     return (
@@ -42,7 +56,8 @@ const Options = (props) => {
   }
 
   const renderRight = () => {
-    const icon_source = route?.right ? images[route?.right] : null
+    const rightKey = route?.right
+    const icon_source = rightKey && rightKey !== null ? images[rightKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
     return (
@@ -72,14 +87,14 @@ const Options = (props) => {
         size={22}
         position="center"
       >
-        {route?.title || props?.route?.params?.title}
+        {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
       </Text>
     )
   }
 
   return {
     headerShown: true,
-    headerTransparent: route?.transparent || false,
+    headerTransparent: (route && 'transparent' in route ? route.transparent : false) || false,
     header: () => (
       <SafeAreaView edges={["top"]} style={styles.safeArea}>
         <View style={styles.container}>

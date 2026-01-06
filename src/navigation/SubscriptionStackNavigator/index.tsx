@@ -10,7 +10,13 @@ const Stack = createStackNavigator<RootStackParamList>();
 const SubscriptionStackNavigator = () => {
     return (
         <Stack.Navigator screenOptions={Options}>
-            <Stack.Screen name={ROUTES.SUBSCRIPTION} component={Subscription} />
+            <Stack.Screen 
+                name={ROUTES.SUBSCRIPTION} 
+                component={Subscription}
+                options={{
+                    gestureEnabled: true,
+                }}
+            />
             <Stack.Screen name={ROUTES.SUBSCRIPTION_LOGS} component={SubscriptionLogs} />
         </Stack.Navigator>
     );
