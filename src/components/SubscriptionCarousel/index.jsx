@@ -21,7 +21,7 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
             <View style={{ flex: 0.8 }}>
                 <Text size={17} weight='bold'>{item.title}</Text>
                 <Row align='center' style={{ marginTop: heightPixel(10) }} gap={5}>
-                    <Text size={27} weight='bold'>{item.price}</Text>
+                    <Text size={25} weight='bold'>{item.price}</Text>
                     <Icon source={images.coin} size={24} />
                     <Text size={12} weight='bold'>Yalla Coins</Text>
                 </Row>
