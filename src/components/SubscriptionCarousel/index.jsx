@@ -43,16 +43,20 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
     );
 
     return (
-        <View>
+        <View style={styles.container}>
             <Carousel
                 data={data}
                 renderItem={renderItem}
                 sliderWidth={vw * 100}
                 itemWidth={ITEM_WIDTH}
                 layout="stack"
-                onBeforeSnapToItem={setActive}
+                onSnapToItem={setActive}
                 activeSlideAlignment="start"
-
+                enableMomentum={false}
+                enableSnap={true}
+                scrollEnabled={true}
+                useScrollView={false}
+                removeClippedSubviews={false}
             />
             <Pagination
                 dotsLength={data?.length}
@@ -70,6 +74,9 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
 };
 
 const styles = StyleSheet.create({
+    container: {
+        minHeight: ITEM_HEIGHT + 60,
+    },
     card: {
         backgroundColor: '#121212',
         borderRadius: heightPixel(16),

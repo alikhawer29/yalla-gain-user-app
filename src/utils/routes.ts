@@ -111,7 +111,7 @@ const ROUTES_OPTIONS = [
   {
     route_name: ROUTES.TRANSFER,
     left: 'back',
-    right: 'null',
+    right: null,
     logo: false,
     title: 'Transfer',
   },
