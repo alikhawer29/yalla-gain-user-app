@@ -75,3 +75,4 @@ yarn-error.log
 !.yarn/versions
 
 unity/builds/android/unityLibrary/symbols/
+unity/builds/ios/
