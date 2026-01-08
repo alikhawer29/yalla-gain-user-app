@@ -53,6 +53,7 @@ export type RootStackParamList = {
     SavedWorkoutContent: undefined
     CreateAvatar: undefined
     Scan: undefined
+    AvatarScanForm: { frontPhoto: any; rightPhoto: any }
     // Consultation & Booking
     ConsultantsList: { type: 'doctor' | 'trainer' }
     ConsultantProfile: { id: number; type: 'doctor' | 'trainer' }
