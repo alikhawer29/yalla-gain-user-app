@@ -45,6 +45,7 @@ const ROUTES = {
   SAVED_WORKOUT_CONTENT: 'SavedWorkoutContent',
   CREATE_AVATAR: 'CreateAvatar',
   SCAN: 'Scan',
+  AVATAR_SCAN_FORM: 'AvatarScanForm',
   // Consultation & Booking
   CONSULTANTS_LIST: 'ConsultantsList',
   CONSULTANT_PROFILE: 'ConsultantProfile',
@@ -236,6 +237,13 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: null,
+  },
+  {
+    route_name: ROUTES.AVATAR_SCAN_FORM,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Create Your Body Avatar',
   },
   // Consultation & Booking
   {

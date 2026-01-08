@@ -425,6 +425,14 @@ export const userApi = createApi({
         body: payload,
       }),
     }),
+    scanAvatar: builder.mutation({
+      query: (formData: FormData) => ({
+        url: 'scan',
+        method: 'POST',
+        body: formData,
+        formData: true,
+      }),
+    }),
   }),
 });
 
@@ -481,5 +489,6 @@ export const {
   useGetWalletCoinsQuery,
   useTransferYallaCoinMutation,
   useBuyYallaCoinMutation,
-  useConfirmPaymentMutation
+  useConfirmPaymentMutation,
+  useScanAvatarMutation
 } = userApi;
