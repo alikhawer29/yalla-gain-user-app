@@ -10,6 +10,7 @@ import * as Yup from "yup"
 import { Platform } from "react-native"
 import { validatePhoto } from "../../utils/photoValidation"
 import RNFS from "react-native-fs"
+import { optimizePhoto } from "../../utils/optimizePhoto"
 
 const AVATAR_SCAN_FORM_SCHEMA = Yup.object().shape({
     age: Yup.number()
@@ -97,151 +98,110 @@ const useAvatarScanFormController = () => {
             formData.append('height', String(data.height))
             formData.append('weight', String(data.weight))
 
-            // Verify photos meet EXACT resolution requirements before sending
-            const { Image: RNImage } = require("react-native")
-            
-            const checkPhotoResolution = (photo: any, photoName: string): Promise<{ width: number; height: number }> => {
-                return new Promise((resolve, reject) => {
-                    const photoUri = photo.path?.startsWith('file://') 
-                        ? photo.path 
-                        : `file://${photo.path}`
-                    
-                    RNImage.getSize(
-                        photoUri,
-                        (width: number, height: number) => {
-                            const isValid = 
-                                (width === 1080 && height === 1920) ||
-                                (width === 720 && height === 1280)
-                            
-                            if (!isValid) {
-                                reject(new Error(
-                                    `${photoName} resolution is ${width}×${height}. ` +
-                                    `Required: exactly 1080×1920 or 720×1280. ` +
-                                    `Please go back and retake the photo.`
-                                ))
-                            } else {
-                                resolve({ width, height })
-                            }
-                        },
-                        (error: any) => reject(error)
-                    )
-                })
-            }
-
-            // Get file info (size and format) for a photo
-            const getPhotoFileInfo = async (photo: any): Promise<{ size: number; sizeMB: number; format: string }> => {
-                const filePath = photo.path?.startsWith('file://') 
-                    ? photo.path.replace('file://', '') 
-                    : photo.path
-                
-                const fileStats = await RNFS.stat(filePath)
-                const fileSize = fileStats.size || 0
-                const sizeMB = fileSize / (1024 * 1024)
-                
-                // Get file format from extension
-                const fileExtension = photo.path?.toLowerCase().split('.').pop() || 'unknown'
-                let format = 'unknown'
-                if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
-                    format = 'JPEG'
-                } else if (fileExtension === 'png') {
-                    format = 'PNG'
-                } else {
-                    format = fileExtension.toUpperCase()
-                }
-                
-                return { size: fileSize, sizeMB, format }
-            }
-
-            // Check both photos before submission - must be exact resolution
-            let frontPhotoDimensions: { width: number; height: number } | null = null
-            let rightPhotoDimensions: { width: number; height: number } | null = null
-            let frontPhotoFileInfo: { size: number; sizeMB: number; format: string } | null = null
-            let rightPhotoFileInfo: { size: number; sizeMB: number; format: string } | null = null
+            // Optimize both photos to meet backend requirements
+            console.log("=== Optimizing Photos ===")
+            let optimizedFrontPhoto: any = null
+            let optimizedRightPhoto: any = null
             
             try {
-                frontPhotoDimensions = await checkPhotoResolution(frontPhoto, "Front photo")
-                rightPhotoDimensions = await checkPhotoResolution(rightPhoto, "Right photo")
+                console.log("Optimizing front photo...")
+                optimizedFrontPhoto = await optimizePhoto(frontPhoto, 'front')
+                console.log(`Front photo optimized: ${optimizedFrontPhoto.width}×${optimizedFrontPhoto.height}, ${optimizedFrontPhoto.sizeMB.toFixed(2)}MB, Quality: ${optimizedFrontPhoto.quality}%`)
                 
-                // Get file info for both photos
-                frontPhotoFileInfo = await getPhotoFileInfo(frontPhoto)
-                rightPhotoFileInfo = await getPhotoFileInfo(rightPhoto)
+                console.log("Optimizing right photo...")
+                optimizedRightPhoto = await optimizePhoto(rightPhoto, 'right')
+                console.log(`Right photo optimized: ${optimizedRightPhoto.width}×${optimizedRightPhoto.height}, ${optimizedRightPhoto.sizeMB.toFixed(2)}MB, Quality: ${optimizedRightPhoto.quality}%`)
                 
-                // Log the resolutions, file sizes, and formats of both images being sent to API
-                console.log("=== Photo Details Being Sent to API ===")
+                console.log("=== Optimized Photo Details ===")
                 console.log(`Front Photo:`)
-                console.log(`  - Resolution: ${frontPhotoDimensions.width} × ${frontPhotoDimensions.height}`)
-                console.log(`  - File Size: ${frontPhotoFileInfo.size} bytes (${frontPhotoFileInfo.sizeMB.toFixed(2)} MB)`)
-                console.log(`  - File Format: ${frontPhotoFileInfo.format}`)
+                console.log(`  - Resolution: ${optimizedFrontPhoto.width} × ${optimizedFrontPhoto.height}`)
+                console.log(`  - File Size: ${optimizedFrontPhoto.size} bytes (${optimizedFrontPhoto.sizeMB.toFixed(2)} MB)`)
+                console.log(`  - File Format: JPEG`)
+                console.log(`  - Quality: ${optimizedFrontPhoto.quality}%`)
+                if (optimizedFrontPhoto.savedPath) {
+                    console.log(`  - Saved for testing: ${optimizedFrontPhoto.savedPath}`)
+                }
                 console.log(`Right Photo:`)
-                console.log(`  - Resolution: ${rightPhotoDimensions.width} × ${rightPhotoDimensions.height}`)
-                console.log(`  - File Size: ${rightPhotoFileInfo.size} bytes (${rightPhotoFileInfo.sizeMB.toFixed(2)} MB)`)
-                console.log(`  - File Format: ${rightPhotoFileInfo.format}`)
-                console.log("========================================")
-            } catch (resolutionError: any) {
+                console.log(`  - Resolution: ${optimizedRightPhoto.width} × ${optimizedRightPhoto.height}`)
+                console.log(`  - File Size: ${optimizedRightPhoto.size} bytes (${optimizedRightPhoto.sizeMB.toFixed(2)} MB)`)
+                console.log(`  - File Format: JPEG`)
+                console.log(`  - Quality: ${optimizedRightPhoto.quality}%`)
+                if (optimizedRightPhoto.savedPath) {
+                    console.log(`  - Saved for testing: ${optimizedRightPhoto.savedPath}`)
+                }
+                console.log("===============================")
+                console.log("")
+                console.log("📁 ALL SAVED IMAGES FOR POSTMAN TESTING:")
+                console.log("==========================================")
+                if (optimizedFrontPhoto.savedPath) {
+                    console.log(`Front Photo (Optimized): ${optimizedFrontPhoto.savedPath}`)
+                }
+                if (optimizedRightPhoto.savedPath) {
+                    console.log(`Right Photo (Optimized): ${optimizedRightPhoto.savedPath}`)
+                }
+                console.log("==========================================")
+            } catch (optimizationError: any) {
                 showOkModal({
                     type: "error",
-                    title: "Photo Resolution Error",
-                    message: resolutionError.message
+                    title: "Photo Optimization Error",
+                    message: optimizationError.message || "Failed to optimize photos. Please try again."
                 })
                 return
             }
 
-            // Convert photos to file objects
-            // For react-native-vision-camera, the photo object has a path property
-            // The path might already include "file://" prefix or might not
-            const frontPhotoUri = frontPhoto.path?.startsWith('file://') 
-                ? frontPhoto.path 
-                : `file://${frontPhoto.path}`
+            // Use savedPath (which has .jpg extension) if available, otherwise use path
+            // savedPath explicitly has .jpg extension for API compatibility
+            const frontPhotoPath = optimizedFrontPhoto.savedPath || optimizedFrontPhoto.path
+            const rightPhotoPath = optimizedRightPhoto.savedPath || optimizedRightPhoto.path
             
-            const rightPhotoUri = rightPhoto.path?.startsWith('file://') 
-                ? rightPhoto.path 
-                : `file://${rightPhoto.path}`
+            const frontPhotoUri = frontPhotoPath?.startsWith('file://') 
+                ? frontPhotoPath 
+                : `file://${frontPhotoPath}`
+            
+            const rightPhotoUri = rightPhotoPath?.startsWith('file://') 
+                ? rightPhotoPath 
+                : `file://${rightPhotoPath}`
 
+            // Ensure file names have .jpg extension for API
             const frontPhotoFile = {
                 uri: frontPhotoUri,
-                type: 'image/jpeg',
-                name: 'front_photo.jpg',
+                type: 'image/jpeg', // MIME type
+                name: 'front_photo.jpg', // Explicit .jpg extension
             }
 
             const rightPhotoFile = {
                 uri: rightPhotoUri,
-                type: 'image/jpeg',
-                name: 'right_photo.jpg',
+                type: 'image/jpeg', // MIME type
+                name: 'right_photo.jpg', // Explicit .jpg extension
             }
 
             formData.append('frontPhoto', frontPhotoFile as any)
             formData.append('rightPhoto', rightPhotoFile as any)
 
-            // Note: We are VALIDATING images meet backend requirements but NOT optimizing/resizing them
-            // Backend requirements:
-            // - Format: JPEG
-            // - Resolution: 1080×1920 or 720×1280 (exact match required)
-            // - Size: ≤ 3 MB
-            // Images are sent as-is if they meet these requirements
-            // If images don't meet requirements, validation fails and user must retake
-
             // Log final payload info before sending
-            console.log("=== API Payload Info ===")
+            console.log("=== API Payload Info (JPG Images) ===")
             console.log("User ID:", user?.id)
             console.log("Age:", data.age)
             console.log("Gender:", data.gender)
             console.log("Height:", data.height)
             console.log("Weight:", data.weight)
             console.log("Front Photo URI:", frontPhotoUri)
+            console.log("Front Photo File Name:", frontPhotoFile.name)
+            console.log("Front Photo MIME Type:", frontPhotoFile.type)
             console.log("Right Photo URI:", rightPhotoUri)
-            if (frontPhotoDimensions && frontPhotoFileInfo) {
-                console.log(`Front Photo:`)
-                console.log(`  - Resolution: ${frontPhotoDimensions.width} × ${frontPhotoDimensions.height}`)
-                console.log(`  - File Size: ${frontPhotoFileInfo.size} bytes (${frontPhotoFileInfo.sizeMB.toFixed(2)} MB)`)
-                console.log(`  - File Format: ${frontPhotoFileInfo.format}`)
-            }
-            if (rightPhotoDimensions && rightPhotoFileInfo) {
-                console.log(`Right Photo:`)
-                console.log(`  - Resolution: ${rightPhotoDimensions.width} × ${rightPhotoDimensions.height}`)
-                console.log(`  - File Size: ${rightPhotoFileInfo.size} bytes (${rightPhotoFileInfo.sizeMB.toFixed(2)} MB)`)
-                console.log(`  - File Format: ${rightPhotoFileInfo.format}`)
-            }
-            console.log("=======================")
+            console.log("Right Photo File Name:", rightPhotoFile.name)
+            console.log("Right Photo MIME Type:", rightPhotoFile.type)
+            console.log(`Front Photo:`)
+            console.log(`  - Resolution: ${optimizedFrontPhoto.width} × ${optimizedFrontPhoto.height}`)
+            console.log(`  - File Size: ${optimizedFrontPhoto.size} bytes (${optimizedFrontPhoto.sizeMB.toFixed(2)} MB)`)
+            console.log(`  - File Format: JPEG`)
+            console.log(`  - Quality: ${optimizedFrontPhoto.quality}%`)
+            console.log(`Right Photo:`)
+            console.log(`  - Resolution: ${optimizedRightPhoto.width} × ${optimizedRightPhoto.height}`)
+            console.log(`  - File Size: ${optimizedRightPhoto.size} bytes (${optimizedRightPhoto.sizeMB.toFixed(2)} MB)`)
+            console.log(`  - File Format: JPEG`)
+            console.log(`  - Quality: ${optimizedRightPhoto.quality}%`)
+            console.log("===========================================")
 
             await submit(formData).unwrap()
         } catch (error: any) {

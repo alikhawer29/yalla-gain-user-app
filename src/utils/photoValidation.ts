@@ -32,16 +32,24 @@ export const validatePhoto = async (photo: any): Promise<PhotoValidationResult> 
             errors.push("Photo must be in JPEG format")
         }
 
-        // Check file size
+        // Check file size (but allow larger files from camera - they will be optimized later)
+        // Only warn if file is extremely large (>20MB) as that might indicate an issue
         const filePath = photo.path.startsWith('file://') 
             ? photo.path.replace('file://', '') 
             : photo.path
         
         const fileStats = await RNFS.stat(filePath)
         const fileSize = fileStats.size || 0
+        const fileSizeMB = fileSize / (1024 * 1024)
 
-        if (fileSize > MAX_FILE_SIZE) {
-            errors.push(`Photo size must be no more than 3 MB. Current size: ${(fileSize / (1024 * 1024)).toFixed(2)} MB`)
+        // Allow larger files from camera (they will be optimized before API submission)
+        // Only reject if file is extremely large (>20MB) which might indicate corruption
+        const MAX_CAMERA_SIZE = 20 * 1024 * 1024 // 20 MB
+        if (fileSize > MAX_CAMERA_SIZE) {
+            errors.push(`Photo size is too large (${fileSizeMB.toFixed(2)} MB). Maximum allowed: 20 MB. Please retake the photo.`)
+        } else if (fileSize > MAX_FILE_SIZE) {
+            // Log warning but don't reject - optimization will handle it
+            console.log(`📸 Camera photo size: ${fileSizeMB.toFixed(2)} MB (will be optimized to ≤3 MB before submission)`)
         }
 
         // Check image dimensions
