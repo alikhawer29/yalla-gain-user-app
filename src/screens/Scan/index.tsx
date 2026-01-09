@@ -14,6 +14,7 @@ import Row from "../../components/Row"
 import Button from "../../components/Button"
 import { useModal } from "../../contexts/ModalContext"
 import { validatePhoto } from "../../utils/photoValidation"
+import RNFS from "react-native-fs"
 
 const Scan = () => {
 
@@ -65,15 +66,20 @@ const Scan = () => {
                 flash: 'off',
             })
 
-            // Validate the photo (with tolerance for resolution)
+            // Validate the photo (with tolerance for resolution and size)
             const validation = await validatePhoto(res)
 
-            // If validation fails with resolution errors but has correct aspect ratio, allow it
+            // Check for different types of errors
             const hasResolutionError = validation.errors.some(err => err.includes('resolution'))
-            const hasOtherErrors = validation.errors.some(err => !err.includes('resolution'))
+            const hasFormatError = validation.errors.some(err => err.includes('JPEG') || err.includes('format'))
+            const hasSizeError = validation.errors.some(err => err.includes('size') || err.includes('MB'))
+            const hasExtremeSizeError = validation.errors.some(err => err.includes('too large') || err.includes('20 MB'))
 
-            if (hasOtherErrors || (hasResolutionError && validation.errors.length > 1)) {
-                // Has format or size errors, or multiple errors - show error
+            // Only reject if:
+            // 1. Format is wrong (must be JPEG)
+            // 2. File is extremely large (>20MB - might be corrupted)
+            // 3. Photo is missing/invalid
+            if (hasFormatError || hasExtremeSizeError || validation.errors.some(err => err.includes('missing') || err.includes('invalid'))) {
                 showOkModal({
                     type: "error",
                     title: "Photo Requirements Not Met",
@@ -83,11 +89,17 @@ const Scan = () => {
                 return
             }
 
-            // If only resolution error but aspect ratio is correct, allow with warning
-            if (hasResolutionError && !hasOtherErrors) {
-                // Photo will be processed before submission, so allow it
-                console.log("Photo resolution doesn't match exactly but will be processed")
+            // Allow size errors (will be optimized before submission)
+            if (hasSizeError) {
+                console.log("📸 Camera photo is larger than 3MB - will be optimized before submission")
             }
+
+            // Allow resolution errors if aspect ratio is correct (will be resized during optimization)
+            if (hasResolutionError) {
+                console.log("📸 Photo resolution doesn't match exactly but will be processed and resized")
+            }
+
+            // Note: Original captured images are NOT saved - only optimized images sent to API will be saved
 
             // Photo is valid or acceptable, set it
             if (currentStep === 'front') {
