@@ -8,8 +8,19 @@ import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
+import useProgressTrackingController from "./useProgressTrackingController"
 
 const ProgressTracking = () => {
+    const {
+        values: { isLoading },
+        functions: {
+            handleInitialAvatarView,
+            handleInitialAvatarEdit,
+            handleFutureAvatarView,
+            handleFutureAvatarEdit,
+        },
+    } = useProgressTrackingController()
+
     return (
         <Wrapper scrollable bottom_bar floating>
             <Row gap={5}>
@@ -19,8 +30,21 @@ const ProgressTracking = () => {
                             <Image source={images.avatar.fat} />
                         </View>
                         <Row style={{ flex: 0.1 }} justify="space-between" align="center">
-                            <Button font_size={10} style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }} text="View" />
-                            <Button font_size={10} type="outlined" style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }} text="Edit" />
+                            <Button
+                                font_size={10}
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
+                                text="View"
+                                onPress={handleInitialAvatarView}
+                                loading={isLoading}
+                            />
+                            <Button
+                                font_size={10}
+                                type="outlined"
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
+                                text="Edit"
+                                onPress={handleInitialAvatarEdit}
+                                loading={isLoading}
+                            />
                         </Row>
                     </CardWrapper>
                 </View>
@@ -30,8 +54,21 @@ const ProgressTracking = () => {
                             <Image source={images.avatar.slim} />
                         </View>
                         <Row style={{ flex: 0.1 }} justify="space-between" align="center">
-                            <Button font_size={10} style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }} text="View" />
-                            <Button font_size={10} type="outlined" style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }} text="Edit" />
+                            <Button
+                                font_size={10}
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
+                                text="View"
+                                onPress={handleFutureAvatarView}
+                                loading={isLoading}
+                            />
+                            <Button
+                                font_size={10}
+                                type="outlined"
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
+                                text="Edit"
+                                onPress={handleFutureAvatarEdit}
+                                loading={isLoading}
+                            />
                         </Row>
                     </CardWrapper>
                 </View>

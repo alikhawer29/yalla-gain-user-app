@@ -433,6 +433,13 @@ export const userApi = createApi({
         formData: true,
       }),
     }),
+    updateAvatar: builder.mutation({
+      query: (body: { avatar: 'initial' | 'future'; type: 'view' | 'edit' }) => ({
+        url: 'avatar/update',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -490,5 +497,6 @@ export const {
   useTransferYallaCoinMutation,
   useBuyYallaCoinMutation,
   useConfirmPaymentMutation,
-  useScanAvatarMutation
+  useScanAvatarMutation,
+  useUpdateAvatarMutation
 } = userApi;
