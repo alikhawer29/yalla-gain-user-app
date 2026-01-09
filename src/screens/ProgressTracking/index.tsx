@@ -12,7 +12,12 @@ import useProgressTrackingController from "./useProgressTrackingController"
 
 const ProgressTracking = () => {
     const {
-        values: { isLoading },
+        values: {
+            isLoadingInitialView,
+            isLoadingInitialEdit,
+            isLoadingFutureView,
+            isLoadingFutureEdit,
+        },
         functions: {
             handleInitialAvatarView,
             handleInitialAvatarEdit,
@@ -35,7 +40,7 @@ const ProgressTracking = () => {
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="View"
                                 onPress={handleInitialAvatarView}
-                                loading={isLoading}
+                                loading={isLoadingInitialView}
                             />
                             <Button
                                 font_size={10}
@@ -43,7 +48,7 @@ const ProgressTracking = () => {
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="Edit"
                                 onPress={handleInitialAvatarEdit}
-                                loading={isLoading}
+                                loading={isLoadingInitialEdit}
                             />
                         </Row>
                     </CardWrapper>
@@ -59,7 +64,7 @@ const ProgressTracking = () => {
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="View"
                                 onPress={handleFutureAvatarView}
-                                loading={isLoading}
+                                loading={isLoadingFutureView}
                             />
                             <Button
                                 font_size={10}
@@ -67,7 +72,7 @@ const ProgressTracking = () => {
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="Edit"
                                 onPress={handleFutureAvatarEdit}
-                                loading={isLoading}
+                                loading={isLoadingFutureEdit}
                             />
                         </Row>
                     </CardWrapper>
