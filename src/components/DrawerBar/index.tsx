@@ -1,11 +1,12 @@
 import { CommonActions } from "@react-navigation/native"
-import { DrawerContentScrollView } from "@react-navigation/drawer"
+import { DrawerContentScrollView, DrawerContentComponentProps } from "@react-navigation/drawer"
 import { View } from "react-native"
 import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import { useGetWalletCoinsQuery } from "../../redux/Apis/User"
+import { deleteUnityGameUserData } from "../../utils/unityGameData"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
 import { navigationRef } from "../../utils/navigation"
@@ -108,7 +109,7 @@ const DRAWER_ROUTES = [
     },
 ]
 
-const DrawerBar = (props) => {
+const DrawerBar = (props: DrawerContentComponentProps) => {
 
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
@@ -120,7 +121,16 @@ const DrawerBar = (props) => {
             type: "warning",
             title: "Logout",
             message: "Are you sure you want to logout?"
-        }, () => dispatch(logout()))
+        }, async () => {
+            // Delete Unity game user data before logout
+            try {
+                await deleteUnityGameUserData();
+            } catch (err) {
+                console.error('Error deleting Unity game data on logout:', err);
+            }
+            // Dispatch logout action
+            dispatch(logout());
+        })
     }
 
     const handleNavigation = (childItem: any) => {
