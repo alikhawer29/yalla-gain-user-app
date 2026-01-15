@@ -598,8 +598,9 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                 visible={showCommentsModal}
                 onClose={() => setShowCommentsModal(false)}
                 post_id={id}
-                comment_count={comment_count}
+                comment_count={localCommentCount}
                 onCommentAdded={() => setLocalCommentCount(prev => prev + 1)}
+                onCommentDeleted={() => setLocalCommentCount(prev => Math.max(0, prev - 1))}
             />
             <ReactionPicker
                 visible={showReactionPicker}

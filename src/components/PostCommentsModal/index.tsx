@@ -7,9 +7,10 @@ import images from "../../assets/images";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel, font } from "../../utils/helper";
 import ReactionPicker from "../ReactionPicker";
-import { useGetCommentsQuery, usePostCommentMutation, useReactCommentMutation } from "../../redux/Apis/User";
+import { useGetCommentsQuery, usePostCommentMutation, useReactCommentMutation, useDeleteCommentMutation } from "../../redux/Apis/User";
 import { useAppSelector } from "../../hooks";
 import { selectUser } from "../../redux/Slices/AuthSlice";
+import { useModal } from "../../contexts/ModalContext";
 
 interface IPostCommentsModal {
     visible: boolean;
@@ -17,13 +18,14 @@ interface IPostCommentsModal {
     post_id?: string | number;
     comment_count: number;
     onCommentAdded?: () => void;
+    onCommentDeleted?: () => void;
 }
 
 interface CommentReaction {
     [commentId: number]: 'like' | 'heart' | null;
 }
 
-const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count, onCommentAdded }) => {
+const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, comment_count, onCommentAdded, onCommentDeleted }) => {
     const [commentText, setCommentText] = useState("");
     const [commentReactions, setCommentReactions] = useState<CommentReaction>({});
     const [isUpdatingReaction, setIsUpdatingReaction] = useState(false);
@@ -40,6 +42,8 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
     });
     const [postComment, { isLoading: isPostingComment }] = usePostCommentMutation();
     const [reactComment] = useReactCommentMutation();
+    const [deleteComment, { isLoading: isDeletingComment }] = useDeleteCommentMutation();
+    const { showYesNoModal } = useModal();
 
     // Map API response to component structure
     const comments = useMemo(() => {
@@ -144,6 +148,31 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
         }
     };
 
+    const handleDeleteComment = async (commentId: number) => {
+        try {
+            await deleteComment(commentId).unwrap();
+            // Refresh comments list
+            await refetch();
+            // Notify parent to decrement count
+            onCommentDeleted?.();
+        } catch (error) {
+            console.error('Delete comment error:', error);
+        }
+    };
+
+    const confirmDeleteComment = (commentId: number) => {
+        showYesNoModal(
+            {
+                type: 'warning',
+                title: 'Delete Comment',
+                message: 'Are you sure you want to delete this comment? This action cannot be undone.',
+            },
+            () => {
+                handleDeleteComment(commentId);
+            }
+        );
+    };
+
     const renderCommentItem = ({ item }: { item: any }) => {
         const userPhoto = item.user?.photo || item.user?.image
         const photoSource = userPhoto ? { uri: userPhoto } : images.dummy
@@ -185,9 +214,18 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                             <Text weight="semibold" size={15}>
                                 {item.user?.first_name} {item.user?.last_name}
                             </Text>
-                            <TouchableOpacity>
-                                <Icon source={images.dots} size={15} tint_color={colors.white} />
-                            </TouchableOpacity>
+                            {item.user?.id === currentUserId && (
+                                <TouchableOpacity
+                                    onPress={() => confirmDeleteComment(item.id)}
+                                    disabled={isDeletingComment}
+                                >
+                                    <Icon
+                                        source={images.dots}
+                                        size={15}
+                                        tint_color={isDeletingComment ? colors.icon_gray : colors.white}
+                                    />
+                                </TouchableOpacity>
+                            )}
                         </Row>
 
                         <Text size={13} color={colors.icon_gray} style={{ lineHeight: 20 }}>
@@ -326,7 +364,7 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                     {/* Matches the 'V 200' style in image */}
                                     <Icon source={images.post_like} size={20} tint_color={colors.primary} />
                                     <Text weight="semibold" size={16}>
-                                        {comment_count || comments.length}
+                                        {comments.length > 0 ? comments.length : comment_count}
                                     </Text>
                                 </Row>
                             </Row>

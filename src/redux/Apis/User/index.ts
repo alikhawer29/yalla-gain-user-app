@@ -124,6 +124,7 @@ export const userApi = createApi({
         url: `comment/${id}/remove`,
         method: 'POST',
       }),
+      invalidatesTags: ['Posts'],
     }),
     reportFeed: builder.mutation({
       query: ({ id, body }) => ({
