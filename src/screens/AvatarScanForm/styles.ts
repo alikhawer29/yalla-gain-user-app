@@ -59,6 +59,9 @@ const styles = StyleSheet.create({
   button: {
     marginTop: heightPixel(20),
   },
+  button_row: {
+    marginTop: heightPixel(20),
+  },
   avatarImage: {
     width: widthPixel(200),
     height: heightPixel(300),

@@ -1,13 +1,23 @@
 import { useCallback, useState } from "react"
+import { useNavigation } from "@react-navigation/native"
+import { StackNavigationProp } from "@react-navigation/stack"
+import { RootStackParamList } from "../../interfaces"
+import { ROUTES } from "../../utils/routes"
 import { useModal } from "../../contexts/ModalContext"
 import { useUpdateAvatarMutation } from "../../redux/Apis/User"
 
 type LoadingButton = 'initial-view' | 'initial-edit' | 'future-view' | 'future-edit' | null
 
 const useProgressTrackingController = () => {
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>()
   const { showOkModal } = useModal()
   const [updateAvatar] = useUpdateAvatarMutation()
   const [loadingButton, setLoadingButton] = useState<LoadingButton>(null)
+
+  // Navigate to Avatar Visualization
+  const navigateToVisualization = useCallback((type: 'initial' | 'future') => {
+      navigation.navigate(ROUTES.AVATAR_VISUALIZATION, { type })
+  }, [navigation])
 
   /**
    * Handles avatar update API call
@@ -26,14 +36,18 @@ const useProgressTrackingController = () => {
           type,
         }
 
+        // Call API
         const response = await updateAvatar(payload).unwrap()
 
         // Show success message
-        showOkModal({
-          type: 'success',
-          title: 'Success',
-          message: `Avatar ${type === 'view' ? 'viewed' : 'updated'} successfully.`,
-        })
+        // showOkModal({
+        //   type: 'success',
+        //   title: 'Success',
+        //   message: `Avatar ${type === 'view' ? 'viewed' : 'updated'} successfully.`,
+        // })
+
+        // Navigate to visualization screen
+        navigateToVisualization(avatar)
 
         return response
       } catch (error: any) {
@@ -48,7 +62,7 @@ const useProgressTrackingController = () => {
         setLoadingButton(null)
       }
     },
-    [updateAvatar, showOkModal],
+    [updateAvatar, showOkModal, navigateToVisualization],
   )
 
   /**

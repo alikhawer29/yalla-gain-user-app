@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { Camera, useCameraDevice, useCameraFormat } from "react-native-vision-camera"
+import { useRoute } from "@react-navigation/native"
 import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import usePermissions from "../../hooks/usePermissions"
@@ -15,10 +16,18 @@ import Button from "../../components/Button"
 import { useModal } from "../../contexts/ModalContext"
 import { validatePhoto } from "../../utils/photoValidation"
 import RNFS from "react-native-fs"
+import { useAppSelector } from "../../hooks"
+import { selectUser } from "../../redux/Slices/AuthSlice"
+import { useScanAvatarMutation } from "../../redux/Apis/User"
+import { optimizePhoto } from "../../utils/optimizePhoto"
 
 const Scan = () => {
-
+    const route = useRoute()
+    const { formData } = (route.params as any) || {}
     const cameraRef = useRef<Camera>(null)
+    const user = useAppSelector(selectUser)
+    const { showOkModal } = useModal()
+    const [submitScan, { isLoading: isSubmitting }] = useScanAvatarMutation()
 
     const [granted, setGranted] = useState(false)
     const [checking, setChecking] = useState(true)
@@ -36,7 +45,6 @@ const Scan = () => {
     ])
 
     const { ensurePermissions, PERMISSIONS } = usePermissions()
-    const { showOkModal } = useModal()
 
     useEffect(() => {
 
@@ -132,14 +140,85 @@ const Scan = () => {
         }
     }, [currentStep, frontPhoto])
 
-    const onProceed = useCallback(() => {
-        if (frontPhoto && rightPhoto) {
-            navigate(ROUTES.AVATAR_SCAN_FORM, {
-                frontPhoto,
-                rightPhoto
-            })
+    const onProceed = useCallback(async () => {
+        if (frontPhoto && rightPhoto && formData) {
+            try {
+                // Validate both photos before submission
+                const frontValidation = await validatePhoto(frontPhoto);
+                const rightValidation = await validatePhoto(rightPhoto);
+
+                // Filter out resolution-only errors
+                const frontCriticalErrors = frontValidation.errors.filter(
+                    err => !err.includes('resolution') && !err.includes('Resolution'),
+                );
+                const rightCriticalErrors = rightValidation.errors.filter(
+                    err => !err.includes('resolution') && !err.includes('Resolution'),
+                );
+
+                if (frontCriticalErrors.length > 0 || rightCriticalErrors.length > 0) {
+                    const allErrors = [
+                        ...(frontCriticalErrors.length > 0
+                            ? ['Front Photo: ' + frontCriticalErrors.join(', ')]
+                            : []),
+                        ...(rightCriticalErrors.length > 0
+                            ? ['Right Photo: ' + rightCriticalErrors.join(', ')]
+                            : []),
+                    ];
+                    showOkModal({
+                        type: 'error',
+                        title: 'Photo Validation Failed',
+                        message:
+                            'One or more photos have critical issues:\n\n' +
+                            allErrors.join('\n\n') +
+                            '\n\nPlease retake the photos.',
+                    });
+                    return;
+                }
+
+                // Optimize photos
+                const optimizedFrontPhoto = await optimizePhoto(frontPhoto, 'front');
+                const optimizedRightPhoto = await optimizePhoto(rightPhoto, 'right');
+
+                // Prepare FormData
+                const submitFormData = new FormData();
+                submitFormData.append('user_id', String(user?.id));
+                submitFormData.append('age', String(formData.age));
+                submitFormData.append('gender', formData.gender);
+                submitFormData.append('height', String(formData.height));
+                submitFormData.append('weight', String(formData.weight));
+                submitFormData.append('scan', 'true'); // Scan mode
+
+                // Add photos
+                const frontPhotoPath = optimizedFrontPhoto.savedPath || optimizedFrontPhoto.path;
+                const rightPhotoPath = optimizedRightPhoto.savedPath || optimizedRightPhoto.path;
+                const frontPhotoUri = frontPhotoPath?.startsWith('file://') ? frontPhotoPath : `file://${frontPhotoPath}`;
+                const rightPhotoUri = rightPhotoPath?.startsWith('file://') ? rightPhotoPath : `file://${rightPhotoPath}`;
+
+                submitFormData.append('frontPhoto', {
+                    uri: frontPhotoUri,
+                    type: 'image/jpeg',
+                    name: 'front_photo.jpg',
+                } as any);
+                submitFormData.append('rightPhoto', {
+                    uri: rightPhotoUri,
+                    type: 'image/jpeg',
+                    name: 'right_photo.jpg',
+                } as any);
+
+                // Submit and redirect to Unity game
+                await submitScan(submitFormData).unwrap();
+                navigate(ROUTES.CREATE_AVATAR);
+            } catch (error: any) {
+                showOkModal({
+                    type: 'error',
+                    title: 'Error',
+                    message:
+                        error?.data?.message ||
+                        'Failed to submit scan data. Please try again.',
+                });
+            }
         }
-    }, [frontPhoto, rightPhoto])
+    }, [frontPhoto, rightPhoto, formData, user, submitScan, showOkModal])
 
     if (checking) return null
 
@@ -163,9 +242,9 @@ const Scan = () => {
                             </Text>
                         </View>
                         <Row style={{ position: "absolute", bottom: 80, left: widthPixel(20), right: widthPixel(20) }} justify="space-between">
-                            <Button text="Retake" style={{ width: "49%" }} type="secondary" onPress={onRetake} />
+                            <Button text="Retake" style={{ width: "49%" }} type="secondary" onPress={onRetake} disabled={isSubmitting} />
                             {currentStep === 'right' && rightPhoto ? (
-                                <Button text="Proceed" style={{ width: "49%" }} onPress={onProceed} />
+                                <Button text="Proceed" style={{ width: "49%" }} onPress={onProceed} loading={isSubmitting} />
                             ) : (
                                 <Button text="Next" style={{ width: "49%" }} onPress={onNext} />
                             )}

@@ -23,10 +23,14 @@ const AvatarScanForm = () => {
         values: {
             initial,
             isLoading,
-            frontPhoto
+            isLoadingManual,
+            isLoadingScan,
+            showActionButtons
         },
         functions: {
-            onSubmit
+            onSubmit,
+            onManualSubmit,
+            onScanPress
         }
     } = useAvatarScanFormController()
 
@@ -42,14 +46,6 @@ const AvatarScanForm = () => {
                 >
                     {({ values: data, handleChange, handleSubmit, touched, errors, setFieldValue }) => (
                         <>
-                            {frontPhoto && (
-                                <Image
-                                    source={{ uri: frontPhoto.path?.startsWith('file://') ? frontPhoto.path : `file://${frontPhoto.path}` }}
-                                    style={styles.avatarImage}
-                                    resizeMode="contain"
-                                />
-                            )}
-
                             <Text size={20} weight="semibold" style={styles.basic_information_label}>
                                 Basic Information:
                             </Text>
@@ -62,8 +58,6 @@ const AvatarScanForm = () => {
                                 onChangeText={handleChange("age")}
                                 error={touched?.age ? errors?.age : ""}
                             />
-
-
 
                             <View style={styles.field_container}>
                                 <Text size={14} weight="semibold" style={styles.label}>
@@ -122,7 +116,25 @@ const AvatarScanForm = () => {
                                 error={touched?.height ? errors?.height : ""}
                             />
 
-                            <Button text="Next" onPress={handleSubmit} loading={isLoading} style={styles.button} />
+                            {showActionButtons ? (
+                                <Row style={styles.button_row} gap={10}>
+                                    <Button 
+                                        text="Manual" 
+                                        type="outlined"
+                                        onPress={() => onManualSubmit(data)} 
+                                        loading={isLoadingManual} 
+                                        style={[styles.button, { flex: 1 }]} 
+                                    />
+                                    <Button 
+                                        text="Scan" 
+                                        onPress={() => onScanPress(data)} 
+                                        loading={isLoadingScan} 
+                                        style={[styles.button, { flex: 1 }]} 
+                                    />
+                                </Row>
+                            ) : (
+                                <Button text="Next" onPress={handleSubmit} loading={isLoading} style={styles.button} />
+                            )}
                         </>
                     )}
                 </Formik>

@@ -77,6 +77,7 @@ const images = {
   avatar: {
     fat: require('./fat_avatar.png'),
     slim: require('./slim_avatar.png'),
+    detailed_avatar: require('./detailed_avatar.png'),
   },
   drawer_icons: {
     challenges: require('./drawer/challenges.png'),
