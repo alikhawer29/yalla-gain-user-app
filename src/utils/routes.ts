@@ -63,6 +63,7 @@ const ROUTES = {
   MY_POSTS: 'MyPosts',
   USER_PROFILE: 'UserProfile',
   BLOCKED_USERS: 'BlockedUsers',
+  AVATAR_VISUALIZATION: 'AvatarVisualization',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -350,6 +351,14 @@ const ROUTES_OPTIONS = [
     logo: false,
     title: 'Block Users',
     bottom_tab: true,
+  },
+  {
+    route_name: ROUTES.AVATAR_VISUALIZATION,
+    left: 'back',
+    right: 'notifications',
+    logo: false,
+    title: 'Avatar Details', // Default title, can be overridden by route params
+    bottom_tab: false,
   },
 ] as const;
 

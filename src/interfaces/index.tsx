@@ -78,6 +78,7 @@ export type RootStackParamList = {
     MyPosts: undefined;
     UserProfile: { userId: number };
     BlockedUsers: undefined;
+    AvatarVisualization: { type: 'initial' | 'future'; title?: string };
 };
 
 export interface IWrapper {
