@@ -165,7 +165,7 @@ const ChatDetails = () => {
           style={[
             styles.input_container,
             {
-              paddingVertical: heightPixel(30),
+              paddingVertical: heightPixel(10),
               paddingBottom:
                 Platform.OS === 'ios'
                   ? heightPixel(30) + insets.bottom
@@ -173,6 +173,8 @@ const ChatDetails = () => {
             },
           ]}
         >
+
+
           <View style={styles.input_wrapper}>
             <TextInput
               style={styles.input}
