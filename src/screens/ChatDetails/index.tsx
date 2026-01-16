@@ -144,7 +144,7 @@ const ChatDetails = () => {
 
         {renderSelectedFiles()}
 
-        <View style={[styles.input_container, { paddingBottom: heightPixel(30) + insets.bottom }]}>
+        <View style={[styles.input_container, { paddingBottom: (Platform.OS === 'ios' && keyboardHeight > 0) ? heightPixel(10) : heightPixel(30) + insets.bottom }]}>
           <View style={styles.input_wrapper}>
             <TextInput
               style={styles.input}
