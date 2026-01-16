@@ -1,4 +1,5 @@
 import { CommonActions } from "@react-navigation/native"
+import React from "react"
 import { DrawerContentScrollView, DrawerContentComponentProps } from "@react-navigation/drawer"
 import { View } from "react-native"
 import images from "../../assets/images"
@@ -197,19 +198,19 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
                 </View>
             </Row>
             {
-                DRAWER_ROUTES.map((item) => (
+                DRAWER_ROUTES.map((item, index) => (
                     item?.children ?
-                        <>
+                        <React.Fragment key={`group-${index}`}>
                             {item?.title && <Text size={16} color={colors.white} style={styles.drawer_item_header}>{item.title}</Text>}
                             {
-                                item?.children?.map((childItem) => (
-                                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: childItem?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => handleNavigation(childItem)}>
+                                item?.children?.map((childItem, childIndex) => (
+                                    <Row key={`child-${index}-${childIndex}`} gap={8} align="center" style={[styles.drawer_item, { backgroundColor: childItem?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => handleNavigation(childItem)}>
                                         <Icon source={childItem?.icon} size={24} tint_color={colors.white} />
                                         <Text size={15} weight="semibold" color={colors.white}>{childItem.title}</Text>
                                     </Row>
                                 ))
                             }
-                        </> : null
+                        </React.Fragment> : null
                 ))
             }
             <Button text="Logout" type="custom" icon={images.drawer_icons.logout} style={styles.logout_button} onPress={onPressLogout} />

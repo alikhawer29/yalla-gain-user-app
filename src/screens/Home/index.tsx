@@ -132,6 +132,7 @@ const Home = () => {
                     renderItem={({ item }) => <WorkoutCard {...item} />}
                     showsVerticalScrollIndicator={false}
                     ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
+                    scrollEnabled={false}
                 />
             </View>
         </Wrapper>

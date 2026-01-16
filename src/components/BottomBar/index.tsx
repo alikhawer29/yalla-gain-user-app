@@ -84,6 +84,7 @@ const BottomBar = ({ state, descriptors, navigation }) => {
 
                     return (
                         <Pressable
+                            key={route.key}
                             accessibilityState={isFocused ? { selected: true } : {}}
                             accessibilityLabel={options.tabBarAccessibilityLabel}
                             testID={options.tabBarButtonTestID}
