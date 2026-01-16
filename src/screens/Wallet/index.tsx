@@ -31,7 +31,7 @@ const Wallet = () => {
                 <View style={styles.content}>
                     <View style={styles.coinContainer}>
                         <Image
-                            source={images.coin}
+                            source={require("../../assets/images/coins.png")}
                             style={styles.coinImage}
                         />
 
