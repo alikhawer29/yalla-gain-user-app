@@ -50,11 +50,20 @@ const ChatDetails = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Icon source={chatImage ? { uri: chatImage } : images.dummy} size={40} rounded no_padding />
-      <Text size={16} weight="semibold" style={styles.header_name}>{chatName}</Text>
+      <Icon
+        source={chatImage ? { uri: chatImage } : images.dummy}
+        size={40}
+        rounded
+        no_padding
+      />
+      <Text size={16} weight="semibold" style={styles.header_name}>
+        {chatName}
+      </Text>
       {userRole && (
         <View style={styles.role_badge}>
-          <Text size={10} color={colors.white}>{formatRole(userRole)}</Text>
+          <Text size={10} color={colors.white}>
+            {formatRole(userRole)}
+          </Text>
         </View>
       )}
     </View>
@@ -67,7 +76,9 @@ const ChatDetails = () => {
       <>
         {showDate && (
           <View style={styles.date_separator}>
-            <Text size={12} color={colors.icon_gray}>{formatDate(item.date)}</Text>
+            <Text size={12} color={colors.icon_gray}>
+              {formatDate(item.date)}
+            </Text>
           </View>
         )}
         <ChatMessageCard
@@ -104,12 +115,17 @@ const ChatDetails = () => {
       <View style={styles.selected_files_container}>
         {selectedFiles.map((file, index) => (
           <View key={index} style={styles.selected_file}>
-            <Image source={{ uri: file.uri }} style={styles.selected_file_image} />
+            <Image
+              source={{ uri: file.uri }}
+              style={styles.selected_file_image}
+            />
             <TouchableOpacity
               style={styles.remove_file_btn}
               onPress={() => onRemoveFile(index)}
             >
-              <Text size={10} color={colors.white}>✕</Text>
+              <Text size={10} color={colors.white}>
+                ✕
+              </Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -118,12 +134,13 @@ const ChatDetails = () => {
   };
 
   return (
-    <Wrapper hide_bottom_bar>
-      {renderHeader()}
-      <KeyboardAvoidingView
-        style={[styles.container, { marginBottom: isNewAndroid ? keyboardHeight : 0 }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+    >
+      <Wrapper hide_bottom_bar>
+        {renderHeader()}
         {isLoading ? (
           <View style={styles.loading_container}>
             <ActivityIndicator size="large" color={colors.primary} />
@@ -133,7 +150,7 @@ const ChatDetails = () => {
             ref={flatlistRef}
             data={messages}
             renderItem={renderMessage}
-            keyExtractor={(item) => String(item.id)}
+            keyExtractor={item => String(item.id)}
             ItemSeparatorComponent={() => <Seperator size={10} />}
             showsVerticalScrollIndicator={false}
             style={styles.messages_container}
@@ -144,7 +161,18 @@ const ChatDetails = () => {
 
         {renderSelectedFiles()}
 
-        <View style={[styles.input_container, { paddingBottom: (Platform.OS === 'ios' && keyboardHeight > 0) ? heightPixel(10) : heightPixel(30) + insets.bottom }]}>
+        <View
+          style={[
+            styles.input_container,
+            {
+              paddingVertical: heightPixel(30),
+              paddingBottom:
+                Platform.OS === 'ios'
+                  ? heightPixel(30) + insets.bottom
+                  : heightPixel(30) + insets.bottom,
+            },
+          ]}
+        >
           <View style={styles.input_wrapper}>
             <TextInput
               style={styles.input}
@@ -155,7 +183,12 @@ const ChatDetails = () => {
               multiline
             />
             <Row gap={10}>
-              <Icon source={images.gallery} size={20} tint_color={colors.icon_gray} onPress={onPickFiles} />
+              <Icon
+                source={images.gallery}
+                size={20}
+                tint_color={colors.icon_gray}
+                onPress={onPickFiles}
+              />
             </Row>
           </View>
           <TouchableOpacity
@@ -170,10 +203,9 @@ const ChatDetails = () => {
             )}
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </Wrapper>
+      </Wrapper>
+    </KeyboardAvoidingView>
   );
 };
 
 export default ChatDetails;
-
