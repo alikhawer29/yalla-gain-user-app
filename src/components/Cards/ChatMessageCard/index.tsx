@@ -65,14 +65,19 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
 
     return (
       <View style={styles.files_container}>
-        {message.file.map((file: any, index: number) => (
-          <Image
-            key={index}
-            source={{ uri: file.url || file }}
-            style={styles.file_image}
-            resizeMode="cover"
-          />
-        ))}
+        {message.file.map((file: any, index: number) => {
+          const uri = typeof file === 'string' ? file : (file.url || file.path || file.uri || file.media_url);
+          if (!uri || typeof uri !== 'string') return null;
+
+          return (
+            <Image
+              key={index}
+              source={{ uri }}
+              style={styles.file_image}
+              resizeMode="cover"
+            />
+          );
+        })}
       </View>
     );
   };
