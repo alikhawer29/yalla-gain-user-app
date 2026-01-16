@@ -7,6 +7,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  input_container: {
+    flexDirection: 'row',
+    backgroundColor: colors.transparent,
+    gap: 10,
+    paddingVertical: heightPixel(30),
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -41,13 +47,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: heightPixel(15),
   },
-  input_container: {
-    flexDirection: 'row',
-    backgroundColor: colors.transparent,
-    gap: 10,
-    paddingVertical: heightPixel(40),
-    alignItems: 'flex-end',
-  },
+
   input_wrapper: {
     flex: 1,
     flexDirection: 'row',
