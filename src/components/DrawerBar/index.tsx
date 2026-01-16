@@ -115,7 +115,7 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
     const { showYesNoModal } = useModal()
-    const { data: walletData } = useGetWalletCoinsQuery({})
+    const { data: walletData } = useGetWalletCoinsQuery({}, { refetchOnMountOrArgChange: true })
 
     const onPressLogout = () => {
         showYesNoModal({

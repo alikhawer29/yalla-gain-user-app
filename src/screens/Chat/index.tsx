@@ -50,7 +50,7 @@ const Chat = () => {
     };
 
     return (
-        <Wrapper scrollable floating hide_bottom_bar>
+        <Wrapper scrollable={false} floating hide_bottom_bar>
             <FlatList
                 data={filteredChats}
                 renderItem={({ item }) => (
