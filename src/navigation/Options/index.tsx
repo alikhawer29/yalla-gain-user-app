@@ -1,7 +1,8 @@
 import React from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
-import { StackNavigationOptions } from "@react-navigation/stack"
+import { StackNavigationOptions, StackNavigationProp } from "@react-navigation/stack"
+import { RouteProp } from "@react-navigation/native"
 import images from "../../assets/images"
 import Icon from "../../components/Icon"
 import Image from "../../components/Image"
@@ -13,26 +14,28 @@ import { goBack } from "../../utils/navigation"
 import { ROUTES_OPTIONS } from "../../utils/routes"
 
 interface OptionsProps {
-  route?: {
+  route?: RouteProp<any, any> | {
     name?: string
     params?: {
       title?: string
     }
   }
-  navigation?: {
-    openDrawer: () => void
+  navigation?: StackNavigationProp<any, any> | {
+    openDrawer?: () => void
   }
 }
 
 const Options = (props: OptionsProps): StackNavigationOptions => {
 
-  const route = ROUTES_OPTIONS.find(item => item.route_name === props?.route?.name)
+  const routeName = (props?.route as any)?.name
+  const route = ROUTES_OPTIONS.find(item => item.route_name === routeName)
 
   const handleLeftPress = () => {
     if (route?.left === "back") {
       goBack()
     } else if (route?.left === "drawer") {
-      props?.navigation?.openDrawer()
+      const nav = props?.navigation as any
+      nav?.openDrawer?.()
     }
   }
 
