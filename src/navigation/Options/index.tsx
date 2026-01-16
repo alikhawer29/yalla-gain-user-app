@@ -95,11 +95,19 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
     )
   }
 
+  const isTransparent = (route && 'transparent' in route ? route.transparent : false) || false
+
   return {
     headerShown: true,
-    headerTransparent: (route && 'transparent' in route ? route.transparent : false) || false,
+    headerTransparent: isTransparent,
     header: () => (
-      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <SafeAreaView
+        edges={["top"]}
+        style={[
+          styles.safeArea,
+          { backgroundColor: isTransparent ? colors.transparent : colors.black }
+        ]}
+      >
         <View style={styles.container}>
           {renderLeft()}
           <View style={styles.center}>{renderTitle()}</View>
