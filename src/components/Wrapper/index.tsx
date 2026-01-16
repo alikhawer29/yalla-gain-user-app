@@ -1,10 +1,12 @@
 import { useHeaderHeight } from "@react-navigation/elements"
 import { FC, memo } from "react"
 import { ActivityIndicator, ScrollView, View } from "react-native"
+import images from "../../assets/images"
 import { IWrapper } from "../../interfaces"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
 import FloatingButton from "../FloatingButton"
+import Image from "../Image"
 import styles from "./styles"
 
 const Wrapper: FC<IWrapper> = ({
@@ -47,6 +49,15 @@ const Wrapper: FC<IWrapper> = ({
 
     return (
         <View style={container_style}>
+            <View style={styles.left_image} >
+                <Image source={images.left_light} />
+            </View>
+            <View style={styles.bg_image} >
+                <Image source={images.center_light} />
+            </View>
+            <View style={styles.right_image} >
+                <Image source={images.right_light} />
+            </View>
             {
                 floating &&
                 <FloatingButton style={{ right: widthPixel(30), bottom: (heightPixel(bottom_bar ? 90 : 0) + bottomBarPadding) + 10 }} />
