@@ -74,7 +74,7 @@ const MyPosts = () => {
     const hasData = data && 'data' in data && Array.isArray(data.data) && data.data.length > 0;
     if (isLoading && !hasData) {
         return (
-            <Wrapper scrollable>
+            <Wrapper>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
@@ -83,7 +83,7 @@ const MyPosts = () => {
     }
 
     return (
-        <Wrapper scrollable>
+        <Wrapper>
             <FlatList
                 data={data?.data || []}
                 renderItem={({ item }) => <NewsFeedCard {...item} isMyPost={true} />}

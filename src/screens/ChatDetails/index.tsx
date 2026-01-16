@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import images from '../../assets/images';
 import Icon from '../../components/Icon';
 import Row from '../../components/Row';
@@ -16,6 +17,7 @@ import Text from '../../components/Text';
 import Wrapper from '../../components/Wrapper';
 import useKeyboard from '../../hooks/useKeyboard';
 import colors from '../../utils/colors';
+import { heightPixel } from '../../utils/helper';
 import ChatMessageCard from '../../components/Cards/ChatMessageCard';
 import useChatDetailsController from './useChatDetailsController';
 import styles from './styles';
@@ -37,6 +39,7 @@ const ChatDetails = () => {
     functions: { onChangeMessage, onSendMessage, onPickFiles, onRemoveFile },
   } = useChatDetailsController();
 
+  const insets = useSafeAreaInsets();
   const keyboardHeight = useKeyboard();
   const isNewAndroid = Platform.OS === 'android' && Platform.Version >= 35;
 
@@ -141,11 +144,11 @@ const ChatDetails = () => {
 
         {renderSelectedFiles()}
 
-        <View style={styles.input_container}>
+        <View style={[styles.input_container, { paddingBottom: heightPixel(30) + insets.bottom }]}>
           <View style={styles.input_wrapper}>
             <TextInput
               style={styles.input}
-              placeholder="Type message ..."
+              placeholder="Type a message..."
               value={message}
               onChangeText={onChangeMessage}
               placeholderTextColor={colors.icon_gray}
