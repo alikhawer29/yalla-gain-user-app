@@ -1,6 +1,7 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { useEffect } from 'react';
 import { Platform, StatusBar, StyleSheet, UIManager } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import BootSplash from 'react-native-bootsplash';
 import { MenuProvider } from 'react-native-popup-menu';
 import Toast from 'react-native-toast-message';
@@ -44,18 +45,24 @@ function App() {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-          <AppWrapper>
-            <StatusBar barStyle={'light-content'} />
-            <MenuProvider>
-              <ModalProvider>
-                <NavigationContainer ref={navigationRef} theme={navTheme}>
-                  <AppStackNavigator />
-                  {/* <NetworkLoggerFAB /> */}
-                  <Toast />
-                </NavigationContainer>
-              </ModalProvider>
-            </MenuProvider>
-          </AppWrapper>
+          <SafeAreaProvider>
+            <AppWrapper>
+              <StatusBar
+                barStyle="light-content"
+                translucent={false}
+                backgroundColor={colors.primary}
+              />
+              <MenuProvider>
+                <ModalProvider>
+                  <NavigationContainer ref={navigationRef} theme={navTheme}>
+                    <AppStackNavigator />
+                    {/* <NetworkLoggerFAB /> */}
+                    <Toast />
+                  </NavigationContainer>
+                </ModalProvider>
+              </MenuProvider>
+            </AppWrapper>
+          </SafeAreaProvider>
         </StripeProvider>
       </PersistGate>
     </Provider>
