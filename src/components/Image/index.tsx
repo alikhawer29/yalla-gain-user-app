@@ -1,12 +1,40 @@
-import { FC, memo } from "react"
-import { Image as RNImage } from "react-native"
-import { IImage } from "../../interfaces"
-import styles from "./styles"
+import { FC, memo, useState } from 'react';
+import { Image as RNImage, View } from 'react-native';
+import { IImage } from '../../interfaces';
+import images from '../../assets/images';
+import styles from './styles';
 
-const Image: FC<IImage> = ({ source, style, resize = "contain" }) => {
+const Image: FC<IImage> = ({ source, style, resize = 'contain' }) => {
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    setHasError(true);
+  };
+
+  if (
+    hasError ||
+    (typeof source === 'object' &&
+      !Array.isArray(source) &&
+      source?.uri &&
+      (!source.uri.trim() || source.uri === 'undefined'))
+  ) {
     return (
-        <RNImage source={source} style={[styles.container, style]} resizeMode={resize} />
-    )
-}
+      <RNImage
+        source={images.dummy}
+        style={[styles.container, style]}
+        resizeMode={resize}
+      />
+    );
+  }
 
-export default memo(Image)
+  return (
+    <RNImage
+      source={source}
+      style={[styles.container, style]}
+      resizeMode={resize}
+      onError={handleError}
+    />
+  );
+};
+
+export default memo(Image);

@@ -11,7 +11,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.transparent,
     gap: 10,
-    paddingVertical: heightPixel(30),
   },
   header: {
     flexDirection: 'row',

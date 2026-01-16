@@ -66,7 +66,10 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
     return (
       <View style={styles.files_container}>
         {message.file.map((file: any, index: number) => {
-          const uri = typeof file === 'string' ? file : (file.url || file.path || file.uri || file.media_url);
+          const uri =
+            typeof file === 'string'
+              ? file
+              : file.url || file.path || file.uri || file.media_url;
           if (!uri || typeof uri !== 'string') return null;
 
           return (
@@ -93,7 +96,11 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
       {!isMine && (
         <View style={styles.avatar_container}>
           <Icon
-            source={message.image ? { uri: message.image } : images.dummy}
+            source={
+              message.image && message.image.trim() !== ''
+                ? { uri: message.image }
+                : images.dummy
+            }
             rounded
             no_padding
             size={39}
@@ -111,13 +118,19 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
         {message.message && <Text size={12}>{message.message}</Text>}
         <Row align="center" justify="flex-end" gap={5}>
           <Icon source={images.clock} tint_color={colors.icon_gray} size={10} />
-          <Text size={10} color={colors.icon_gray}>{formatTime(message.time)}</Text>
+          <Text size={10} color={colors.icon_gray}>
+            {formatTime(message.time)}
+          </Text>
         </Row>
       </View>
       {isMine && (
         <View style={styles.avatar_container}>
           <Icon
-            source={message.image ? { uri: message.image } : images.dummy}
+            source={
+              message.image && message.image.trim() !== ''
+                ? { uri: message.image }
+                : images.dummy
+            }
             rounded
             no_padding
             size={39}
@@ -129,4 +142,3 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
 };
 
 export default memo(ChatMessageCard);
-
