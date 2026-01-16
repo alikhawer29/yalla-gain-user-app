@@ -165,8 +165,6 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                 post_id: id,
                 option_id: optionId
             }).unwrap();
-
-            console.log('Poll vote successful for option:', optionId);
         } catch (error: any) {
             console.error('Vote poll error:', error);
             // Revert on error
@@ -180,7 +178,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleEditPost = () => {
-        navigate(ROUTES.EDIT_POST, { 
+        navigate(ROUTES.EDIT_POST, {
             postId: id,
             postData: {
                 id,
@@ -222,7 +220,6 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleMediaPress = (mediaUrl: string, isVideo: boolean) => {
-        console.log('Media pressed:', mediaUrl, 'isVideo:', isVideo);
         setSelectedMedia({ url: mediaUrl, isVideo });
         setShowMediaViewer(true);
     };
@@ -329,7 +326,8 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                         style={{ width: '100%', height: '100%' }}
                                         controls
                                         paused={true}
-                                    />                                </View>
+                                    />
+                                </View>
                             )}
                         </TouchableOpacity>
                     )
@@ -465,8 +463,8 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     return (
         <CardWrapper padding={18} height={"auto"} color={colors.blackish_gray}>
             <Row align="center" gap={12}>
-                <TouchableOpacity 
-                    style={{ flex: 0.9 }} 
+                <TouchableOpacity
+                    style={{ flex: 0.9 }}
                     onPress={handleUserProfileClick}
                     activeOpacity={0.7}
                 >
@@ -486,12 +484,12 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                     </Row>
                 </TouchableOpacity>
                 {isMyPost || isOwnPost ? (
-                    <Menu 
+                    <Menu
                         dropdown_items={[
                             { label: "Edit", onPress: handleEditPost },
                             { label: "Remove", onPress: handleDeletePost }
-                        ]} 
-                        style={{ flex: 0.1, alignItems: "flex-end" }} 
+                        ]}
+                        style={{ flex: 0.1, alignItems: "flex-end" }}
                     />
                 ) : (
                     <Menu dropdown_items={[{ label: "Report", onPress: handleReportClick }]} style={{ flex: 0.1, alignItems: "flex-end" }} />

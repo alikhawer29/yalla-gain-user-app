@@ -15,7 +15,6 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
     const user = useAppSelector(selectUser)
     
     const [content, setContent] = useState("");
-    console.log("content", content);
     const [media, setMedia] = useState<any[]>([]);
     const [pollOptions, setPollOptions] = useState([{ id: 1, text: "" }, { id: 2, text: "" }]);
     const [activeTab, setActiveTab] = useState<'text' | 'photo' | 'video' | 'poll'>(initialTab || 'text');

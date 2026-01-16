@@ -19,12 +19,7 @@ import { navigationRef } from './src/utils/navigation';
 const STRIPE_PUBLISHABLE_KEY =
   'pk_test_51JVZEtHOTfIICq62kKsm6o2pYVhJUXPXViO9m2hrXqw6vKRwC4RzL3GYiWF9LKax8JORdQpZKrxeNx02wwONOMuO00H8CpMfRf';
 
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+
 
 function App() {
   useEffect(() => {

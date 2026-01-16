@@ -35,7 +35,6 @@ const saveImageToDocuments = async (
     if (!sourceExists) throw new Error(`Source image not found: ${sourcePath}`);
 
     await RNFS.copyFile(sourcePath, destinationPath);
-    console.log(`📁 Image saved for testing: ${destinationPath}`);
     return destinationPath;
   } catch (error: any) {
     console.warn('Failed to save image:', error);

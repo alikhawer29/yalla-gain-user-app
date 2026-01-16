@@ -260,7 +260,6 @@ const useBookingDetailsController = () => {
       return;
     }
     try {
-      console.log(id, 'id');
       await rateBooking({ id, rating, review }).unwrap();
       setShowRateModal(false);
       showOkModal(

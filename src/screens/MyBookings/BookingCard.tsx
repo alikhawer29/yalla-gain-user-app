@@ -15,8 +15,6 @@ interface IBookingCard {
 }
 
 const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => {
-
-    console.log(booking, 'booking')
     const formatDate = (dateString: string) => {
         if (!dateString) return "";
 

@@ -81,7 +81,7 @@ const NewsFeed = () => {
     }
 
     return (
-        <Wrapper scrollable>
+        <Wrapper scrollable={false}>
             <FlatList
                 data={data?.data || []}
                 renderItem={({ item }) => <NewsFeedCard {...item} />}
