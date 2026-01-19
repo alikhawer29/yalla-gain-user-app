@@ -1,9 +1,4 @@
 ﻿#include "pch-c.h"
-#ifndef _MSC_VER
-# include <alloca.h>
-#else
-# include <malloc.h>
-#endif
 
 
 #include "codegen/il2cpp-codegen-metadata.h"
@@ -84,34 +79,34 @@ static Il2CppTokenAdjustorThunkPair s_adjustorThunks[4] =
 };
 static const int32_t s_InvokerIndices[28] = 
 {
-	6326,
-	6457,
-	6457,
-	6406,
-	6406,
-	1952,
-	3484,
-	6406,
-	6326,
-	6406,
-	6326,
-	6406,
-	6457,
-	6457,
-	3556,
-	3530,
-	1952,
-	3556,
-	1952,
-	3530,
-	3530,
-	3530,
-	1952,
-	1965,
-	4307,
-	2468,
-	4307,
-	2469,
+	10527,
+	10792,
+	10792,
+	10709,
+	10709,
+	3224,
+	5996,
+	10709,
+	10527,
+	10709,
+	10527,
+	10709,
+	10792,
+	10792,
+	6116,
+	6071,
+	3224,
+	6116,
+	3224,
+	6071,
+	6071,
+	6071,
+	3224,
+	3263,
+	7447,
+	4159,
+	7447,
+	4160,
 };
 IL2CPP_EXTERN_C const Il2CppCodeGenModule g_UnityEngine_AudioModule_CodeGenModule;
 const Il2CppCodeGenModule g_UnityEngine_AudioModule_CodeGenModule = 
