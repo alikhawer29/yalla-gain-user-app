@@ -82,3 +82,5 @@ unity/builds/ios/
 unity/builds/
 unityLibrary/src/main/assets/bin/
 *.unity3d
+unity/builds/android/unityLibrary/src/main/assets/bin/Data/data.unity3d
+unity/builds/android/unityLibrary/unityLibrary/src/main/assets/bin/Data/data.unity3d
