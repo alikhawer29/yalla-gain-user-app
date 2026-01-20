@@ -76,3 +76,9 @@ yarn-error.log
 
 unity/builds/android/unityLibrary/symbols/
 unity/builds/ios/
+
+
+# Unity build artifacts
+unity/builds/
+unityLibrary/src/main/assets/bin/
+*.unity3d
