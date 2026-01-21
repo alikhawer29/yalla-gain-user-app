@@ -67,6 +67,8 @@ const ROUTES = {
   NOTIFICATIONS: 'Notifications',
   CHOOSE_LANGUAGE: 'ChooseLanguage',
   BASIC_DETAILS: 'BasicDetails',
+  ABOUT_US: 'AboutUs',
+  FAQS: 'Faqs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -385,6 +387,22 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Basic Details',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.ABOUT_US,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'About Us',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.FAQS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'FAQs',
     bottom_tab: false,
   },
 ] as const;

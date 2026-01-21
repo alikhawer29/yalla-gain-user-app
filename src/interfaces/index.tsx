@@ -45,9 +45,9 @@ export type RootStackParamList = {
     Chatbot: undefined
     CreateNewsFeed: undefined
     Workout: undefined
-    WorkoutDetails: undefined
-    VideoDetails: undefined
-    VideoPlayer: undefined
+    WorkoutDetails: { id: number }
+    VideoDetails: { id: number }
+    VideoPlayer: { video: string }
     MovementCorrection: undefined
     MovementCorrectionCamera: undefined
     SavedWorkoutContent: undefined
@@ -82,6 +82,8 @@ export type RootStackParamList = {
     Notifications: undefined;
     ChooseLanguage: undefined;
     BasicDetails: undefined;
+    AboutUs: undefined;
+    Faqs: undefined;
 };
 
 export interface IWrapper {

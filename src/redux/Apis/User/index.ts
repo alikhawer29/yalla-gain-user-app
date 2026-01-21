@@ -441,6 +441,14 @@ export const userApi = createApi({
         body,
       }),
     }),
+    getFaqs: builder.query({
+      query: () => ({
+        url: `faqs`,
+        method: 'GET',
+      }),
+      // Always fetch fresh FAQs when screen mounts again
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -499,5 +507,6 @@ export const {
   useBuyYallaCoinMutation,
   useConfirmPaymentMutation,
   useScanAvatarMutation,
-  useUpdateAvatarMutation
+  useUpdateAvatarMutation,
+  useGetFaqsQuery
 } = userApi;

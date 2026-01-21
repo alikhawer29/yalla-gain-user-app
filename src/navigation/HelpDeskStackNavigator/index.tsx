@@ -10,6 +10,8 @@ import CreatePost from '../../screens/CreatePost';
 import BlockedUsers from '../../screens/BlockedUsers';
 import ChooseLanguage from '../../screens/ChooseLanguage';
 import BasicDetails from '../../screens/BasicDetails';
+import AboutUs from '../../screens/AboutUs';
+import Faqs from '../../screens/Faqs';
 import { ROUTES } from '../../utils/routes';
 import Options from '../Options';
 
@@ -27,6 +29,8 @@ const HelpDeskStackNavigator = () => {
             <Stack.Screen name={ROUTES.SUBSCRIPTION_LOGS} component={SubscriptionLogs} />
             <Stack.Screen name={ROUTES.CHOOSE_LANGUAGE} component={ChooseLanguage} />
             <Stack.Screen name={ROUTES.BASIC_DETAILS} component={BasicDetails} />
+            <Stack.Screen name={ROUTES.ABOUT_US} component={AboutUs} />
+            <Stack.Screen name={ROUTES.FAQS} component={Faqs} />
         </Stack.Navigator>
     );
 }
