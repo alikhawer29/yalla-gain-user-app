@@ -1,0 +1,752 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		048E40522E21A86800D56C34 /* SF-Pro-Display-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 048E40502E21A86800D56C34 /* SF-Pro-Display-Regular.otf */; };
+		048E40532E21A86800D56C34 /* SF-Pro-Display-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 048E40512E21A86800D56C34 /* SF-Pro-Display-Semibold.otf */; };
+		048E40542E21A86800D56C34 /* SF-Pro-Display-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 048E404F2E21A86800D56C34 /* SF-Pro-Display-Bold.otf */; };
+		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		336FF2CA411140DFA6BE1E3D /* index.ts in Resources */ = {isa = PBXBuildFile; fileRef = 4C7E609A47CB4451A0FAFA19 /* index.ts */; };
+		416CFE6A1F3949AE96D45083 /* RNUnityViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 234138C2519846778FF07E7F /* RNUnityViewManager.m */; };
+		6EF8419F7066653E8B80D757 /* libPods-YallaGain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */; };
+		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		79CE710DA7A64C495FFC1465 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A5E70CE9E1FD4579BF3AC106 /* RNUnityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACDF1252D8B49BDA5DC3730 /* RNUnityView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		145F4F3B2EB27D8D0039225E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		04203C732E3172F400C9D63D /* AppDelegate+RNAppAuth-Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AppDelegate+RNAppAuth-Bridge.h"; sourceTree = "<group>"; };
+		048E404F2E21A86800D56C34 /* SF-Pro-Display-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SF-Pro-Display-Bold.otf"; sourceTree = "<group>"; };
+		048E40502E21A86800D56C34 /* SF-Pro-Display-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SF-Pro-Display-Regular.otf"; sourceTree = "<group>"; };
+		048E40512E21A86800D56C34 /* SF-Pro-Display-Semibold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SF-Pro-Display-Semibold.otf"; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* YallaGain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YallaGain.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = YallaGain/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = YallaGain/Info.plist; sourceTree = "<group>"; };
+		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = YallaGain/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		145F4F3C2EB27DCA0039225E /* global-metadata.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "global-metadata.dat"; sourceTree = "<group>"; };
+		145F4F3E2EB27DCA0039225E /* machine.config */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = machine.config; sourceTree = "<group>"; };
+		145F4F412EB27DCA0039225E /* mscorlib.dll-resources.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "mscorlib.dll-resources.dat"; sourceTree = "<group>"; };
+		145F4F442EB27DCA0039225E /* unity_builtin_extra */ = {isa = PBXFileReference; lastKnownFileType = file; path = unity_builtin_extra; sourceTree = "<group>"; };
+		145F4F462EB27DCA0039225E /* boot.config */ = {isa = PBXFileReference; lastKnownFileType = text; path = boot.config; sourceTree = "<group>"; };
+		145F4F472EB27DCA0039225E /* globalgamemanagers */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers; sourceTree = "<group>"; };
+		145F4F482EB27DCA0039225E /* globalgamemanagers.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers.assets; sourceTree = "<group>"; };
+		145F4F492EB27DCA0039225E /* globalgamemanagers.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers.assets.resS; sourceTree = "<group>"; };
+		145F4F4A2EB27DCA0039225E /* level0 */ = {isa = PBXFileReference; lastKnownFileType = file; path = level0; sourceTree = "<group>"; };
+		145F4F4B2EB27DCA0039225E /* level0.resS */ = {isa = PBXFileReference; lastKnownFileType = text; path = level0.resS; sourceTree = "<group>"; };
+		145F4F4C2EB27DCA0039225E /* RuntimeInitializeOnLoads.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RuntimeInitializeOnLoads.json; sourceTree = "<group>"; };
+		145F4F4D2EB27DCA0039225E /* ScriptingAssemblies.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ScriptingAssemblies.json; sourceTree = "<group>"; };
+		145F4F4E2EB27DCA0039225E /* sharedassets0.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets; sourceTree = "<group>"; };
+		145F4F4F2EB27DCA0039225E /* sharedassets0.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets.resS; sourceTree = "<group>"; };
+		145F4F502EB27DCA0039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = text; path = "unity default resources"; sourceTree = "<group>"; };
+		145F4F532EB27EB00039225E /* global-metadata.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "global-metadata.dat"; sourceTree = "<group>"; };
+		145F4F552EB27EB00039225E /* machine.config */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = machine.config; sourceTree = "<group>"; };
+		145F4F582EB27EB00039225E /* mscorlib.dll-resources.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "mscorlib.dll-resources.dat"; sourceTree = "<group>"; };
+		145F4F5B2EB27EB00039225E /* unity_builtin_extra */ = {isa = PBXFileReference; lastKnownFileType = file; path = unity_builtin_extra; sourceTree = "<group>"; };
+		145F4F5D2EB27EB00039225E /* boot.config */ = {isa = PBXFileReference; lastKnownFileType = text; path = boot.config; sourceTree = "<group>"; };
+		145F4F5E2EB27EB00039225E /* globalgamemanagers */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers; sourceTree = "<group>"; };
+		145F4F5F2EB27EB00039225E /* globalgamemanagers.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers.assets; sourceTree = "<group>"; };
+		145F4F602EB27EB00039225E /* globalgamemanagers.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = globalgamemanagers.assets.resS; sourceTree = "<group>"; };
+		145F4F612EB27EB00039225E /* level0 */ = {isa = PBXFileReference; lastKnownFileType = file; path = level0; sourceTree = "<group>"; };
+		145F4F622EB27EB00039225E /* level0.resS */ = {isa = PBXFileReference; lastKnownFileType = text; path = level0.resS; sourceTree = "<group>"; };
+		145F4F632EB27EB00039225E /* RuntimeInitializeOnLoads.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = RuntimeInitializeOnLoads.json; sourceTree = "<group>"; };
+		145F4F642EB27EB00039225E /* ScriptingAssemblies.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ScriptingAssemblies.json; sourceTree = "<group>"; };
+		145F4F652EB27EB00039225E /* sharedassets0.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets; sourceTree = "<group>"; };
+		145F4F662EB27EB00039225E /* sharedassets0.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets.resS; sourceTree = "<group>"; };
+		145F4F672EB27EB00039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = text; path = "unity default resources"; sourceTree = "<group>"; };
+		1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.debug.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.debug.xcconfig"; sourceTree = "<group>"; };
+		234138C2519846778FF07E7F /* RNUnityViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RNUnityViewManager.m; path = YallaGain/RNUnityViewManager.m; sourceTree = "<group>"; };
+		3D03A81F69A4492D864D24F4 /* YallaGain-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "YallaGain-Bridging-Header.h"; path = "YallaGain/YallaGain-Bridging-Header.h"; sourceTree = "<group>"; };
+		4C7E609A47CB4451A0FAFA19 /* index.ts */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = index.ts; path = ../src/assets/fonts/index.ts; sourceTree = "<group>"; };
+		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = YallaGain/AppDelegate.swift; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = YallaGain/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8B204FB01EFA4E4789307465 /* SF-Pro-Display-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro-Display-Bold.otf"; path = "../src/assets/fonts/SF-Pro-Display-Bold.otf"; sourceTree = "<group>"; };
+		9ACDF1252D8B49BDA5DC3730 /* RNUnityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RNUnityView.swift; path = YallaGain/RNUnityView.swift; sourceTree = "<group>"; };
+		A95A3505CE6E486F9C012837 /* RNUnityView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RNUnityView.h; path = YallaGain/RNUnityView.h; sourceTree = "<group>"; };
+		B7E13CC4CB7F416D8C63F44F /* SF-Pro-Display-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro-Display-Regular.otf"; path = "../src/assets/fonts/SF-Pro-Display-Regular.otf"; sourceTree = "<group>"; };
+		DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.release.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.release.xcconfig"; sourceTree = "<group>"; };
+		E5D9D9308C804E07957DBF76 /* SF-Pro-Display-Semibold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro-Display-Semibold.otf"; path = "../src/assets/fonts/SF-Pro-Display-Semibold.otf"; sourceTree = "<group>"; };
+		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YallaGain.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6EF8419F7066653E8B80D757 /* libPods-YallaGain.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		13B07FAE1A68108700A75B9A /* YallaGain */ = {
+			isa = PBXGroup;
+			children = (
+				04203C732E3172F400C9D63D /* AppDelegate+RNAppAuth-Bridge.h */,
+				048E404F2E21A86800D56C34 /* SF-Pro-Display-Bold.otf */,
+				048E40502E21A86800D56C34 /* SF-Pro-Display-Regular.otf */,
+				048E40512E21A86800D56C34 /* SF-Pro-Display-Semibold.otf */,
+				13B07FB51A68108700A75B9A /* Images.xcassets */,
+				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				9ACDF1252D8B49BDA5DC3730 /* RNUnityView.swift */,
+				A95A3505CE6E486F9C012837 /* RNUnityView.h */,
+				234138C2519846778FF07E7F /* RNUnityViewManager.m */,
+				3D03A81F69A4492D864D24F4 /* YallaGain-Bridging-Header.h */,
+				13B07FB61A68108700A75B9A /* Info.plist */,
+				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+			);
+			name = YallaGain;
+			sourceTree = "<group>";
+		};
+		145F4F3D2EB27DCA0039225E /* Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F3C2EB27DCA0039225E /* global-metadata.dat */,
+			);
+			path = Metadata;
+			sourceTree = "<group>";
+		};
+		145F4F3F2EB27DCA0039225E /* 4.0 */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F3E2EB27DCA0039225E /* machine.config */,
+			);
+			path = 4.0;
+			sourceTree = "<group>";
+		};
+		145F4F402EB27DCA0039225E /* mono */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F3F2EB27DCA0039225E /* 4.0 */,
+			);
+			path = mono;
+			sourceTree = "<group>";
+		};
+		145F4F422EB27DCA0039225E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F412EB27DCA0039225E /* mscorlib.dll-resources.dat */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		145F4F432EB27DCA0039225E /* Managed */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F3D2EB27DCA0039225E /* Metadata */,
+				145F4F402EB27DCA0039225E /* mono */,
+				145F4F422EB27DCA0039225E /* Resources */,
+			);
+			path = Managed;
+			sourceTree = "<group>";
+		};
+		145F4F452EB27DCA0039225E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F442EB27DCA0039225E /* unity_builtin_extra */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		145F4F512EB27DCA0039225E /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F432EB27DCA0039225E /* Managed */,
+				145F4F452EB27DCA0039225E /* Resources */,
+				145F4F462EB27DCA0039225E /* boot.config */,
+				145F4F472EB27DCA0039225E /* globalgamemanagers */,
+				145F4F482EB27DCA0039225E /* globalgamemanagers.assets */,
+				145F4F492EB27DCA0039225E /* globalgamemanagers.assets.resS */,
+				145F4F4A2EB27DCA0039225E /* level0 */,
+				145F4F4B2EB27DCA0039225E /* level0.resS */,
+				145F4F4C2EB27DCA0039225E /* RuntimeInitializeOnLoads.json */,
+				145F4F4D2EB27DCA0039225E /* ScriptingAssemblies.json */,
+				145F4F4E2EB27DCA0039225E /* sharedassets0.assets */,
+				145F4F4F2EB27DCA0039225E /* sharedassets0.assets.resS */,
+				145F4F502EB27DCA0039225E /* unity default resources */,
+			);
+			name = Data;
+			path = ../unity/builds/ios/UnityFramework.framework/Data;
+			sourceTree = "<group>";
+		};
+		145F4F542EB27EB00039225E /* Metadata */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F532EB27EB00039225E /* global-metadata.dat */,
+			);
+			path = Metadata;
+			sourceTree = "<group>";
+		};
+		145F4F562EB27EB00039225E /* 4.0 */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F552EB27EB00039225E /* machine.config */,
+			);
+			path = 4.0;
+			sourceTree = "<group>";
+		};
+		145F4F572EB27EB00039225E /* mono */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F562EB27EB00039225E /* 4.0 */,
+			);
+			path = mono;
+			sourceTree = "<group>";
+		};
+		145F4F592EB27EB00039225E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F582EB27EB00039225E /* mscorlib.dll-resources.dat */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		145F4F5A2EB27EB00039225E /* Managed */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F542EB27EB00039225E /* Metadata */,
+				145F4F572EB27EB00039225E /* mono */,
+				145F4F592EB27EB00039225E /* Resources */,
+			);
+			path = Managed;
+			sourceTree = "<group>";
+		};
+		145F4F5C2EB27EB00039225E /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F5B2EB27EB00039225E /* unity_builtin_extra */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		145F4F682EB27EB00039225E /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				145F4F5A2EB27EB00039225E /* Managed */,
+				145F4F5C2EB27EB00039225E /* Resources */,
+				145F4F5D2EB27EB00039225E /* boot.config */,
+				145F4F5E2EB27EB00039225E /* globalgamemanagers */,
+				145F4F5F2EB27EB00039225E /* globalgamemanagers.assets */,
+				145F4F602EB27EB00039225E /* globalgamemanagers.assets.resS */,
+				145F4F612EB27EB00039225E /* level0 */,
+				145F4F622EB27EB00039225E /* level0.resS */,
+				145F4F632EB27EB00039225E /* RuntimeInitializeOnLoads.json */,
+				145F4F642EB27EB00039225E /* ScriptingAssemblies.json */,
+				145F4F652EB27EB00039225E /* sharedassets0.assets */,
+				145F4F662EB27EB00039225E /* sharedassets0.assets.resS */,
+				145F4F672EB27EB00039225E /* unity default resources */,
+			);
+			name = Data;
+			path = ../unity/builds/ios/UnityFramework.framework/Data;
+			sourceTree = "<group>";
+		};
+		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
+				F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Libraries;
+			sourceTree = "<group>";
+		};
+		83CBB9F61A601CBA00E9B192 = {
+			isa = PBXGroup;
+			children = (
+				145F4F512EB27DCA0039225E /* Data */,
+				145F4F682EB27EB00039225E /* Data */,
+				13B07FAE1A68108700A75B9A /* YallaGain */,
+				832341AE1AAA6A7D00B99B32 /* Libraries */,
+				83CBBA001A601CBA00E9B192 /* Products */,
+				2D16E6871FA4F8E400B85C8A /* Frameworks */,
+				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				F80243CA77324D78812A272C /* Resources */,
+			);
+			indentWidth = 2;
+			sourceTree = "<group>";
+			tabWidth = 2;
+			usesTabs = 0;
+		};
+		83CBBA001A601CBA00E9B192 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				13B07F961A680F5B00A75B9A /* YallaGain.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */,
+				DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		F80243CA77324D78812A272C /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8B204FB01EFA4E4789307465 /* SF-Pro-Display-Bold.otf */,
+				B7E13CC4CB7F416D8C63F44F /* SF-Pro-Display-Regular.otf */,
+				E5D9D9308C804E07957DBF76 /* SF-Pro-Display-Semibold.otf */,
+				4C7E609A47CB4451A0FAFA19 /* index.ts */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		13B07F861A680F5B00A75B9A /* YallaGain */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "YallaGain" */;
+			buildPhases = (
+				A79A6BF4F2D1E751C0D8577C /* [CP] Check Pods Manifest.lock */,
+				13B07F871A680F5B00A75B9A /* Sources */,
+				13B07F8C1A680F5B00A75B9A /* Frameworks */,
+				13B07F8E1A680F5B00A75B9A /* Resources */,
+				A1B2C3D4E5F6789012345678 /* Copy Unity Data Folder */,
+				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
+				145F4F3B2EB27D8D0039225E /* CopyFiles */,
+				D3BCAD9CD3D306787D5242E2 /* [CP] Embed Pods Frameworks */,
+				76B0394B7BCFC345823EACE1 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YallaGain;
+			productName = YallaGain;
+			productReference = 13B07F961A680F5B00A75B9A /* YallaGain.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		83CBB9F71A601CBA00E9B192 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					13B07F861A680F5B00A75B9A = {
+						LastSwiftMigration = 1120;
+					};
+				};
+			};
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "YallaGain" */;
+			compatibilityVersion = "Xcode 12.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 83CBB9F61A601CBA00E9B192;
+			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				13B07F861A680F5B00A75B9A /* YallaGain */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		13B07F8E1A680F5B00A75B9A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
+				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				79CE710DA7A64C495FFC1465 /* PrivacyInfo.xcprivacy in Resources */,
+				336FF2CA411140DFA6BE1E3D /* index.ts in Resources */,
+				048E40522E21A86800D56C34 /* SF-Pro-Display-Regular.otf in Resources */,
+				048E40532E21A86800D56C34 /* SF-Pro-Display-Semibold.otf in Resources */,
+				048E40542E21A86800D56C34 /* SF-Pro-Display-Bold.otf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/.xcode.env.local",
+				"$(SRCROOT)/.xcode.env",
+			);
+			name = "Bundle React Native code and images";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
+		};
+		76B0394B7BCFC345823EACE1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A1B2C3D4E5F6789012345678 /* Copy Unity Data Folder */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../unity/builds/ios/UnityFramework.framework/Data",
+			);
+			name = "Copy Unity Data Folder";
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Data",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Copy Unity Data folder from unity/builds/ios to app bundle\nUNITY_DATA_SOURCE=\"${SRCROOT}/../unity/builds/ios/UnityFramework.framework/Data\"\nUNITY_DATA_DEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Data\"\n\n# Try primary source first\nif [ -d \"$UNITY_DATA_SOURCE\" ]; then\n  echo \"✅ Found Unity Data folder at: $UNITY_DATA_SOURCE\"\n  echo \"Copying Unity Data folder to app bundle...\"\n  rm -rf \"$UNITY_DATA_DEST\"\n  cp -R \"$UNITY_DATA_SOURCE\" \"$UNITY_DATA_DEST\"\n  echo \"✅ Unity Data folder copied successfully to $UNITY_DATA_DEST\"\nelse\n  echo \"⚠️ UnityFramework Data folder not found at $UNITY_DATA_SOURCE\"\n  # Fallback to node_modules if available\n  FALLBACK_SOURCE=\"${SRCROOT}/../node_modules/@azesmway/react-native-unity/ios/UnityFramework.framework/Data\"\n  if [ -d \"$FALLBACK_SOURCE\" ]; then\n    echo \"✅ Found fallback Unity Data folder at: $FALLBACK_SOURCE\"\n    rm -rf \"$UNITY_DATA_DEST\"\n    cp -R \"$FALLBACK_SOURCE\" \"$UNITY_DATA_DEST\"\n    echo \"✅ Unity Data folder copied from fallback location\"\n  else\n    echo \"❌ ERROR: Unity Data folder not found in either location!\"\n    echo \"   Primary: $UNITY_DATA_SOURCE\"\n    echo \"   Fallback: $FALLBACK_SOURCE\"\n    exit 1\n  fi\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		A79A6BF4F2D1E751C0D8577C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-YallaGain-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D3BCAD9CD3D306787D5242E2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		13B07F871A680F5B00A75B9A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				A5E70CE9E1FD4579BF3AC106 /* RNUnityView.swift in Sources */,
+				416CFE6A1F3949AE96D45083 /* RNUnityViewManager.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		13B07F941A680F5B00A75B9A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CURRENT_PROJECT_VERSION = 13;
+				DEVELOPMENT_TEAM = 3YP4TQ9R94;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = YallaGain/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Yalla Gain";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.0.13;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.appfnh.yallagain;
+				PRODUCT_NAME = YallaGain;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/YallaGain/YallaGain-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		13B07F951A680F5B00A75B9A /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CURRENT_PROJECT_VERSION = 13;
+				DEVELOPMENT_TEAM = 3YP4TQ9R94;
+				INFOPLIST_FILE = YallaGain/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Yalla Gain";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.0.13;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lc++",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.appfnh.yallagain;
+				PRODUCT_NAME = YallaGain;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/YallaGain/YallaGain-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+		83CBBA201A601CBA00E9B192 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SDKROOT)/usr/lib/swift\"",
+					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
+					"\"$(inherited)\"",
+				);
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DFOLLY_NO_CONFIG",
+					"-DFOLLY_MOBILE=1",
+					"-DFOLLY_USE_LIBCPP=1",
+					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+				);
+				OTHER_LDFLAGS = "$(inherited)  ";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
+			};
+			name = Debug;
+		};
+		83CBBA211A601CBA00E9B192 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					/usr/lib/swift,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"\"$(SDKROOT)/usr/lib/swift\"",
+					"\"$(TOOLCHAIN_DIR)/usr/lib/swift/$(PLATFORM_NAME)\"",
+					"\"$(inherited)\"",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CPLUSPLUSFLAGS = (
+					"$(OTHER_CFLAGS)",
+					"-DFOLLY_NO_CONFIG",
+					"-DFOLLY_MOBILE=1",
+					"-DFOLLY_USE_LIBCPP=1",
+					"-DFOLLY_CFG_NO_COROUTINES=1",
+					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
+				);
+				OTHER_LDFLAGS = "$(inherited)  ";
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				USE_HERMES = true;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "YallaGain" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				13B07F941A680F5B00A75B9A /* Debug */,
+				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "YallaGain" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				83CBBA201A601CBA00E9B192 /* Debug */,
+				83CBBA211A601CBA00E9B192 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
+}
