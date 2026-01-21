@@ -56,7 +56,11 @@ const AvatarScanForm = () => {
                                 required
                                 value={data?.age?.toString()}
                                 onChangeText={handleChange("age")}
-                                error={touched?.age ? errors?.age : ""}
+                                error={
+                                    touched?.age && typeof errors?.age === "string"
+                                        ? errors.age
+                                        : undefined
+                                }
                             />
 
                             <View style={styles.field_container}>
@@ -89,7 +93,7 @@ const AvatarScanForm = () => {
                                         <Text size={16} style={styles.radio_label}>Female</Text>
                                     </Touchable>
                                 </Row>
-                                {touched?.gender && errors?.gender && (
+                                {touched?.gender && typeof errors?.gender === "string" && (
                                     <Text color={colors.danger} size={12} style={styles.error_text}>
                                         {errors.gender}
                                     </Text>
@@ -103,7 +107,11 @@ const AvatarScanForm = () => {
                                 required
                                 value={data?.weight?.toString()}
                                 onChangeText={handleChange("weight")}
-                                error={touched?.weight ? errors?.weight : ""}
+                                error={
+                                    touched?.weight && typeof errors?.weight === "string"
+                                        ? errors.weight
+                                        : undefined
+                                }
                             />
 
                             <Input
@@ -113,7 +121,11 @@ const AvatarScanForm = () => {
                                 required
                                 value={data?.height?.toString()}
                                 onChangeText={handleChange("height")}
-                                error={touched?.height ? errors?.height : ""}
+                                error={
+                                    touched?.height && typeof errors?.height === "string"
+                                        ? errors.height
+                                        : undefined
+                                }
                             />
 
                             {showActionButtons ? (
