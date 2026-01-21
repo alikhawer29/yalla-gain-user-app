@@ -5,7 +5,7 @@ import { heightPixel, widthPixel } from "../../utils/helper";
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: widthPixel(20),
+        // paddingHorizontal: widthPixel(20),
         paddingTop: heightPixel(20),
     },
     description: {
