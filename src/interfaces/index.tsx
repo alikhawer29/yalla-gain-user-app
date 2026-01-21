@@ -84,6 +84,7 @@ export type RootStackParamList = {
     BasicDetails: undefined;
     AboutUs: undefined;
     Faqs: undefined;
+    ContactUs: undefined;
 };
 
 export interface IWrapper {

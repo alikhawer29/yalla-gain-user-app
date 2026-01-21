@@ -449,6 +449,13 @@ export const userApi = createApi({
       // Always fetch fresh FAQs when screen mounts again
       keepUnusedDataFor: 0,
     }),
+    contactUs: builder.mutation({
+      query: body => ({
+        url: `contact-us`,
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -508,5 +515,6 @@ export const {
   useConfirmPaymentMutation,
   useScanAvatarMutation,
   useUpdateAvatarMutation,
-  useGetFaqsQuery
+  useGetFaqsQuery,
+  useContactUsMutation
 } = userApi;

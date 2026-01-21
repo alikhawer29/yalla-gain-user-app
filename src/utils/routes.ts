@@ -69,6 +69,7 @@ const ROUTES = {
   BASIC_DETAILS: 'BasicDetails',
   ABOUT_US: 'AboutUs',
   FAQS: 'Faqs',
+  CONTACT_US: 'ContactUs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -403,6 +404,14 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'FAQs',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.CONTACT_US,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Contact Us',
     bottom_tab: false,
   },
 ] as const;

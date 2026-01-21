@@ -18,7 +18,7 @@ const HELPDESK = [
     { icon: images.helpdesk.blocked_user, title: "Blocked User", onPress: () => navigate(ROUTES.BLOCKED_USERS) },
     { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
     { icon: images.helpdesk.aboutus, title: "About Us", onPress: () => navigate(ROUTES.ABOUT_US) },
-    { icon: images.helpdesk.contact, title: "Contact Us" },
+    { icon: images.helpdesk.contact, title: "Contact Us", onPress: () => navigate(ROUTES.CONTACT_US) },
     { icon: images.helpdesk.trash, title: "Delete Account", color: colors.danger }
 ]
 
