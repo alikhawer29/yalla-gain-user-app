@@ -10,6 +10,6 @@ declare module '@azesmway/react-native-unity' {
 
   export default class UnityView extends Component<UnityViewProps> {
     postMessage(gameObject: string, methodName: string, message: string): void;
+    windowFocusChanged(hasFocus: boolean): void;
   }
 }
-

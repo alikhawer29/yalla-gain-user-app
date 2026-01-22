@@ -4,7 +4,7 @@ import { useAppSelector } from "../../hooks"
 import { selectUser } from "../../redux/Slices/AuthSlice"
 import { getGreetingText } from "../../utils/helper"
 import { navigate } from "../../utils/navigation"
-import { NAVIGATORS } from "../../utils/routes"
+import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
 import Row from "../Row"
@@ -27,7 +27,19 @@ const ProfileHeader: FC = () => {
                 </View>
             </Row>
             <View style={styles.button_container}>
-                <Button text="Change Avatar" style={styles.button} font_size={12} onPress={() => navigate(NAVIGATORS.AVATAR_STACK)} />
+                <Button
+                    text="Avatar"
+                    style={styles.button}
+                    font_size={12}
+                    onPress={() =>
+                        navigate(NAVIGATORS.DRAWER as any, {
+                            screen: NAVIGATORS.AVATAR_STACK,
+                            params: {
+                                screen: ROUTES.AVATAR_SCAN_FORM,
+                            },
+                        })
+                    }
+                />
             </View>
         </Row>
     )

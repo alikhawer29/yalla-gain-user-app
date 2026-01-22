@@ -232,10 +232,10 @@ const ROUTES_OPTIONS = [
   },
   {
     route_name: ROUTES.CREATE_AVATAR,
-    left: 'back',
+    left: 'null',
     right: null,
     logo: false,
-    title: 'Create Your Body Avatar',
+    title: 'Create Your Body Avatar',//that screen
   },
   {
     route_name: ROUTES.SCAN,
