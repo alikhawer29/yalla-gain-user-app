@@ -18,7 +18,7 @@ const AVATAR_SCAN_FORM_SCHEMA = Yup.object().shape({
     .required('Gender is required'),
   weight: Yup.number()
     .required('Weight is required')
-    .min(1, 'Weight must be at least 1 gram'),
+    .min(1, 'Weight must be at least 1 kg'),
   height: Yup.number()
     .required('Height is required')
     .min(1, 'Height must be at least 1 cm'),
