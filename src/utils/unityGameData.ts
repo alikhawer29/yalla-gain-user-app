@@ -7,28 +7,30 @@ const USER_DATA_FILE = 'userData.json';
 
 /**
  * Get the path where Unity game can access user data
- * Path: /storage/emulated/0/Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json
- *
- * Alternative paths if the above doesn't work:
- * 1. External Directory: RNFS.ExternalDirectoryPath + '/MyGameSaves/userData.json'
- * 2. Document Directory: RNFS.DocumentDirectoryPath + '/MyGameSaves/userData.json'
+ * 
+ * Android: /storage/emulated/0/Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json
+ * iOS: /var/mobile/Containers/Data/Application/{UUID}/Documents/MyGameSaves/userData.json
  */
 const getUnityGameDataPath = (): string => {
-  if (Platform.OS !== 'android') {
-    console.warn('Unity game data path is only available on Android');
-    return '';
-  }
-
   try {
-    // Construct the path: /storage/emulated/0/Android/data/{package}/files/{dir}/{file}
-    const basePath = RNFS.ExternalStorageDirectoryPath; // /storage/emulated/0
-    const fullPath = `${basePath}/Android/data/${PACKAGE_NAME}/files/${GAME_SAVES_DIR}/${USER_DATA_FILE}`;
-
-    return fullPath;
+    if (Platform.OS === 'android') {
+      // Android: Use app-specific external storage directory
+      const basePath = RNFS.ExternalStorageDirectoryPath; // /storage/emulated/0
+      const fullPath = `${basePath}/Android/data/${PACKAGE_NAME}/files/${GAME_SAVES_DIR}/${USER_DATA_FILE}`;
+      return fullPath;
+    } else if (Platform.OS === 'ios') {
+      // iOS: Use Documents directory (accessible by both React Native and Unity)
+      // Path: /var/mobile/Containers/Data/Application/{UUID}/Documents/MyGameSaves/userData.json
+      const fullPath = `${RNFS.DocumentDirectoryPath}/${GAME_SAVES_DIR}/${USER_DATA_FILE}`;
+      return fullPath;
+    } else {
+      console.warn('Unity game data path is only available on Android and iOS');
+      return '';
+    }
   } catch (error) {
     console.error('Error constructing Unity game data path:', error);
-    // Fallback to External Directory if the above fails
-    return `${RNFS.ExternalDirectoryPath}/${GAME_SAVES_DIR}/${USER_DATA_FILE}`;
+    // Fallback to Document Directory for both platforms
+    return `${RNFS.DocumentDirectoryPath}/${GAME_SAVES_DIR}/${USER_DATA_FILE}`;
   }
 };
 
@@ -40,8 +42,8 @@ export const writeUserIdToUnityGame = async (
   userId: number | string,
 ): Promise<boolean> => {
   try {
-    if (Platform.OS !== 'android') {
-      console.warn('Unity game data is only written on Android');
+    if (Platform.OS !== 'android' && Platform.OS !== 'ios') {
+      console.warn('Unity game data is only written on Android and iOS');
       return false;
     }
 
@@ -51,9 +53,15 @@ export const writeUserIdToUnityGame = async (
     }
 
     // Create directory if it doesn't exist
-    const dirPath = `${RNFS.ExternalStorageDirectoryPath}/Android/data/${PACKAGE_NAME}/files/${GAME_SAVES_DIR}`;
-    const dirExists = await RNFS.exists(dirPath);
+    let dirPath: string;
+    if (Platform.OS === 'android') {
+      dirPath = `${RNFS.ExternalStorageDirectoryPath}/Android/data/${PACKAGE_NAME}/files/${GAME_SAVES_DIR}`;
+    } else {
+      // iOS: Use Documents directory
+      dirPath = `${RNFS.DocumentDirectoryPath}/${GAME_SAVES_DIR}`;
+    }
 
+    const dirExists = await RNFS.exists(dirPath);
     if (!dirExists) {
       await RNFS.mkdir(dirPath);
     }
@@ -74,12 +82,18 @@ export const writeUserIdToUnityGame = async (
       console.log('✅ User ID successfully written to Unity game!');
       console.log('📁 File path:', filePath);
       console.log('📄 File content:', fileContent);
-      console.log(
-        '📱 To view on device: Use a file manager app and navigate to:',
-      );
-      console.log(
-        '   Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json',
-      );
+      if (Platform.OS === 'android') {
+        console.log(
+          '📱 To view on device: Use a file manager app and navigate to:',
+        );
+        console.log(
+          '   Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json',
+        );
+      } else {
+        console.log(
+          '📱 iOS: File is stored in Documents directory (accessible by Unity)',
+        );
+      }
     } else {
       console.error('❌ File was not created at path:', filePath);
     }
@@ -96,7 +110,7 @@ export const writeUserIdToUnityGame = async (
  */
 export const deleteUnityGameUserData = async (): Promise<boolean> => {
   try {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS !== 'android' && Platform.OS !== 'ios') {
       return false;
     }
 
@@ -123,7 +137,7 @@ export const deleteUnityGameUserData = async (): Promise<boolean> => {
  */
 export const readUserIdFromUnityGame = async (): Promise<string | null> => {
   try {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS !== 'android' && Platform.OS !== 'ios') {
       return null;
     }
 
@@ -158,13 +172,13 @@ export const getUnityGameFileInfo = async (): Promise<{
   error: string | null;
 }> => {
   try {
-    if (Platform.OS !== 'android') {
+    if (Platform.OS !== 'android' && Platform.OS !== 'ios') {
       return {
         exists: false,
-        path: 'N/A (iOS)',
+        path: 'N/A',
         content: null,
         user_id: null,
-        error: 'Unity game data is only available on Android',
+        error: 'Unity game data is only available on Android and iOS',
       };
     }
 
