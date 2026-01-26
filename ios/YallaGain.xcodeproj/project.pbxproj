@@ -11,9 +11,9 @@
 		048E40532E21A86800D56C34 /* SF-Pro-Display-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 048E40512E21A86800D56C34 /* SF-Pro-Display-Semibold.otf */; };
 		048E40542E21A86800D56C34 /* SF-Pro-Display-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 048E404F2E21A86800D56C34 /* SF-Pro-Display-Bold.otf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		1805D10D55445693FC6C7401 /* libPods-YallaGain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 43A80AB9960164A6BC8709B6 /* libPods-YallaGain.a */; };
 		336FF2CA411140DFA6BE1E3D /* index.ts in Resources */ = {isa = PBXBuildFile; fileRef = 4C7E609A47CB4451A0FAFA19 /* index.ts */; };
 		416CFE6A1F3949AE96D45083 /* RNUnityViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 234138C2519846778FF07E7F /* RNUnityViewManager.m */; };
-		6EF8419F7066653E8B80D757 /* libPods-YallaGain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		79CE710DA7A64C495FFC1465 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -55,7 +55,7 @@
 		145F4F4D2EB27DCA0039225E /* ScriptingAssemblies.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ScriptingAssemblies.json; sourceTree = "<group>"; };
 		145F4F4E2EB27DCA0039225E /* sharedassets0.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets; sourceTree = "<group>"; };
 		145F4F4F2EB27DCA0039225E /* sharedassets0.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets.resS; sourceTree = "<group>"; };
-		145F4F502EB27DCA0039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = text; path = "unity default resources"; sourceTree = "<group>"; };
+		145F4F502EB27DCA0039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = file; path = "unity default resources"; sourceTree = "<group>"; };
 		145F4F532EB27EB00039225E /* global-metadata.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "global-metadata.dat"; sourceTree = "<group>"; };
 		145F4F552EB27EB00039225E /* machine.config */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = machine.config; sourceTree = "<group>"; };
 		145F4F582EB27EB00039225E /* mscorlib.dll-resources.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "mscorlib.dll-resources.dat"; sourceTree = "<group>"; };
@@ -70,10 +70,11 @@
 		145F4F642EB27EB00039225E /* ScriptingAssemblies.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ScriptingAssemblies.json; sourceTree = "<group>"; };
 		145F4F652EB27EB00039225E /* sharedassets0.assets */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets; sourceTree = "<group>"; };
 		145F4F662EB27EB00039225E /* sharedassets0.assets.resS */ = {isa = PBXFileReference; lastKnownFileType = file; path = sharedassets0.assets.resS; sourceTree = "<group>"; };
-		145F4F672EB27EB00039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = text; path = "unity default resources"; sourceTree = "<group>"; };
-		1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.debug.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.debug.xcconfig"; sourceTree = "<group>"; };
+		145F4F672EB27EB00039225E /* unity default resources */ = {isa = PBXFileReference; lastKnownFileType = file; path = "unity default resources"; sourceTree = "<group>"; };
 		234138C2519846778FF07E7F /* RNUnityViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = RNUnityViewManager.m; path = YallaGain/RNUnityViewManager.m; sourceTree = "<group>"; };
 		3D03A81F69A4492D864D24F4 /* YallaGain-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "YallaGain-Bridging-Header.h"; path = "YallaGain/YallaGain-Bridging-Header.h"; sourceTree = "<group>"; };
+		43A80AB9960164A6BC8709B6 /* libPods-YallaGain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YallaGain.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		450D30031D1E637E68C98BC3 /* Pods-YallaGain.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.release.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.release.xcconfig"; sourceTree = "<group>"; };
 		4C7E609A47CB4451A0FAFA19 /* index.ts */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = index.ts; path = ../src/assets/fonts/index.ts; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = YallaGain/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = YallaGain/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -81,10 +82,9 @@
 		9ACDF1252D8B49BDA5DC3730 /* RNUnityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RNUnityView.swift; path = YallaGain/RNUnityView.swift; sourceTree = "<group>"; };
 		A95A3505CE6E486F9C012837 /* RNUnityView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = RNUnityView.h; path = YallaGain/RNUnityView.h; sourceTree = "<group>"; };
 		B7E13CC4CB7F416D8C63F44F /* SF-Pro-Display-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro-Display-Regular.otf"; path = "../src/assets/fonts/SF-Pro-Display-Regular.otf"; sourceTree = "<group>"; };
-		DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.release.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.release.xcconfig"; sourceTree = "<group>"; };
 		E5D9D9308C804E07957DBF76 /* SF-Pro-Display-Semibold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-Pro-Display-Semibold.otf"; path = "../src/assets/fonts/SF-Pro-Display-Semibold.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YallaGain.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA91F2D47354D05DE22F8E89 /* Pods-YallaGain.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YallaGain.debug.xcconfig"; path = "Target Support Files/Pods-YallaGain/Pods-YallaGain.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,7 +92,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6EF8419F7066653E8B80D757 /* libPods-YallaGain.a in Frameworks */,
+				1805D10D55445693FC6C7401 /* libPods-YallaGain.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,7 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				F0B4C1315F1EFFD9A8B9D048 /* libPods-YallaGain.a */,
+				43A80AB9960164A6BC8709B6 /* libPods-YallaGain.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -305,8 +305,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */,
-				DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */,
+				FA91F2D47354D05DE22F8E89 /* Pods-YallaGain.debug.xcconfig */,
+				450D30031D1E637E68C98BC3 /* Pods-YallaGain.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -329,15 +329,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "YallaGain" */;
 			buildPhases = (
-				A79A6BF4F2D1E751C0D8577C /* [CP] Check Pods Manifest.lock */,
+				531745735C7C9DFBFAA2634E /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				A1B2C3D4E5F6789012345678 /* Copy Unity Data Folder */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				145F4F3B2EB27D8D0039225E /* CopyFiles */,
-				D3BCAD9CD3D306787D5242E2 /* [CP] Embed Pods Frameworks */,
-				76B0394B7BCFC345823EACE1 /* [CP] Copy Pods Resources */,
+				324DA687DCCEF64E9B87CC3B /* [CP] Embed Pods Frameworks */,
+				90D07E4475C303E1C20E07BF /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -354,8 +354,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1620;
+				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1120;
@@ -414,7 +413,46 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		76B0394B7BCFC345823EACE1 /* [CP] Copy Pods Resources */ = {
+		324DA687DCCEF64E9B87CC3B /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		531745735C7C9DFBFAA2634E /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-YallaGain-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		90D07E4475C303E1C20E07BF /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -449,45 +487,6 @@
 			shellScript = "# Copy Unity Data folder from unity/builds/ios to app bundle\nUNITY_DATA_SOURCE=\"${SRCROOT}/../unity/builds/ios/UnityFramework.framework/Data\"\nUNITY_DATA_DEST=\"${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Data\"\n\n# Try primary source first\nif [ -d \"$UNITY_DATA_SOURCE\" ]; then\n  echo \"✅ Found Unity Data folder at: $UNITY_DATA_SOURCE\"\n  echo \"Copying Unity Data folder to app bundle...\"\n  rm -rf \"$UNITY_DATA_DEST\"\n  cp -R \"$UNITY_DATA_SOURCE\" \"$UNITY_DATA_DEST\"\n  echo \"✅ Unity Data folder copied successfully to $UNITY_DATA_DEST\"\nelse\n  echo \"⚠️ UnityFramework Data folder not found at $UNITY_DATA_SOURCE\"\n  # Fallback to node_modules if available\n  FALLBACK_SOURCE=\"${SRCROOT}/../node_modules/@azesmway/react-native-unity/ios/UnityFramework.framework/Data\"\n  if [ -d \"$FALLBACK_SOURCE\" ]; then\n    echo \"✅ Found fallback Unity Data folder at: $FALLBACK_SOURCE\"\n    rm -rf \"$UNITY_DATA_DEST\"\n    cp -R \"$FALLBACK_SOURCE\" \"$UNITY_DATA_DEST\"\n    echo \"✅ Unity Data folder copied from fallback location\"\n  else\n    echo \"❌ ERROR: Unity Data folder not found in either location!\"\n    echo \"   Primary: $UNITY_DATA_SOURCE\"\n    echo \"   Fallback: $FALLBACK_SOURCE\"\n    exit 1\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		A79A6BF4F2D1E751C0D8577C /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-YallaGain-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D3BCAD9CD3D306787D5242E2 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-YallaGain/Pods-YallaGain-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -506,11 +505,11 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1AF9693D5EC85E5F10839063 /* Pods-YallaGain.debug.xcconfig */;
+			baseConfigurationReference = FA91F2D47354D05DE22F8E89 /* Pods-YallaGain.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 3YP4TQ9R94;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = YallaGain/Info.plist;
@@ -521,7 +520,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.13;
+				MARKETING_VERSION = 0.0.10;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -543,11 +542,11 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DD749E7250EE112D5C35CBF8 /* Pods-YallaGain.release.xcconfig */;
+			baseConfigurationReference = 450D30031D1E637E68C98BC3 /* Pods-YallaGain.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 3YP4TQ9R94;
 				INFOPLIST_FILE = YallaGain/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Yalla Gain";
@@ -557,7 +556,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.0.13;
+				MARKETING_VERSION = 0.0.10;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -609,7 +608,6 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -690,7 +688,6 @@
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -725,7 +722,6 @@
 				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
 				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
