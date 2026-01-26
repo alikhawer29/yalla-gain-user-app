@@ -37,15 +37,23 @@ public class YallaGainUnityView: RCTView {
         let work: () -> Void = { [weak self] in
             guard let self = self else { return }
             
+            // Ensure we have a valid frame before proceeding
+            guard self.frame.width > 0 && self.frame.height > 0 else {
+                print("⚠️ View frame not ready yet, retrying...")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                    self?.initUnity()
+                }
+                return
+            }
+            
             let bundlePath = Bundle.main.bundlePath + "/Frameworks/UnityFramework.framework"
             guard let bundle = Bundle(path: bundlePath) else {
                 print("❌ UnityFramework bundle not found at: \(bundlePath)")
                 return
             }
             
-            // Load bundle on background thread to avoid blocking
+            // Load bundle - this should be fast if already loaded
             if !bundle.isLoaded {
-                // Load synchronously but in async dispatch to avoid blocking React Native init
                 let loaded = bundle.load()
                 print("📦 UnityFramework bundle load result: \(loaded)")
                 if !loaded {
@@ -154,6 +162,12 @@ public class YallaGainUnityView: RCTView {
             }
         }
         
+        // CRITICAL: Set up the Unity view container BEFORE calling runEmbedded
+        // This ensures Unity has a proper view hierarchy to render into
+        self.clipsToBounds = true
+        self.isUserInteractionEnabled = true
+        self.backgroundColor = .clear
+        
         // Get the runEmbedded method
         if ufw.responds(to: NSSelectorFromString("runEmbeddedWithArgc:argv:appLaunchOpts:")) {
             var cStringArgs: [UnsafeMutablePointer<CChar>?] = args.map { strdup($0) }
@@ -170,31 +184,24 @@ public class YallaGainUnityView: RCTView {
             let launchOpts = appLaunchOpts.isEmpty ? nil : appLaunchOpts as NSDictionary
             
             print("📞 Calling Unity runEmbedded...")
+            
+            // Run Unity initialization - this will set up Unity's rendering loop
+            // Note: This call may take some time but is necessary for Unity to start
+            // Unity will handle its own rendering via UnityRepaint callbacks
             runEmbedded(ufw, selector, argc, argv, launchOpts)
+            
+            // Give Unity a moment to initialize before accessing its views
             print("✅ Unity runEmbedded completed")
             
             // Free allocated strings
             for ptr in cStringArgs where ptr != nil {
                 free(ptr)
             }
-        }
-        
-        // Get root view and configure
-        if let appController = ufw.perform(NSSelectorFromString("appController"))?.takeUnretainedValue() {
-            if let rootView = (appController as AnyObject).perform(NSSelectorFromString("rootView"))?.takeUnretainedValue() as? UIView {
-                rootView.removeFromSuperview()
-                rootView.frame = bounds
-                // Configure Unity root view
-                rootView.isUserInteractionEnabled = true
-                rootView.isMultipleTouchEnabled = true
-                // Set clipsToBounds to ensure Unity doesn't capture touches outside its bounds
-                rootView.clipsToBounds = true
-                // Configure Unity view to not interfere with React Native UI
-                rootView.isExclusiveTouch = false
-                addSubview(rootView)
-                // Make sure our view allows parent views to handle touches when appropriate
-                self.clipsToBounds = true
-                self.isUserInteractionEnabled = true
+            
+            // Get root view and configure AFTER Unity has initialized
+            // Use a retry mechanism to handle Unity's async initialization
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                self?.setupUnityRootView(retryCount: 0, maxRetries: 10)
             }
         }
     }
@@ -232,17 +239,68 @@ public class YallaGainUnityView: RCTView {
         return rootView
     }
     
+    private func setupUnityRootView(retryCount: Int, maxRetries: Int) {
+        guard let ufw = ufw else { return }
+        
+        if let appController = ufw.perform(NSSelectorFromString("appController"))?.takeUnretainedValue() {
+            if let rootView = (appController as AnyObject).perform(NSSelectorFromString("rootView"))?.takeUnretainedValue() as? UIView {
+                // Remove from any existing superview
+                rootView.removeFromSuperview()
+                
+                // Configure Unity root view
+                rootView.frame = bounds
+                rootView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                rootView.isUserInteractionEnabled = true
+                rootView.isMultipleTouchEnabled = true
+                rootView.clipsToBounds = true
+                rootView.isExclusiveTouch = false
+                rootView.backgroundColor = .clear
+                
+                // Add to our view hierarchy
+                addSubview(rootView)
+                
+                // Ensure our view is properly configured
+                clipsToBounds = true
+                isUserInteractionEnabled = true
+                
+                print("✅ Unity root view configured and added to hierarchy")
+                
+                // Force a layout update
+                setNeedsLayout()
+                layoutIfNeeded()
+                return
+            }
+        }
+        
+        // Retry if view not ready yet
+        if retryCount < maxRetries {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?.setupUnityRootView(retryCount: retryCount + 1, maxRetries: maxRetries)
+            }
+        } else {
+            print("⚠️ Unity root view not available after \(maxRetries) retries")
+        }
+    }
+    
     override public func didMoveToWindow() {
         super.didMoveToWindow()
         
         // Only initialize Unity when view is added to window (after React Native is ready)
-        // Wait longer to ensure React Native is fully initialized and JS bundle has loaded
+        // Reduce delay to prevent blocking - Unity initialization should be faster now
         if window != nil && ufw == nil {
-            // Use a longer delay to ensure React Native bridge and JS bundle are fully loaded
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                // Double check the bridge is ready by checking if we can access it
-                guard let self = self else { return }
-                self.initUnity()
+            // Ensure we have a valid frame before initializing
+            if frame.width > 0 && frame.height > 0 {
+                // Initialize immediately if frame is ready
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.initUnity()
+                }
+            } else {
+                // Wait a bit for layout if frame isn't ready yet
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    guard let self = self, self.window != nil else { return }
+                    self.initUnity()
+                }
             }
         }
     }
@@ -261,11 +319,19 @@ public class YallaGainUnityView: RCTView {
         
         guard let ufw = ufw else { return }
         
-        // Update Unity root view frame
+        // Update Unity root view frame - ensure it matches our bounds
         if let appController = ufw.perform(NSSelectorFromString("appController"))?.takeUnretainedValue() {
             if let rootView = (appController as AnyObject).perform(NSSelectorFromString("rootView"))?.takeUnretainedValue() as? UIView {
-                rootView.frame = bounds
+                // Only update if frame has changed to avoid unnecessary work
+                if rootView.frame != bounds {
+                    rootView.frame = bounds
+                }
+                
+                // Ensure Unity view is in our hierarchy
                 if rootView.superview != self {
+                    rootView.removeFromSuperview()
+                    rootView.frame = bounds
+                    rootView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
                     addSubview(rootView)
                 }
             }
