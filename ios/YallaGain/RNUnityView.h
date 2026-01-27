@@ -13,4 +13,3 @@ typedef void (^RCTBubblingEventBlock)(NSDictionary *);
 
 // Note: YallaGainUnityView class is implemented in Swift (RNUnityView.swift)
 // Methods are available via @objc exposure in the Swift file
-

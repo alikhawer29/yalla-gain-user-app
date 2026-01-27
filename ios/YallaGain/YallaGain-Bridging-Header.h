@@ -29,4 +29,3 @@ typedef void (^RCTBubblingEventBlock)(NSDictionary *body);
 #if __has_include(<mach-o/ldsyms.h>)
 #import <mach-o/ldsyms.h>
 #endif
-
