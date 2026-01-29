@@ -40,20 +40,17 @@ const MyProfile = () => {
         showOkModal({
           type: 'error',
           title: 'Unity Game File Status',
-          message: `❌ File not found!\n\n📁 Expected Path:\n${
-            info.path
-          }\n\n⚠️ Error: ${
-            info.error || 'File does not exist'
-          }\n\n💡 Make sure you are logged in.`,
+          message: `❌ File not found!\n\n📁 Expected Path:\n${info.path
+            }\n\n⚠️ Error: ${info.error || 'File does not exist'
+            }\n\n💡 Make sure you are logged in.`,
         });
       }
     } catch (error: any) {
       showOkModal({
         type: 'error',
         title: 'Error',
-        message: `Failed to check Unity file: ${
-          error?.message || 'Unknown error'
-        }`,
+        message: `Failed to check Unity file: ${error?.message || 'Unknown error'
+          }`,
       });
     } finally {
       setIsCheckingUnityFile(false);
@@ -98,9 +95,8 @@ const MyProfile = () => {
         showOkModal({
           type: 'error',
           title: 'iOS Unity File Test - FAILED ❌',
-          message: `${testResult.message}\n\n📁 Path:\n${
-            testResult.details.path
-          }\n\n❌ Error: ${testResult.details.error || 'Unknown error'}`,
+          message: `${testResult.message}\n\n📁 Path:\n${testResult.details.path
+            }\n\n❌ Error: ${testResult.details.error || 'Unknown error'}`,
         });
       }
     } catch (error: any) {
@@ -172,7 +168,7 @@ const MyProfile = () => {
       </Row>
 
       {/* Unity Game File Status */}
-      <View
+      {/* <View
         style={[
           styles.item,
           {
@@ -269,7 +265,7 @@ const MyProfile = () => {
             Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json
           </Text>
         )}
-      </View>
+      </View> */}
 
       <Button
         text="Edit Profile"
