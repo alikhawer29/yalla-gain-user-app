@@ -1,33 +1,28 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
   UnityViewNativeIOSRef,
 } from '../../components/UnityView/UnityViewNativeIOS';
 import { useIsFocused } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS } from '../../utils/routes';
-
-interface IMessage {
-  gameObject: string;
-  methodName: string;
-  message: string;
-}
+import { selectUser } from '../../redux/Slices/AuthSlice';
 
 const CreateAvatar = () => {
+  // ✅ ALL HOOKS AT TOP LEVEL (before any conditionals)
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const isFocused = useIsFocused();
+  const user = useSelector(selectUser);
+  const userId = user?.id;
 
   const handleUnityMessage = (message: string) => {
-    console.log('onUnityMessage', message);
-
-    // Unity buttons:
-    // - Save button:   method "SaveGame", event "SaveGame"
-    // - Close button:  method "CloseGame", event "GoBack"
+    console.log('[UnityMessage]', message);
+    
     if (message === 'SaveGame' || message === 'GoBack') {
-      // Navigate back to Home tab inside Drawer -> BottomTab -> HomeStack
       navigate(NAVIGATORS.DRAWER as any, {
         screen: NAVIGATORS.BOTTOM,
         params: {
@@ -37,42 +32,59 @@ const CreateAvatar = () => {
     }
   };
 
+  // ✅ FIXED: Send userId as JSON format
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      if (unityNativeIOSRef?.current) {
-        const message: IMessage = {
-          gameObject: 'gameObject',
-          methodName: 'methodName',
-          message: 'message',
-        };
-        unityNativeIOSRef.current.postMessage(
-          message.gameObject,
-          message.methodName,
-          message.message,
-        );
-      }
-    } else {
-      if (unityRef?.current) {
-        const message: IMessage = {
-          gameObject: 'gameObject',
-          methodName: 'methodName',
-          message: 'message',
-        };
-        unityRef.current.postMessage(
-          message.gameObject,
-          message.methodName,
-          message.message,
-        );
-      }
-    }
-  }, []);
+    // ✅ No early return - conditional logic inside
+    if (isFocused && userId) {
+      // Convert userId to JSON format that matches RNReceiver.cs
+      // Expects: {"user_id":"2"}
+      const userIdJson = JSON.stringify({ user_id: String(userId) });
+      
+      console.log('[SendUserId] JSON payload:', userIdJson);
 
+      const sendSetUserId = () => {
+        try {
+          if (Platform.OS === 'ios' && unityNativeIOSRef.current) {
+            console.log('[SendUserId-iOS] Sending...');
+            unityNativeIOSRef.current?.postMessage(
+              'RNReceiver',
+              'SetUserId',
+              userIdJson,
+            );
+            console.log('[SendUserId-iOS] ✅ Sent');
+          } else if (Platform.OS === 'android' && unityRef.current) {
+            console.log('[SendUserId-Android] Sending...');
+            unityRef.current.postMessage(
+              'ApiManager',
+              'SetUserId',
+              userIdJson,
+            );
+            console.log('[SendUserId-Android] ✅ Sent');
+          }
+        } catch (error) {
+          console.error('[SendUserId] Error:', error);
+        }
+      };
+
+      // Send at intervals: 5s, 10s, 15s
+      const timers = [
+        setTimeout(sendSetUserId, 5000),
+        setTimeout(sendSetUserId, 10000),
+        setTimeout(sendSetUserId, 15000),
+      ];
+
+      return () => {
+        timers.forEach(timer => clearTimeout(timer));
+      };
+    }
+  }, [isFocused, userId]);
+
+  // ✅ Android window focus handling
   useEffect(() => {
     if (Platform.OS === 'android' && unityRef?.current) {
       unityRef?.current?.windowFocusChanged(isFocused);
     }
-    // Note: iOS doesn't have windowFocusChanged method in UnityViewNativeIOS
-  }, [isFocused, unityRef]);
+  }, [isFocused]);
 
   return (
     <Wrapper>
