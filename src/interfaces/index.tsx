@@ -61,6 +61,14 @@ export type RootStackParamList = {
     AppointmentBooking: { serviceId: number; type: 'doctor' | 'trainer'; charges: string }
     MyBookings: undefined
     BookingDetails: { id: number }
+    ZoomMeeting: {
+        sdk_key?: string
+        signature: string
+        meeting_number: string
+        password?: string
+        join_url?: string
+        userName?: string
+    }
     Reviews: { consultant_id: number }
     // Chat
     ChatDetails: {
@@ -95,6 +103,8 @@ export interface IWrapper {
     loading?: boolean
     floating?: boolean
     hide_bottom_bar?: boolean
+    onRefresh?: () => void | Promise<void>
+    refreshing?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {

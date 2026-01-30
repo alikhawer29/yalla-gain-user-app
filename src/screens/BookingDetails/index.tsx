@@ -24,7 +24,8 @@ const BookingDetails = () => {
         functions: {
             formatTime, getStatusColor, onApprove, onReject,
             onStartChat, onJoinSession, onRateBooking, onReportBooking, onGiveTip, onSubmitTip,
-            setShowRateModal, setShowReportModal, setShowTipModal, onDownloadPrescription
+            setShowRateModal, setShowReportModal, setShowTipModal, onDownloadPrescription,
+            onReload,
         },
     } = useBookingDetailsController();
 
@@ -40,7 +41,7 @@ const BookingDetails = () => {
         return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
     };
 
-    if (isLoading) {
+    if (isLoading && !booking) {
         return (
             <Wrapper>
                 <View style={styles.loader_container}>
@@ -53,7 +54,11 @@ const BookingDetails = () => {
     }
 
     return (
-        <Wrapper scrollable>
+        <Wrapper
+            scrollable
+            onRefresh={onReload}
+            refreshing={isLoading}
+        >
             {/* Booking ID and Status */}
             <Row justify="space-between" align="flex-start" style={styles.header_row}>
                 <View>

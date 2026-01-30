@@ -234,12 +234,49 @@ const useBookingDetailsController = () => {
   };
 
   const onJoinSession = () => {
-    // TODO: Implement join session functionality
-    showOkModal({
-      type: 'info',
-      title: 'Join Session',
-      message: 'Join session functionality will be implemented soon.',
-    });
+    const status = booking?.status?.toLowerCase();
+    const isInProgress = status === 'in-progress' || status === 'inprogress';
+
+    if (!isInProgress) {
+      showOkModal({
+        type: 'info',
+        title: 'Join Session',
+        message:
+          'You can join the meeting only when the session is in progress.',
+      });
+      return;
+    }
+
+    const hasZoomDetails =
+      booking?.sdk_key && booking?.signature && booking?.meeting_number;
+
+    if (!hasZoomDetails) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message:
+          'Meeting details are not available yet. Please try again later.',
+      });
+      return;
+    }
+
+    const userName =
+      [booking?.first_name, booking?.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || 'Participant';
+
+    navigate(
+      ROUTES.ZOOM_MEETING as any,
+      {
+        sdk_key: booking.sdk_key,
+        signature: booking.signature,
+        meeting_number: String(booking.meeting_number),
+        password: booking.password ?? '',
+        join_url: booking.join_url,
+        userName,
+      } as any,
+    );
   };
 
   const onRateBooking = async (rating: number, review: string) => {

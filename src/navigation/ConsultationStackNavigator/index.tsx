@@ -6,6 +6,7 @@ import ServiceDetails from '../../screens/ServiceDetails';
 import AppointmentBooking from '../../screens/AppointmentBooking';
 import MyBookings from '../../screens/MyBookings';
 import BookingDetails from '../../screens/BookingDetails';
+import ZoomMeeting from '../../screens/ZoomMeeting';
 import Reviews from '../../screens/Reviews';
 import NetworkLoggerScreen from '../../screens/NetworkLogger';
 import { ROUTES } from '../../utils/routes';
@@ -22,6 +23,7 @@ const ConsultationStackNavigator = () => {
             <Stack.Screen name={ROUTES.APPOINTMENT_BOOKING} component={AppointmentBooking} />
             <Stack.Screen name={ROUTES.MY_BOOKINGS} component={MyBookings} />
             <Stack.Screen name={ROUTES.BOOKING_DETAILS} component={BookingDetails} />
+            <Stack.Screen name={ROUTES.ZOOM_MEETING} component={ZoomMeeting} options={{ headerShown: false }} />
             <Stack.Screen name={ROUTES.REVIEWS} component={Reviews} />
             <Stack.Screen name={ROUTES.NETWORK_LOGGER} component={NetworkLoggerScreen} />
         </Stack.Navigator>

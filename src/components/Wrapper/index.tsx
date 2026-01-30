@@ -1,6 +1,6 @@
 import { useHeaderHeight } from "@react-navigation/elements"
 import { FC, memo } from "react"
-import { ActivityIndicator, ScrollView, View } from "react-native"
+import { ActivityIndicator, RefreshControl, ScrollView, View } from "react-native"
 import images from "../../assets/images"
 import { IWrapper } from "../../interfaces"
 import colors from "../../utils/colors"
@@ -17,6 +17,8 @@ const Wrapper: FC<IWrapper> = ({
     loading = false,
     floating = false,
     hide_bottom_bar = false,
+    onRefresh,
+    refreshing = false,
 }) => {
 
     const headerHeight = useHeaderHeight()
@@ -68,6 +70,16 @@ const Wrapper: FC<IWrapper> = ({
                     contentContainerStyle={[styles.scroll_content, content_container_style]}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    refreshControl={
+                        onRefresh ? (
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                colors={[colors.primary]}
+                                tintColor={colors.primary}
+                            />
+                        ) : undefined
+                    }
                 >
                     {renderBody()}
                 </ScrollView>

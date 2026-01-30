@@ -53,6 +53,7 @@ const ROUTES = {
   APPOINTMENT_BOOKING: 'AppointmentBooking',
   MY_BOOKINGS: 'MyBookings',
   BOOKING_DETAILS: 'BookingDetails',
+  ZOOM_MEETING: 'ZoomMeeting',
   REVIEWS: 'Reviews',
   NETWORK_LOGGER: 'NetworkLogger',
   CHAT_DETAILS: 'ChatDetails',
@@ -235,7 +236,7 @@ const ROUTES_OPTIONS = [
     left: 'null',
     right: null,
     logo: false,
-    title: 'Create Your Body Avatar',//that screen
+    title: 'Create Your Body Avatar', //that screen
   },
   {
     route_name: ROUTES.SCAN,
@@ -295,6 +296,13 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Booking Details',
+  },
+  {
+    route_name: ROUTES.ZOOM_MEETING,
+    left: 'null',
+    right: null,
+    logo: false,
+    title: 'Zoom Meeting',
   },
   {
     route_name: ROUTES.REVIEWS,

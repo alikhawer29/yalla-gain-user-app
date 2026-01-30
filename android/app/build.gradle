@@ -79,14 +79,20 @@ android {
 
     namespace "com.blitzapp.yallagain"
     defaultConfig {
-        manifestPlaceholders = [
-            appAuthRedirectScheme: 'myapp'
-        ]
         applicationId "com.blitzapp.yallagain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 16  
-        versionName "0.0.16"
+        versionCode 17
+        versionName "0.0.17"
+        // Required by react-native-app-auth for OAuth redirect
+        manifestPlaceholders = [appAuthRedirectScheme: 'myapp']
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
     }
     signingConfigs {
         debug {
@@ -126,5 +132,38 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+
+    // Zoom Meeting SDK
+    implementation 'us.zoom.meetingsdk:zoomsdk:6.6.0'
+
+    // Coil image loading library (required by Zoom SDK)
+    implementation "io.coil-kt:coil:2.5.0"
+    implementation "io.coil-kt:coil-gif:2.5.0"
+
+    // Jetpack Compose dependencies required by Zoom SDK
+    def composeBomVersion = "2024.09.00"
+    implementation platform("androidx.compose:compose-bom:$composeBomVersion")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.ui:ui-graphics"
+    implementation "androidx.compose.ui:ui-text"
+    implementation "androidx.compose.ui:ui-unit"
+    implementation "androidx.compose.ui:ui-geometry"
+    implementation "androidx.compose.ui:ui-tooling-preview"
+    implementation "androidx.compose.foundation:foundation"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.activity:activity-compose:1.9.2"
+    implementation "androidx.compose.runtime:runtime"
+    implementation "androidx.compose.runtime:runtime-livedata"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
+}
+
+// Workaround: externalNativeBuildClean runs CMake which expects codegen JNI dirs
+// that only exist after a full build. Disable it so ./gradlew clean succeeds.
+// For a full native clean, manually delete android/app/.cxx and android/app/build.
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith('externalNativeBuildClean')) {
+        task.enabled = false
     }
 }

@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useGetMyBookingsQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import useDebounce from '../../hooks/useDebounce';
+
+/** Number of records per page. Increase if you want larger chunks. */
+const PER_PAGE = 15;
 
 const STATUS_FILTERS = [
   { label: 'All', value: 'all' },
@@ -26,6 +29,8 @@ const useMyBookingsController = () => {
   const [fromDate, setFromDate] = useState<string | null>(null);
   const [toDate, setToDate] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [accumulatedBookings, setAccumulatedBookings] = useState<any[]>([]);
   const debouncedSearch = useDebounce(search, 500);
 
   const {
@@ -38,13 +43,50 @@ const useMyBookingsController = () => {
     search: debouncedSearch,
     from_date: fromDate || undefined,
     to_date: toDate || undefined,
+    per_page: PER_PAGE,
+    page,
   });
 
-  const bookings = data?.data || [];
+  const meta = data?.meta;
+  const currentPage = meta?.current_page ?? 1;
+  const lastPage = meta?.last_page ?? 1;
+  const total = meta?.total ?? 0;
+  const hasMore = currentPage < lastPage;
+  const isLoadingMore = isLoading && page > 1;
 
-  const onReload = () => {
-    refetch();
-  };
+  // Reset to first page when filters change
+  useEffect(() => {
+    setPage(1);
+    setAccumulatedBookings([]);
+  }, [selectedTab, selectedStatus, debouncedSearch, fromDate, toDate]);
+
+  // Accumulate results: replace on page 1, append on next pages (only when response matches current page)
+  useEffect(() => {
+    if (!data?.data) return;
+    const responsePage = meta?.current_page ?? 1;
+    if (responsePage === 1) {
+      setAccumulatedBookings(data.data);
+    } else if (responsePage === page) {
+      setAccumulatedBookings(prev => [...prev, ...data.data]);
+    }
+  }, [data, page, meta?.current_page]);
+
+  const bookings = accumulatedBookings;
+
+  const onReload = useCallback(() => {
+    setAccumulatedBookings([]);
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
+
+  const onLoadMore = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      setPage(p => p + 1);
+    }
+  }, [hasMore, isLoadingMore]);
 
   const onSearch = (text: string) => {
     setSearch(text);
@@ -101,6 +143,9 @@ const useMyBookingsController = () => {
     values: {
       bookings,
       isLoading,
+      isLoadingMore,
+      hasMore,
+      total,
       search,
       selectedTab,
       selectedStatus,
@@ -112,6 +157,7 @@ const useMyBookingsController = () => {
     },
     functions: {
       onReload,
+      onLoadMore,
       onSearch,
       onTabChange,
       onStatusChange,

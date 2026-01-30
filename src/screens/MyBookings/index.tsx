@@ -1,4 +1,4 @@
-import { FlatList, RefreshControl, ScrollView, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, ScrollView, View } from "react-native";
 import images from "../../assets/images";
 import DateFilterModal from "../../components/DateFilterModal";
 import Icon from "../../components/Icon";
@@ -17,8 +17,8 @@ import BookingCard from "./BookingCard";
 
 const MyBookings = () => {
     const {
-        values: { bookings, isLoading, search, selectedTab, selectedStatus, tabs, statusFilters, showFilterModal, fromDate, toDate },
-        functions: { onReload, onSearch, onTabChange, onStatusChange, onBookingPress, getStatusColor, onFilterPress, onCloseFilterModal, onApplyFilter },
+        values: { bookings, isLoading, isLoadingMore, hasMore, search, selectedTab, selectedStatus, tabs, statusFilters, showFilterModal, fromDate, toDate },
+        functions: { onReload, onLoadMore, onSearch, onTabChange, onStatusChange, onBookingPress, getStatusColor, onFilterPress, onCloseFilterModal, onApplyFilter },
     } = useMyBookingsController();
 
     return (
@@ -89,7 +89,19 @@ const MyBookings = () => {
                 showsVerticalScrollIndicator={false}
                 style={{ flex: 1 }}
                 refreshControl={
-                    <RefreshControl refreshing={isLoading} onRefresh={onReload} />
+                    <RefreshControl
+                        refreshing={isLoading && !isLoadingMore}
+                        onRefresh={onReload}
+                    />
+                }
+                onEndReached={onLoadMore}
+                onEndReachedThreshold={0.3}
+                ListFooterComponent={
+                    isLoadingMore ? (
+                        <View style={{ paddingVertical: heightPixel(15), alignItems: "center" }}>
+                            <ActivityIndicator size="small" color={colors.primary} />
+                        </View>
+                    ) : null
                 }
             />
 
