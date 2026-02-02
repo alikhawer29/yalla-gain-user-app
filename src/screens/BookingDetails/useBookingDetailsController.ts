@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Platform } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { useAppSelector } from '../../hooks';
+import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
 import {
@@ -19,6 +21,7 @@ import { NAVIGATORS, ROUTES } from '../../utils/routes';
 const useBookingDetailsController = () => {
   const route = useRoute();
   const { id } = route.params as { id: number };
+  const user = useAppSelector(selectUser);
 
   const { showOkModal, showYesNoModal, showInputModal } = useModal();
 
@@ -260,11 +263,10 @@ const useBookingDetailsController = () => {
       return;
     }
 
+    // Use logged-in user's name so participant shows their real name in Zoom
     const userName =
-      [booking?.first_name, booking?.last_name]
-        .filter(Boolean)
-        .join(' ')
-        .trim() || 'Participant';
+      [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
+      'Participant';
 
     navigate(
       ROUTES.ZOOM_MEETING as any,

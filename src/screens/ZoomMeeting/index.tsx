@@ -22,7 +22,7 @@ function ZoomMeetingContent() {
   const zoom = useZoom();
   const { ensurePermissions, PERMISSIONS } = usePermissions();
   const joinAttempted = useRef(false);
-  const [status, setStatus] = useState<'initializing' | 'joining' | 'in-meeting' | 'error'>('initializing');
+  const [status, setStatus] = useState<'initializing' | 'joining' | 'in-meeting' | 'left' | 'error'>('initializing');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Lifecycle management refs
@@ -30,7 +30,7 @@ function ZoomMeetingContent() {
   const hasJoinedRef = useRef(false);
   const isLeavingRef = useRef(false);
   const joinTimeRef = useRef<number>(0);
-  const lastForegroundTimeRef = useRef<number>(0); // Track when we last came to foreground
+  const lastBackgroundTimeRef = useRef<number>(0); // Track when we went to background
 
   const params = route.params as {
     signature: string;
@@ -59,31 +59,54 @@ function ZoomMeetingContent() {
     // Listen for app state changes
     const subscription = AppState.addEventListener('change', handleAppStateChange);
 
+    // Listen for Zoom meeting status events (if available)
+    let meetingStatusListener: any = null;
+    try {
+      if ((zoom as any).addListener) {
+        meetingStatusListener = (zoom as any).addListener('onMeetingStatusChanged', (event: any) => {
+          console.log("Participant - Meeting status changed:", event);
+
+          // Meeting ended statuses
+          // Status 3 = MeetingStatus_Ended, Status 4 = MeetingStatus_Disconnecting
+          if (event?.status === 3 || event?.status === 4 ||
+            event?.event === 'meetingEnded' || event?.event === 'meetingDisconnected') {
+            console.log("Participant - Meeting ended via SDK event");
+            handleMeetingEnd();
+          }
+        });
+      }
+    } catch (err) {
+      console.log("Participant - Could not add meeting status listener:", err);
+    }
+
     return () => {
       backHandler.remove();
       subscription.remove();
+      if (meetingStatusListener?.remove) {
+        meetingStatusListener.remove();
+      }
       cleanup();
     };
   }, []);
 
-  const handleAppStateChange = (nextAppState: AppStateStatus) => {
+  const handleAppStateChange = async (nextAppState: AppStateStatus) => {
     const timeSinceJoin = joinTimeRef.current > 0 ? Date.now() - joinTimeRef.current : 0;
-    const timeSinceLastForeground = lastForegroundTimeRef.current > 0 ? Date.now() - lastForegroundTimeRef.current : 0;
+    const timeSinceBackground = lastBackgroundTimeRef.current > 0 ? Date.now() - lastBackgroundTimeRef.current : 0;
 
     console.log("========================================");
     console.log("Participant - App state changed:", appStateRef.current, "->", nextAppState);
     console.log("Participant - Has joined:", hasJoinedRef.current);
     console.log("Participant - Is leaving:", isLeavingRef.current);
     console.log("Participant - Time since join:", timeSinceJoin, "ms");
-    console.log("Participant - Time since last foreground:", timeSinceLastForeground, "ms");
+    console.log("Participant - Time in background:", timeSinceBackground, "ms");
     console.log("========================================");
 
     // When Zoom native UI launches, React Native app goes to background
-    // This happens MANY times during join process - do NOT navigate away
     if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
       console.log("Participant - App went to background, Zoom native UI is now active");
+      lastBackgroundTimeRef.current = Date.now();
       appStateRef.current = nextAppState;
-      return; // Just update state, don't do anything
+      return;
     }
 
     // When app comes back to foreground
@@ -91,35 +114,45 @@ function ZoomMeetingContent() {
       appStateRef.current.match(/inactive|background/) &&
       nextAppState === 'active'
     ) {
-      lastForegroundTimeRef.current = Date.now();
       console.log("Participant - App returned to foreground");
 
-      // CRITICAL: Only navigate back if ALL these conditions are met:
-      // 1. We've actually joined the meeting (not just initializing)
-      // 2. We're not already leaving
-      // 3. It's been at least 2 MINUTES since joining (enough time to be in actual meeting)
-      // 4. It's been at least 10 seconds since we last came to foreground (not rapid transitions)
-      //
-      // This prevents closing during:
-      // - Initial SDK initialization
-      // - Preview screen interactions
-      // - Waiting room
-      // - Joining process
-      // - Quick app switches
+      // Check if meeting is still in progress
+      let meetingInProgress = false;
+      try {
+        // Try to check meeting status - if we get an error or the meeting isn't active, it ended
+        const getMeetingStatus = (zoom as any).getMeetingStatus;
+        if (typeof getMeetingStatus === 'function') {
+          const meetingStatus = await getMeetingStatus();
+          console.log("Participant - Meeting status:", meetingStatus);
+          // Status 2 = InMeeting, 1 = Connecting
+          meetingInProgress = meetingStatus === 2 || meetingStatus === 1;
+        } else {
+          console.log("Participant - getMeetingStatus not available, using timing heuristics");
+        }
+      } catch (err) {
+        console.log("Participant - Could not get meeting status:", err);
+        // If we can't check, assume meeting ended when we return to foreground after being in it
+        meetingInProgress = false;
+      }
+
+      // If user was in the meeting and spent time in background (meeting UI), 
+      // and meeting is no longer in progress, they likely left
       if (
         hasJoinedRef.current &&
         !isLeavingRef.current &&
-        timeSinceJoin > 120000 && // 2 minutes
-        timeSinceLastForeground > 10000 // 10 seconds since last foreground
+        timeSinceJoin > 5000 && // At least 5 seconds since join
+        timeSinceBackground > 3000 // At least 3 seconds in background (actually used Zoom UI)
       ) {
-        console.log("Participant - User likely left meeting - navigating back");
-        setTimeout(() => {
+        if (!meetingInProgress) {
+          console.log("Participant - Meeting ended, navigating back");
           handleMeetingEnd();
-        }, 1000);
+        } else {
+          console.log("Participant - Meeting still in progress, staying on screen");
+        }
       } else {
         console.log("Participant - Ignoring foreground transition - conditions not met");
-        console.log("  - Time since join:", timeSinceJoin, "ms (need > 120000)");
-        console.log("  - Time since last foreground:", timeSinceLastForeground, "ms (need > 10000)");
+        console.log("  - Time since join:", timeSinceJoin, "ms (need > 5000)");
+        console.log("  - Time in background:", timeSinceBackground, "ms (need > 3000)");
       }
     }
 
@@ -134,21 +167,26 @@ function ZoomMeetingContent() {
 
     console.log("Participant - Handling meeting end");
     isLeavingRef.current = true;
+    setStatus('left');
 
     // Try to leave meeting gracefully
     try {
-      zoom.leaveMeeting().catch((err: any) => {
-        console.log("Participant - Leave meeting error (might be expected):", err);
-      });
+      const leaveMeeting = (zoom as any).leaveMeeting;
+      if (typeof leaveMeeting === 'function') {
+        leaveMeeting().catch((err: any) => {
+          console.log("Participant - Leave meeting error (might be expected):", err);
+        });
+      }
     } catch (err) {
       console.log("Participant - Leave meeting exception (might be expected):", err);
     }
 
     cleanup();
 
+    // Navigate back after a short delay
     setTimeout(() => {
       navigateBack();
-    }, 500);
+    }, 300);
   };
 
   const initializeAndJoin = async () => {
@@ -268,7 +306,7 @@ function ZoomMeetingContent() {
         hasJoinedRef.current = true;
         setStatus('in-meeting');
         joinTimeRef.current = Date.now();
-        lastForegroundTimeRef.current = Date.now(); // Initialize foreground time
+        lastBackgroundTimeRef.current = Date.now(); // Initialize background time
       } else if (result === undefined) {
         // iOS-specific behavior or success without explicit return code
         console.warn("Participant - Result is undefined, checking if this is iOS behavior");
@@ -280,7 +318,7 @@ function ZoomMeetingContent() {
           hasJoinedRef.current = true;
           setStatus('in-meeting');
           joinTimeRef.current = Date.now();
-          lastForegroundTimeRef.current = Date.now();
+          lastBackgroundTimeRef.current = Date.now();
         } else {
           console.error("Participant - Undefined result with missing params");
           setErrorMessage("Failed to join meeting. Please check meeting credentials.");
@@ -325,6 +363,19 @@ function ZoomMeetingContent() {
         <StatusBar barStyle="light-content" backgroundColor={colors.blackish_gray} />
         <Text size={16} color={colors.white} style={styles.errorText}>
           {errorMessage}
+        </Text>
+      </View>
+    );
+  }
+
+  // Meeting ended - show brief message while navigating back
+  if (status === 'left') {
+    return (
+      <View style={styles.center}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.blackish_gray} />
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text size={14} color={colors.icon_gray} style={styles.statusText}>
+          Meeting ended
         </Text>
       </View>
     );
