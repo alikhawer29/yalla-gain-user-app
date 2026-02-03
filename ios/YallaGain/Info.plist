@@ -76,6 +76,10 @@
 	<string>For people to see you during meetings, we need access to your camera.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>For people to hear you during meetings, we need access to your microphone.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>YallaGain needs access to your contacts so you can quickly invite and connect with teammates.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>YallaGain uses your calendar to help schedule sessions and avoid conflicts.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>YallaGain needs access to your location to provide better location-based services.</string>
 </dict>
