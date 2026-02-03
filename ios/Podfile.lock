@@ -45,6 +45,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - meetingsdk-react-native (6.6.0):
+    - React-Core
+    - ZoomMeetingSDK (= 6.6.0)
   - NVActivityIndicatorView-ObjC (1.0.1)
   - RCT-Folly (2024.11.18.00):
     - boost
@@ -1996,7 +1999,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video (6.18.0):
+  - react-native-video (6.19.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2014,7 +2017,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-video/Video (= 6.18.0)
+    - react-native-video/Video (= 6.19.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2025,7 +2028,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video/Fabric (6.18.0):
+  - react-native-video/Fabric (6.19.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2053,7 +2056,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video/Video (6.18.0):
+  - react-native-video/Video (6.19.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2649,7 +2652,7 @@ PODS:
     - React-perflogger (= 0.82.0)
     - React-utils (= 0.82.0)
     - SocketRocket
-  - RNBootSplash (6.3.11):
+  - RNBootSplash (6.3.12):
     - boost
     - DoubleConversion
     - fast_float
@@ -2857,7 +2860,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNScreens (4.19.0):
+  - RNScreens (4.20.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2884,10 +2887,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.19.0)
+    - RNScreens/common (= 4.20.0)
     - SocketRocket
     - Yoga
-  - RNScreens/common (4.19.0):
+  - RNScreens/common (4.20.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3001,7 +3004,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNWorklets (0.7.1):
+  - RNWorklets (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -3028,10 +3031,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.7.1)
+    - RNWorklets/worklets (= 0.7.2)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets (0.7.1):
+  - RNWorklets/worklets (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -3058,10 +3061,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.7.1)
+    - RNWorklets/worklets/apple (= 0.7.2)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.7.1):
+  - RNWorklets/worklets/apple (0.7.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -3195,6 +3198,7 @@ PODS:
   - VisionCamera/React (4.7.3):
     - React-Core
   - Yoga (0.0.0)
+  - ZoomMeetingSDK (6.6.0)
 
 DEPENDENCIES:
   - AppAuth (~> 1.0)
@@ -3207,6 +3211,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - LoaderKit (from `../node_modules/react-native-loader-kit`)
+  - "meetingsdk-react-native (from `../node_modules/@zoom/meetingsdk-react-native`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3310,6 +3315,7 @@ SPEC REPOS:
     - StripePaymentSheet
     - StripePaymentsUI
     - StripeUICore
+    - ZoomMeetingSDK
 
 EXTERNAL SOURCES:
   boost:
@@ -3331,6 +3337,8 @@ EXTERNAL SOURCES:
     :tag: hermes-2025-09-01-RNv0.82.0-265ef62ff3eb7289d17e366664ac0da82303e101
   LoaderKit:
     :path: "../node_modules/react-native-loader-kit"
+  meetingsdk-react-native:
+    :path: "../node_modules/@zoom/meetingsdk-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3517,6 +3525,7 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: f0348704893b1f95d723038184171a5a026041ed
+  meetingsdk-react-native: eef5511189d6363aeb209c09b66eaf4fef544443
   NVActivityIndicatorView-ObjC: a2394f53d84c32f71823743a2030e0378d40332f
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: 22bf66112da540a7d40e536366ddd8557934fca1
@@ -3557,7 +3566,7 @@ SPEC CHECKSUMS:
   react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
   react-native-safe-area-context: 54d812805f3c4e08a4580ad086cbde1d8780c2e4
   react-native-unity: cc9f40a5fc4ba5e04437859c17ef8127fd6424d2
-  react-native-video: 7be878f72d62c9259f40e44c9318f45dc38fb58d
+  react-native-video: c129a091917b98995af609c78a357ed64264e64d
   react-native-webview: 8b9097e270a99ee8798449f191a7ea27c790fa1c
   React-NativeModulesApple: 1b4d9722d8df62e881684abadf320e7a8fa1b7f6
   React-oscompat: 80ca388c4831481cd03a6b45ecfc82739ca9a95e
@@ -3591,17 +3600,17 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: d5f21b5da644b33685d4f2685cba86e3c7ea64ff
   ReactCodegen: 1efedd581339e9ff5365e66fcf6522ae9f1be6cb
   ReactCommon: 17f21c8e189e290113e40fd8652758ec9694897b
-  RNBootSplash: 1e2d285376d8901d0b106da4829817e53f3eed94
+  RNBootSplash: 9bcb1ea9b8a8199cf7e397200f38261424daac6f
   RNCAsyncStorage: 302f2fac014fd450046c120567ca364632da682b
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 67d0939149fdc7d619ca6bb2de7ecf5b959539ae
   RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
-  RNPermissions: b18c89131904a59a0dad159f15b50dccbf3f5900
+  RNPermissions: 3c9fc6b54d44ce81b54c8212c4a1c2b994561274
   RNReanimated: 6cdc2b07f88a67e967eab89bbd7b2274e2e71326
-  RNScreens: 69f68c95d395bc4261d27c3aae7b4a458b947b7e
+  RNScreens: b2a5c76af24a02a2fd71bfce42780fdd9c79cc6d
   RNSound: 900f145a7611f93db8bf802a965849a72afd222d
   RNSVG: 7da7ec33015df45de2516f43bb67ab85c58754bc
-  RNWorklets: ee480a67d776e180fca0e89a0fcb84a51f1f0c16
+  RNWorklets: 9d423f16ed98eeaa4526f325b95ed0fe0226bf49
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Stripe: fe028a764ff6cc0b4884ffd1e3adfda8263d331b
   stripe-react-native: b6d04e120fd62e66c152e85562dec69ed635d508
@@ -3614,7 +3623,8 @@ SPEC CHECKSUMS:
   StripeUICore: 55ebd4a7a2c12600645526bfdd6e5bd8ea1c5335
   VisionCamera: 3ea10c46a5c612f5f89fb46a54bef4a0de8b58a7
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
+  ZoomMeetingSDK: e1ce033e8dc31cf946ef0a09971e2a8ec4e26cd0
 
-PODFILE CHECKSUM: 885bdc95d85e042ab66f79ed832747e385f7832d
+PODFILE CHECKSUM: 2db6b1ab796fc35faa2d772581bea1ebbac050de
 
 COCOAPODS: 1.16.2
