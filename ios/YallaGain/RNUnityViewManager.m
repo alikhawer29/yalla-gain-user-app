@@ -1,8 +1,40 @@
 #import <React/RCTViewManager.h>
 #import <React/RCTUIManager.h>
 #import <React/RCTLog.h>
-// Import the generated Swift header to access RNUnityView Swift class
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcherProtocol.h>
+#import <React/RCTComponentEvent.h>
+#import <React/UIView+React.h>
+#import <dlfcn.h>
+// Import the generated Swift header to access YallaGainUnityView Swift class
 #import "YallaGain-Swift.h"
+
+// Unity requires setExecuteHeader before runEmbedded. Resolve at runtime to avoid linker symbol.
+static void* getExecuteHeaderPtr(void) {
+    void *mainHandle = dlopen(NULL, RTLD_NOW);
+    if (!mainHandle) return NULL;
+    return dlsym(mainHandle, "_mh_execute_header");
+}
+
+void* YallaGainGetExecuteHeader(void) {
+    return getExecuteHeaderPtr();
+}
+
+// Call setExecuteHeader on UnityFramework so Swift doesn't need to pass Mach header pointer
+void YallaGainUnitySetExecuteHeader(id unityFramework) {
+    if (!unityFramework || ![unityFramework respondsToSelector:@selector(setExecuteHeader:)]) return;
+    void *header = getExecuteHeaderPtr();
+    if (header) {
+        [unityFramework setExecuteHeader:header];
+    }
+}
+
+// setDataBundleId expects (const char*) — call with C string like the Unity uaal-example
+void YallaGainUnitySetDataBundleId(id unityFramework, const char *bundleId) {
+    if (unityFramework && bundleId && [unityFramework respondsToSelector:@selector(setDataBundleId:)]) {
+        [unityFramework setDataBundleId:bundleId];
+    }
+}
 
 @interface RNUnityViewManager : RCTViewManager
 @end
@@ -59,5 +91,46 @@ RCT_EXPORT_METHOD(unloadUnity:(nonnull NSNumber *)reactTag) {
     }];
 }
 
+/// Test only: simulate a message from Unity so JS can verify [UnityMessage] and sendUserId path without the game.
+RCT_EXPORT_METHOD(simulateMessageFromUnity:(NSString *)message) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [YallaGainUnityView forwardMessageFromUnity:message];
+    });
+}
+
+RCT_EXPORT_METHOD(simulateMessageFromUnityWithGameObject:(NSString *)gameObject message:(NSString *)message) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [YallaGainUnityView forwardMessageFromUnityWithGameObject:gameObject message:message];
+    });
+}
+
 @end
 
+// MARK: - Unity → RN bridge (call these from Unity C# via native plugin when sending messages to the app)
+
+void YallaGainSendMessageToApp(const char *message) {
+    if (!message) return;
+    NSString *msg = [NSString stringWithUTF8String:message];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [YallaGainUnityView forwardMessageFromUnity:msg];
+    });
+}
+
+void YallaGainSendMessageToAppWithGameObject(const char *gameObject, const char *message) {
+    NSString *go = gameObject ? [NSString stringWithUTF8String:gameObject] : nil;
+    NSString *msg = message ? [NSString stringWithUTF8String:message] : @"";
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [YallaGainUnityView forwardMessageFromUnityWithGameObject:go message:msg];
+    });
+}
+
+// Send Unity message to JS via event dispatcher (ensures delivery in Fabric/bridgeless)
+void YallaGainEmitUnityMessageToJS(NSNumber * _Nullable reactTag, NSString * _Nonnull message) {
+    if (!reactTag || !message) return;
+    id bridge = [RCTBridge currentBridge];
+    if (!bridge) return;
+    id<RCTEventDispatcherProtocol> dispatcher = [bridge eventDispatcher];
+    if (!dispatcher) return;
+    RCTComponentEvent *event = [[RCTComponentEvent alloc] initWithName:@"onUnityMessage" viewTag:reactTag body:@{@"message": message}];
+    [dispatcher sendEvent:event];
+}

@@ -13,7 +13,11 @@ const AvatarStackNavigator = () => {
         <Stack.Navigator screenOptions={Options}>
             <Stack.Screen name={ROUTES.AVATAR_SCAN_FORM} component={AvatarScanForm} />
             <Stack.Screen name={ROUTES.SCAN} component={Scan} />
-            <Stack.Screen name={ROUTES.CREATE_AVATAR} component={CreateAvatar} />
+            <Stack.Screen
+                name={ROUTES.CREATE_AVATAR}
+                component={CreateAvatar}
+                options={{ gestureEnabled: false }}
+            />
         </Stack.Navigator>
     );
 }

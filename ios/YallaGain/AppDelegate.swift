@@ -35,6 +35,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
       launchOptions: launchOptions
     )
     
+    // Unity is started lazily when the user opens the Unity screen (RNUnityView).
+    // Do NOT start Unity here — it crashes (EXC_BAD_ACCESS in UnityInitApplicationNoGraphics)
+    // until the game team fixes the embedded player. This lets the app and bundling finish.
+    
     do {
         let session = AVAudioSession.sharedInstance()
         try session.setCategory(.playback, mode: .default, options: [])

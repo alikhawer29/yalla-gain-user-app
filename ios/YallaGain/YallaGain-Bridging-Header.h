@@ -10,6 +10,7 @@
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
 #import <React/RCTComponent.h>
+#import <React/UIView+React.h>
 
 // Define RCTBubblingEventBlock for Swift
 typedef void (^RCTBubblingEventBlock)(NSDictionary *body);
@@ -25,7 +26,10 @@ typedef void (^RCTBubblingEventBlock)(NSDictionary *body);
 #import "UnityFramework.h"
 #endif
 
-// Import mach-o headers for execute header (if needed)
-#if __has_include(<mach-o/ldsyms.h>)
-#import <mach-o/ldsyms.h>
-#endif
+// Unity setExecuteHeader - required before runEmbedded (see Unity docs)
+void* YallaGainGetExecuteHeader(void);
+void YallaGainUnitySetExecuteHeader(id unityFramework);
+void YallaGainUnitySetDataBundleId(id unityFramework, const char *bundleId);
+
+// Emit Unity message event to JS (works in Fabric/bridgeless where RCTBubblingEventBlock may not deliver)
+void YallaGainEmitUnityMessageToJS(NSNumber * _Nullable reactTag, NSString * _Nonnull message);

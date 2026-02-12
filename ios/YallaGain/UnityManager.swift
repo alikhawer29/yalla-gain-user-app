@@ -1,5 +1,6 @@
 import UIKit
 import Foundation
+import ObjectiveC
 
 /// Singleton manager for Unity Framework lifecycle
 /// Unity must be started ONCE at the app level, not from individual views
@@ -12,6 +13,8 @@ final class UnityManager {
     private var isPaused = false // Unity starts running after runEmbedded, we pause it after
     private var activeViewCount = 0 // Track how many views are displaying Unity
     private let lockQueue = DispatchQueue(label: "com.yallagain.unity.manager")
+    /// Handler for messages from Unity → RN. Set by the active Unity view. Called on main queue.
+    private var unityMessageHandler: ((String, String?) -> Void)?
     
     private init() {
         // Private initializer for singleton
@@ -43,35 +46,44 @@ final class UnityManager {
         }
     }
     
-    /// Start Unity Framework if not already started
-    /// This should be called AFTER React Native UI is mounted
-    func startUnityIfNeeded() {
+    /// Start Unity Framework if not already started (app-level, call once).
+    /// Optionally pass a completion called when Unity has finished starting and is ready to embed.
+    func startUnityIfNeeded(completion: (() -> Void)? = nil) {
+        var alreadyStarted = false
         lockQueue.sync {
             guard !started else {
-                print("ℹ️ Unity already started, skipping")
+                alreadyStarted = true
                 return
             }
             started = true
         }
+        if alreadyStarted {
+            print("ℹ️ Unity already started, skipping")
+            completion?()
+            return
+        }
         
-        // CRITICAL: Delay Unity startup to ensure React Native layout is complete
-        // Unity initialization blocks the main thread, so we must wait for RN to settle
+        // Delay so React Native / app UI is ready
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.startUnity()
+            self?.startUnity(completion: completion)
         }
     }
     
-    private func startUnity() {
+    private func startUnity(completion: (() -> Void)? = nil) {
         guard Thread.isMainThread else {
             DispatchQueue.main.async { [weak self] in
-                self?.startUnity()
+                self?.startUnity(completion: completion)
             }
             return
         }
         
-        let bundlePath = Bundle.main.bundlePath + "/Frameworks/UnityFramework.framework"
-        guard let bundle = Bundle(path: bundlePath) else {
-            print("❌ UnityFramework bundle not found at: \(bundlePath)")
+        // Framework path: unity/builds/ios/UnityFramework (try .framework suffix then plain name)
+        let frameworksDir = Bundle.main.bundlePath + "/Frameworks"
+        let bundlePathWithExt = frameworksDir + "/UnityFramework.framework"
+        let bundlePathPlain = frameworksDir + "/UnityFramework"
+        let bundle = Bundle(path: bundlePathWithExt) ?? Bundle(path: bundlePathPlain)
+        guard let bundle = bundle else {
+            print("❌ UnityFramework bundle not found at: \(bundlePathWithExt) or \(bundlePathPlain)")
             return
         }
         
@@ -124,60 +136,72 @@ final class UnityManager {
         
         print("✅ UnityFramework instance obtained")
         
-        // Set Unity data directory - use APP bundle ID
+        // Data path: main app bundle (where Xcode "Copy Unity Data Folder" puts it)
         let appBundlePath = Bundle.main.bundlePath
-        let dataPath = appBundlePath + "/Data"
-        print("📁 Setting Unity data path to: \(dataPath)")
+        let appBundleDataPath = appBundlePath + "/Data"
+        let frameworkBundlePath = bundle.bundlePath
+        let frameworkDataPath = frameworkBundlePath + "/Data"
         
-        if ufw.responds(to: NSSelectorFromString("setDataBundleId:")) {
-            if let appBundleId = Bundle.main.bundleIdentifier {
-                print("📦 Using app bundle ID for Unity: \(appBundleId)")
-                ufw.perform(NSSelectorFromString("setDataBundleId:"), with: appBundleId)
-            }
-        }
-        
-        // Verify data path exists
         let fileManager = FileManager.default
-        let appBundleDataPath = Bundle.main.bundlePath + "/Data"
-        
-        if !fileManager.fileExists(atPath: appBundleDataPath) {
-            print("❌ ERROR: Unity Data folder not found at: \(appBundleDataPath)")
+        let dataPath: String
+        if fileManager.fileExists(atPath: appBundleDataPath) {
+            dataPath = appBundleDataPath
+            print("📁 Using Unity Data from main app bundle: \(dataPath)")
+        } else if fileManager.fileExists(atPath: frameworkDataPath) {
+            dataPath = frameworkDataPath
+            print("📁 Using Unity Data from framework: \(dataPath)")
+        } else {
+            print("❌ Unity Data folder not found at main or framework path")
             return
         }
         
-        print("✅ Unity Data folder found at app bundle: \(appBundleDataPath)")
+        // setDataBundleId expects (const char*) — use C string like Unity uaal-example
+        if let appBundleId = Bundle.main.bundleIdentifier, !appBundleId.isEmpty {
+            print("📦 Set Unity data bundle ID to main app: \(appBundleId)")
+            appBundleId.withCString { YallaGainUnitySetDataBundleId(ufw, $0) }
+        }
+        if ufw.responds(to: NSSelectorFromString("setFrameworkBundlePath:")) {
+            ufw.perform(NSSelectorFromString("setFrameworkBundlePath:"), with: frameworkBundlePath)
+        }
         
-        // Prepare launch options
-        var appLaunchOpts: [String: Any] = [:]
-        appLaunchOpts["unity_data_path"] = appBundleDataPath
+        // Required before runEmbedded (Unity docs + uaal-example) — avoids EXC_BAD_ACCESS in init
+        YallaGainUnitySetExecuteHeader(ufw)
+        
+        // Never pass null/empty argv - UnityInitApplicationNoGraphics can crash
+        var args = ProcessInfo.processInfo.arguments
+        if args.isEmpty { args = [ProcessInfo.processInfo.processName] }
+        if args[0].isEmpty { args[0] = "Unity" }
+        let argc = Int32(args.count)
+        
+        var appLaunchOpts: [String: Any] = ["unity_data_path": dataPath]
         
         // Get the runEmbedded method
         if ufw.responds(to: NSSelectorFromString("runEmbeddedWithArgc:argv:appLaunchOpts:")) {
-            let args = ProcessInfo.processInfo.arguments
-            let argc = Int32(args.count)
             var cStringArgs: [UnsafeMutablePointer<CChar>?] = args.map { strdup($0) }
             cStringArgs.append(nil)
             
-            let argv = cStringArgs.withUnsafeMutableBufferPointer { buffer in
-                UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>(buffer.baseAddress!)
+            defer {
+                for ptr in cStringArgs where ptr != nil { free(ptr) }
+            }
+            
+            guard let baseAddress = cStringArgs.withUnsafeMutableBufferPointer({ $0.baseAddress }),
+                  baseAddress.pointee != nil else {
+                print("❌ Invalid argv for Unity runEmbedded")
+                return
             }
             
             let selector = NSSelectorFromString("runEmbeddedWithArgc:argv:appLaunchOpts:")
             let imp = ufw.method(for: selector)
             typealias RunEmbedded = @convention(c) (AnyObject, Selector, Int32, UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>, NSDictionary?) -> Void
             let runEmbedded = unsafeBitCast(imp, to: RunEmbedded.self)
-            let launchOpts = appLaunchOpts.isEmpty ? nil : appLaunchOpts as NSDictionary
+            let launchOpts = appLaunchOpts as NSDictionary
             
-            print("📞 Calling Unity runEmbedded...")
-            runEmbedded(ufw, selector, argc, argv, launchOpts)
+            print("📞 Calling Unity runEmbedded (app-level)...")
+            runEmbedded(ufw, selector, argc, baseAddress, launchOpts)
             print("✅ Unity runEmbedded completed")
+            completion?()
             
-            // Free allocated strings
-            for ptr in cStringArgs where ptr != nil {
-                free(ptr)
-            }
-            
-            // CRITICAL: Pause Unity immediately after startup completes
+            // Pause Unity immediately; resume when a view registers
             // Unity starts rendering immediately after runEmbedded, which blocks the main thread
             // We MUST pause it right away, then resume only when a view explicitly requests it
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
@@ -196,6 +220,8 @@ final class UnityManager {
                     }
                 }
             }
+        } else {
+            completion?()
         }
     }
     
@@ -299,7 +325,44 @@ final class UnityManager {
             pauseUnity()
         }
     }
-    
+
+    // MARK: - Unity → RN message bridge (Unity calls these from native plugin; we forward to the active view)
+
+    /// Register the handler to receive messages sent from Unity. Call from the active Unity view when it mounts.
+    func registerUnityMessageHandler(_ handler: @escaping (String, String?) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            self?.unityMessageHandler = handler
+            print("📩 Unity → RN message handler registered")
+        }
+    }
+
+    /// Unregister the handler. Call when the Unity view unmounts.
+    func unregisterUnityMessageHandler() {
+        DispatchQueue.main.async { [weak self] in
+            self?.unityMessageHandler = nil
+            print("📩 Unity → RN message handler unregistered")
+        }
+    }
+
+    /// Called by Unity native plugin (e.g. C function YallaGainSendMessageToApp) with a single message string.
+    @objc func sendMessageFromUnity(_ message: String) {
+        DispatchQueue.main.async { [weak self] in
+            let hasHandler = self?.unityMessageHandler != nil
+            print("📩 UnityManager.sendMessageFromUnity: \"\(message)\" handler=\(hasHandler)")
+            self?.unityMessageHandler?(message, nil)
+        }
+    }
+
+    /// Called by Unity native plugin with GameObject name and event/message. Use for MessageSent + SocketConnectedGame.
+    @objc(sendMessageFromUnityWithGameObject:message:)
+    func sendMessageFromUnity(gameObject: String?, message: String) {
+        DispatchQueue.main.async { [weak self] in
+            let hasHandler = self?.unityMessageHandler != nil
+            print("📩 UnityManager.sendMessageFromUnity gameObject=\(gameObject ?? "nil") message=\"\(message)\" handler=\(hasHandler)")
+            self?.unityMessageHandler?(message, gameObject)
+        }
+    }
+
     // MARK: - Pause/Resume
     
     /// Pause Unity rendering to free up main thread
@@ -356,6 +419,27 @@ final class UnityManager {
         }
     }
     
+    /// Unload the Unity application (same as @azesmway/react-native-unity: [[ufw] unloadApplication]).
+    /// Call when leaving the Unity screen so Unity fully quits and restarts fresh next time.
+    func unloadApplication() {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in self?.unloadApplication() }
+            return
+        }
+        let framework = lockQueue.sync { ufw }
+        guard let framework = framework else { return }
+        if framework.responds(to: NSSelectorFromString("unloadApplication")) {
+            framework.perform(NSSelectorFromString("unloadApplication"))
+            print("🛑 Unity unloadApplication called")
+        }
+        lockQueue.sync {
+            ufw = nil
+            started = false
+            isPaused = false
+            activeViewCount = 0
+        }
+    }
+
     /// Send message to Unity
     func sendMessage(toGameObject gameObject: String, methodName: String, message: String) {
         guard let framework = lockQueue.sync(execute: { ufw }) else {

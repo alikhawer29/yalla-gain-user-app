@@ -12,7 +12,6 @@ import { heightPixel, widthPixel } from "../../utils/helper";
 import useConsultantProfileController from "./useConsultantProfileController";
 import styles from "./styles";
 import ServiceCard from "./ServiceCard";
-import { RefreshControl } from "react-native-gesture-handler";
 
 const ConsultantProfile = () => {
     const {
@@ -30,7 +29,12 @@ const ConsultantProfile = () => {
     };
 
     return (
-        <Wrapper scrollable loading={isLoading}>
+        <Wrapper
+            scrollable
+            loading={isLoading}
+            onRefresh={onReload}
+            refreshing={isLoading}
+        >
             <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
                 <View style={{ width: "85%" }}>
                     <Input
@@ -140,9 +144,6 @@ const ConsultantProfile = () => {
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}
-                refreshControl={
-                    <RefreshControl refreshing={isLoading} onRefresh={onReload} />
-                }
                 ItemSeparatorComponent={() => <View style={{ width: widthPixel(15) }} />}
             />
         </Wrapper>
