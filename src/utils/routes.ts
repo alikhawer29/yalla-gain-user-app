@@ -71,6 +71,10 @@ const ROUTES = {
   ABOUT_US: 'AboutUs',
   FAQS: 'Faqs',
   CONTACT_US: 'ContactUs',
+  // Challenges & Rewards
+  CHALLENGES: 'Challenges',
+  CHALLENGE_DETAIL: 'ChallengeDetail',
+  CHALLENGE_LOGS: 'ChallengeLogs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -368,8 +372,10 @@ const ROUTES_OPTIONS = [
   },
   {
     route_name: ROUTES.AVATAR_VISUALIZATION,
-    left: 'back',
-    right: 'notifications',
+    // left: 'back',   // Commented out so user leaves only via Unity GoBack/SaveGame (unloads Unity)
+    // right: 'notifications',
+    left: null,
+    right: null,
     logo: false,
     title: 'Avatar Details', // Default title, can be overridden by route params
     bottom_tab: false,
@@ -421,6 +427,27 @@ const ROUTES_OPTIONS = [
     logo: false,
     title: 'Contact Us',
     bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.CHALLENGES,
+    left: 'drawer',
+    right: 'notifications',
+    logo: false,
+    title: 'Challenges',
+  },
+  {
+    route_name: ROUTES.CHALLENGE_DETAIL,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Challenge Details',
+  },
+  {
+    route_name: ROUTES.CHALLENGE_LOGS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Challenge Logs',
   },
 ] as const;
 

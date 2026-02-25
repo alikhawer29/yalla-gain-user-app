@@ -1,4 +1,5 @@
 import { Formik } from "formik"
+import { useMemo } from "react"
 import { View } from "react-native"
 import Button from "../../components/Button"
 import Icon from "../../components/Icon"
@@ -11,6 +12,11 @@ import images from "../../assets/images"
 import KeyboardAvoidingWrapper from "../../components/KeyboardAvoidingWrapper"
 
 const EditProfile = () => {
+    const maxDobDate = useMemo(() => {
+        const d = new Date()
+        d.setDate(d.getDate() - 1)
+        return d
+    }, [])
 
     const {
         schema,
@@ -65,7 +71,7 @@ const EditProfile = () => {
                                     setFieldValue("dialing_code", e?.callingCode?.[0])
                                 }}
                             />
-                            <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={errors?.dob} />
+                            <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={errors?.dob} maximumDate={maxDobDate} />
                             <Button text="Update" onPress={handleSubmit} loading={isLoading} style={styles.button} />
                         </>
                     )}

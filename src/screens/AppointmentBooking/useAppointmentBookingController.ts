@@ -165,6 +165,14 @@ const useAppointmentBookingController = () => {
       });
       return;
     }
+    if (formData.phone.length < 6 || formData.phone.length > 15) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Phone number must be 6–15 digits.',
+      });
+      return;
+    }
     if (!selectedDate || !selectedSlot) {
       showOkModal({
         type: 'error',

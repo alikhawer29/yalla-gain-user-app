@@ -3,8 +3,7 @@ import { View } from "react-native"
 import { useAppSelector } from "../../hooks"
 import { selectUser } from "../../redux/Slices/AuthSlice"
 import { getGreetingText } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
-import { NAVIGATORS, ROUTES } from "../../utils/routes"
+import { navigateToAvatarForm } from "../../utils/navigation"
 import Button from "../Button"
 import Icon from "../Icon"
 import Row from "../Row"
@@ -31,14 +30,7 @@ const ProfileHeader: FC = () => {
                     text="Avatar"
                     style={styles.button}
                     font_size={12}
-                    onPress={() =>
-                        navigate(NAVIGATORS.DRAWER as any, {
-                            screen: NAVIGATORS.AVATAR_STACK,
-                            params: {
-                                screen: ROUTES.AVATAR_SCAN_FORM,
-                            },
-                        })
-                    }
+                    onPress={navigateToAvatarForm}
                 />
             </View>
         </Row>

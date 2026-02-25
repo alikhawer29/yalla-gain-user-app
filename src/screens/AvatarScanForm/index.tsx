@@ -30,7 +30,8 @@ const AvatarScanForm = () => {
         functions: {
             onSubmit,
             onManualSubmit,
-            onScanPress
+            onScanPress,
+            isFormValid
         }
     } = useAvatarScanFormController()
 
@@ -135,12 +136,14 @@ const AvatarScanForm = () => {
                                         type="outlined"
                                         onPress={() => onManualSubmit(data)}
                                         loading={isLoadingManual}
+                                        disabled={!isFormValid(data)}
                                         style={[styles.button, { flex: 1 }]}
                                     />
                                     <Button
                                         text="Scan"
                                         onPress={() => onScanPress(data)}
                                         loading={isLoadingScan}
+                                        disabled={!isFormValid(data)}
                                         style={[styles.button, { flex: 1 }]}
                                     />
                                 </Row>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRoute } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 import { useModal } from '../../contexts/ModalContext';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
@@ -31,9 +31,23 @@ const useAvatarScanFormController = () => {
   const route = useRoute();
   const { formData: routeFormData } = (route.params as any) || {};
 
-  const [submit, { isLoading, isSuccess }] = useScanAvatarMutation();
+  const [submit, { isLoading, isSuccess, reset }] = useScanAvatarMutation();
   const [isLoadingManual, setIsLoadingManual] = useState(false);
   const [isLoadingScan, setIsLoadingScan] = useState(false);
+  // Only navigate to Unity when we just completed a Manual submit on this screen.
+  // (Scan flow navigates from Scan screen.) Stale isSuccess from a previous visit must not trigger navigation.
+  const didManualSubmitRef = useRef(false);
+
+  // On every focus: clear mutation state and "just submitted" flag so opening the form again
+  // (or returning from Unity) never auto-navigates to Unity. Empty deps = stable callback, run only on focus.
+  useFocusEffect(
+    useCallback(() => {
+      didManualSubmitRef.current = false;
+      reset();
+      return () => {};
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   const initial = routeFormData || {
     age: '',
@@ -48,7 +62,8 @@ const useAvatarScanFormController = () => {
   const showActionButtons = !routeFormData;
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess && didManualSubmitRef.current) {
+      didManualSubmitRef.current = false;
       navigate(ROUTES.CREATE_AVATAR);
     }
   }, [isSuccess]);
@@ -71,6 +86,7 @@ const useAvatarScanFormController = () => {
   // Handle Manual button - submit without photos
   const onManualSubmit = useCallback(
     async (data: any) => {
+      didManualSubmitRef.current = true;
       setIsLoadingManual(true);
       try {
         const formData = new FormData();
@@ -115,6 +131,15 @@ const useAvatarScanFormController = () => {
     [],
   );
 
+  // Manual validation against schema - true only when form is valid
+  const isFormValid = useCallback((values: any) => {
+    try {
+      AVATAR_SCAN_FORM_SCHEMA.validateSync(values);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   return {
     schema: AVATAR_SCAN_FORM_SCHEMA,
@@ -132,6 +157,7 @@ const useAvatarScanFormController = () => {
       onSubmit,
       onManualSubmit,
       onScanPress,
+      isFormValid,
     },
   };
 };

@@ -10,10 +10,13 @@ import WorkoutCard from "../../components/Cards/WorkoutCard"
 import ProfileHeader from "../../components/ProfileHeader"
 import Row from "../../components/Row"
 import Text from "../../components/Text"
+import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import { PROGRESS_TRACKING, RECOMMENDED_VIDEOS, WORKOUT_PLANS } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
+import { navigate } from "../../utils/navigation"
+import { ROUTES } from "../../utils/routes"
 
 const Home = () => {
 
@@ -44,9 +47,9 @@ const Home = () => {
                     </View>
                 </Row>
                 <Row justify="space-between">
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
+                    <Touchable style={{ padding: heightPixel(8), width: "50%" }} onPress={() => navigate('Challenges')}>
                         <TrackingCard icon={images.challenge_graph} title="Challenges" progress={10} subtext="Completed" />
-                    </View>
+                    </Touchable>
                     <View style={{ padding: heightPixel(8), width: "50%" }}>
                         <TrackingCard icon={images.steps_graph} title="Steps" progress={3000} subtext="Steps" />
                     </View>

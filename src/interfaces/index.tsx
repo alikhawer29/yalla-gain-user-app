@@ -93,6 +93,10 @@ export type RootStackParamList = {
     AboutUs: undefined;
     Faqs: undefined;
     ContactUs: undefined;
+    // Challenges & Rewards
+    Challenges: undefined;
+    ChallengeDetail: { id: number };
+    ChallengeLogs: undefined;
 };
 
 export interface IWrapper {
@@ -163,6 +167,7 @@ export interface IButton {
     icon?: ImageSourcePropType,
     loading?: boolean,
     textColor?: string,
+    disabled?: boolean,
 }
 
 export interface IRow {
@@ -195,6 +200,8 @@ export interface IInput {
     disabled?: boolean;
     required?: boolean;
     height?: number;
+    /** For type="date": cap selectable date (e.g. new Date() for DOB to block future) */
+    maximumDate?: Date;
 }
 
 export interface IIcon {
@@ -321,6 +328,8 @@ export interface ITabs {
 export interface IUpload {
     text?: string
     style?: StyleProp<ViewStyle>
+    required?: boolean
+    onPress?: () => void
 }
 
 export interface ICheckbox {

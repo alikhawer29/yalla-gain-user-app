@@ -15,7 +15,7 @@ import styles from './styles';
 
 const Input: FC<IInput> = props => {
 
-    const { label, placeholder, type, icon, error, value, onChangeText, onChangeCountry, maxLength, disabled, required = false, height, mode = "primary", country = "AE" } = props
+    const { label, placeholder, type, icon, error, value, onChangeText, onChangeCountry, maxLength, disabled, required = false, height, mode = "primary", country = "AE", maximumDate } = props
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(type === 'password');
     const [isFocused, setIsFocused] = useState(false);
@@ -72,7 +72,8 @@ const Input: FC<IInput> = props => {
                         countryPickerButtonStyle={{ borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
                         textInputProps={{
                             cursorColor: colors.primary,
-                            placeholderTextColor: colors.white
+                            placeholderTextColor: colors.white,
+                            maxLength: 15,
                         }}
                         disableArrowIcon
                         countryPickerProps={{ renderFlagButton: false }}
@@ -121,6 +122,7 @@ const Input: FC<IInput> = props => {
                     modal
                     open={dateOpen}
                     date={value ? new Date(value) : new Date()}
+                    maximumDate={maximumDate}
                     onConfirm={(date) => {
                         toggleDate()
                         onChangeText(type === "time" ? date?.toISOString() : dateFormatter(date))

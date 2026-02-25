@@ -7,16 +7,17 @@ import Row from "../Row"
 import Text from "../Text"
 import styles from "./styles"
 
-const Button: FC<IButton> = ({ text, style, onPress, type = "primary", font_size = 16, icon = null, loading = false, textColor }) => {
+const Button: FC<IButton> = ({ text, style, onPress, type = "primary", font_size = 16, icon = null, loading = false, textColor, disabled = false }) => {
 
     const button_default_style = {
-        ...(type === "outlined" ? { backgroundColor: colors.light_primary } : type === "secondary" ? { backgroundColor: colors.white } : {})
+        ...(type === "outlined" ? { backgroundColor: colors.light_primary } : type === "secondary" ? { backgroundColor: colors.white } : {}),
+        ...(disabled ? { opacity: 0.5 } : {}),
     }
 
     const buttonTextColor = textColor || ((type === "outlined" || type === "secondary") ? colors.primary : colors.white);
 
     return (
-        <Row gap={6} onPress={onPress} style={[styles.container, style, button_default_style]} align="center" justify="center">
+        <Row gap={6} onPress={disabled ? undefined : onPress} style={[styles.container, style, button_default_style]} align="center" justify="center">
             {
                 loading ? <Loader /> :
                     (

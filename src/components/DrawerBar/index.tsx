@@ -51,6 +51,7 @@ const DRAWER_ROUTES = [
                 icon: images.drawer_icons.challenges,
                 route: NAVIGATORS.BOTTOM,
                 child: NAVIGATORS.HOME_STACK,
+                params: { screen: ROUTES.CHALLENGES },
             },
             {
                 title: "Help Center",

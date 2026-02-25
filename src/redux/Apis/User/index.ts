@@ -13,6 +13,7 @@ export const userApi = createApi({
     'Posts',
     'BlockedUsers',
     'Wallet',
+    'Challenges',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -456,6 +457,74 @@ export const userApi = createApi({
         body,
       }),
     }),
+    // Challenges
+    getChallenges: builder.query({
+      query: (params?: { search?: string; from?: string; to?: string }) => ({
+        url: `challenges`,
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Challenges'],
+    }),
+    getChallengeById: builder.query({
+      query: (id: number) => ({
+        url: `challenge/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Challenges', id }],
+      keepUnusedDataFor: 0,
+    }),
+    startChallenge: builder.mutation({
+      query: (id: number) => ({
+        url: `challenge/${id}/start`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+      async onQueryStarted(id, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(
+            userApi.util.updateQueryData('getChallengeById', id, draft => {
+              const target = (draft as any)?.data ?? draft;
+              if (target && typeof target === 'object') {
+                (target as any).is_started = true;
+                (target as any).challenge_status = (target as any).challenge_status ?? 'ongoing';
+                (target as any).challenge_progress = (target as any).challenge_progress ?? { id: id, status: 'ongoing' };
+              }
+            })
+          );
+        } catch (_) {}
+      },
+    }),
+    startTodayTask: builder.mutation({
+      query: (id: number) => ({
+        url: `challenge/${id}/startTodayTask`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+    }),
+    completeTodayTask: builder.mutation({
+      query: (id: number) => ({
+        url: `challenge/${id}/completeTodayTask`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+    }),
+    leaveChallenge: builder.mutation({
+      query: (id: number) => ({
+        url: `challenge/${id}/leave`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+    }),
+    getChallengeLogs: builder.query({
+      query: (params?: { search?: string; from?: string; to?: string }) => ({
+        url: `challenge/logs/my`,
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Challenges'],
+    }),
   }),
 });
 
@@ -516,5 +585,13 @@ export const {
   useScanAvatarMutation,
   useUpdateAvatarMutation,
   useGetFaqsQuery,
-  useContactUsMutation
+  useContactUsMutation,
+  // Challenges
+  useGetChallengesQuery,
+  useGetChallengeByIdQuery,
+  useStartChallengeMutation,
+  useStartTodayTaskMutation,
+  useCompleteTodayTaskMutation,
+  useLeaveChallengeMutation,
+  useGetChallengeLogsQuery,
 } = userApi;

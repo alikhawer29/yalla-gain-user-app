@@ -19,7 +19,10 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
         .required('Confirm Password is required'),
     dialing_code: Yup.string(),
     country_code: Yup.string(),
-    phone: Yup.string().required('Mobile Number is required'),
+    phone: Yup.string()
+        .required('Mobile Number is required')
+        .min(6, 'Phone number must be 6–15 digits')
+        .max(15, 'Phone number must be 6–15 digits'),
 })
 
 export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
@@ -27,8 +30,22 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     last_name: Yup.string().required('Last Name is required'),
     dialing_code: Yup.string(),
     country_code: Yup.string(),
-    phone: Yup.string().required('Mobile Number is required'),
-    dob: Yup.string(),
+    phone: Yup.string()
+        .required('Mobile Number is required')
+        .min(6, 'Phone number must be 6–15 digits')
+        .max(15, 'Phone number must be 6–15 digits'),
+    dob: Yup.string().test(
+        'not-future',
+        'Date of birth must be in the past (not today or future)',
+        (value) => {
+            if (!value) return true
+            const d = new Date(value)
+            if (Number.isNaN(d.getTime())) return true
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            return d < today
+        }
+    ),
 })
 
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
@@ -40,7 +57,11 @@ export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
     }),
     phone: Yup.string().when('via', {
         is: 'phone',
-        then: schema => schema.required('Phone is required'),
+        then: schema =>
+            schema
+                .required('Phone is required')
+                .min(6, 'Phone number must be 6–15 digits')
+                .max(15, 'Phone number must be 6–15 digits'),
         otherwise: schema => schema.notRequired(),
     }),
     dialing_code: Yup.string().when('via', {

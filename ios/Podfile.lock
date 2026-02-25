@@ -45,9 +45,9 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - meetingsdk-react-native (6.6.0):
+  - meetingsdk-react-native (6.7.2):
     - React-Core
-    - ZoomMeetingSDK (= 6.6.0)
+    - ZoomMeetingSDK (= 6.7.2)
   - NVActivityIndicatorView-ObjC (1.0.1)
   - RCT-Folly (2024.11.18.00):
     - boost
@@ -2860,7 +2860,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNScreens (4.20.0):
+  - RNScreens (4.23.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2887,10 +2887,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.20.0)
+    - RNScreens/common (= 4.23.0)
     - SocketRocket
     - Yoga
-  - RNScreens/common (4.20.0):
+  - RNScreens/common (4.23.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2947,7 +2947,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSVG (15.15.1):
+  - RNSVG (15.15.3):
     - boost
     - DoubleConversion
     - fast_float
@@ -2973,10 +2973,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.1)
+    - RNSVG/common (= 15.15.3)
     - SocketRocket
     - Yoga
-  - RNSVG/common (15.15.1):
+  - RNSVG/common (15.15.3):
     - boost
     - DoubleConversion
     - fast_float
@@ -3198,7 +3198,7 @@ PODS:
   - VisionCamera/React (4.7.3):
     - React-Core
   - Yoga (0.0.0)
-  - ZoomMeetingSDK (6.6.0)
+  - ZoomMeetingSDK (6.7.2)
 
 DEPENDENCIES:
   - AppAuth (~> 1.0)
@@ -3525,7 +3525,7 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: 4d0214b010100d399c0e34bd3f82c7d2d32c253a
-  meetingsdk-react-native: 33422e86ec6bed0b7f5c8682c840f162ccf89a61
+  meetingsdk-react-native: 052d82b3ad596406a7d59e8c23fbec18190392da
   NVActivityIndicatorView-ObjC: a2394f53d84c32f71823743a2030e0378d40332f
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: 22bf66112da540a7d40e536366ddd8557934fca1
@@ -3607,9 +3607,9 @@ SPEC CHECKSUMS:
   RNInAppBrowser: 6d3eb68d471b9834335c664704719b8be1bfdb20
   RNPermissions: a707f1287e3a26e247391251ea8b38f28d744b04
   RNReanimated: 7d59df16c018cf3ed5d5b45964cedea4fc5c26ef
-  RNScreens: 714e10b6b554f7dc7ad9f78dcf36dc8e3fc73415
+  RNScreens: afaf526a9c804c3b4503f950cf3e67ed81e29ada
   RNSound: 180aa1cfad34009ad7472c78d0340100ff948058
-  RNSVG: 1bbfeab22b26db18b73d2e36b37a0f02a1180838
+  RNSVG: 91da5f4f11f562cafee06e2a6f04bb4401ef1090
   RNWorklets: cb0d3cc3c613ac60a3b7620f394980d997a86d8d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Stripe: fe028a764ff6cc0b4884ffd1e3adfda8263d331b
@@ -3623,7 +3623,7 @@ SPEC CHECKSUMS:
   StripeUICore: 55ebd4a7a2c12600645526bfdd6e5bd8ea1c5335
   VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
-  ZoomMeetingSDK: e1ce033e8dc31cf946ef0a09971e2a8ec4e26cd0
+  ZoomMeetingSDK: 5462eae8ef04107226123d2aed4cefe56f206d99
 
 PODFILE CHECKSUM: 2db6b1ab796fc35faa2d772581bea1ebbac050de
 

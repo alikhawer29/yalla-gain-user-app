@@ -39,16 +39,24 @@ const ProgressTracking = () => {
                                 font_size={10}
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="View"
-                                onPress={handleInitialAvatarView}
-                                loading={isLoadingInitialView}
+                                // onPress={handleInitialAvatarView}
+                                // loading={isLoadingInitialView}
+
+                                // Sending future visualization API call opens initial visualization ??? Why?
+                                onPress={handleFutureAvatarView}
+                                loading={isLoadingFutureView}
                             />
                             <Button
                                 font_size={10}
                                 type="outlined"
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="Edit"
-                                onPress={handleInitialAvatarEdit}
-                                loading={isLoadingInitialEdit}
+                                // onPress={handleInitialAvatarEdit}
+                                // loading={isLoadingInitialEdit}
+
+                                // Sending future visualization API call opens initial visualization ??? Why?
+                                onPress={handleFutureAvatarEdit}
+                                loading={isLoadingFutureEdit}
                             />
                         </Row>
                     </CardWrapper>
@@ -63,16 +71,24 @@ const ProgressTracking = () => {
                                 font_size={10}
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="View"
-                                onPress={handleFutureAvatarView}
-                                loading={isLoadingFutureView}
+                                // onPress={handleFutureAvatarView}
+                                // loading={isLoadingFutureView}
+
+                                // Sending initial visualization API call opens future visualization ??? Why?
+                                onPress={handleInitialAvatarView}
+                                loading={isLoadingInitialView}
                             />
                             <Button
                                 font_size={10}
                                 type="outlined"
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
                                 text="Edit"
-                                onPress={handleFutureAvatarEdit}
-                                loading={isLoadingFutureEdit}
+                                // onPress={handleFutureAvatarEdit}
+                                // loading={isLoadingFutureEdit}
+
+                                // Sending initial visualization API call opens future visualization ??? Why?
+                                onPress={handleInitialAvatarEdit}
+                                loading={isLoadingInitialEdit}
                             />
                         </Row>
                     </CardWrapper>

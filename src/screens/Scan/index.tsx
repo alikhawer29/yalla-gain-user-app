@@ -7,9 +7,11 @@ import Touchable from "../../components/Touchable"
 import usePermissions from "../../hooks/usePermissions"
 import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
+import { goBack, navigate } from "../../utils/navigation"
 import { ROUTES } from "../../utils/routes"
+import images from "../../assets/images"
 import NoPermission from "../../components/NoPermission"
+import Icon from "../../components/Icon"
 import Image from "../../components/Image"
 import Row from "../../components/Row"
 import Button from "../../components/Button"
@@ -236,6 +238,9 @@ const Scan = () => {
                 currentPhoto ? (
                     <>
                         <Image source={{ uri: "file://" + currentPhoto?.path }} style={{ flex: 1 }} resize="cover" />
+                        <Touchable onPress={goBack} style={{ position: "absolute", top: 50, left: widthPixel(20), zIndex: 10 }}>
+                            <Icon source={images.back} size={28} tint_color={colors.white} />
+                        </Touchable>
                         <View style={{ position: "absolute", top: 50, left: widthPixel(20), right: widthPixel(20), alignItems: "center" }}>
                             <Text color={colors.white} weight="bold" size={18}>
                                 {currentStep === 'front' ? 'Front Picture' : 'Right Picture'}
@@ -264,6 +269,9 @@ const Scan = () => {
                                 preview={true}
                             />
                         }
+                        <Touchable onPress={goBack} style={{ position: "absolute", top: 50, left: widthPixel(20), zIndex: 10 }}>
+                            <Icon source={images.back} size={28} tint_color={colors.white} />
+                        </Touchable>
                         <View style={{ position: "absolute", top: 50, left: widthPixel(20), right: widthPixel(20), alignItems: "center" }}>
                             <Text color={colors.white} weight="bold" size={18}>
                                 {currentStep === 'front' ? 'Take Front Picture' : 'Take Right Picture'}

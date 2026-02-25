@@ -99,6 +99,17 @@ const images = {
     my_bookings: require('./drawer/my_bookings.png'),
     logout: require('./drawer/logout.png'),
   },
+  challenges: (() => {
+    try {
+      return {
+        filter: require('./challenges_filter.png'),
+        arrow: require('./challenges_arrow.png'),
+        menu: require('./challenges_menu.png'),
+      };
+    } catch {
+      return null;
+    }
+  })(),
   helpdesk: {
     aboutus: require('./helpdesk/aboutus.png'),
     basic_details: require('./helpdesk/basic_details.png'),

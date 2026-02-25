@@ -5,11 +5,11 @@ import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
   UnityViewNativeIOSRef,
 } from '../../components/UnityView/UnityViewNativeIOS';
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { CommonActions, useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
 import { navigate } from '../../utils/navigation';
-import { NAVIGATORS } from '../../utils/routes';
+import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 
 const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
@@ -17,6 +17,7 @@ const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
 
 const CreateAvatar = () => {
   // ✅ ALL HOOKS AT TOP LEVEL (before any conditionals)
+  const navigation = useNavigation();
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -99,6 +100,15 @@ const CreateAvatar = () => {
   const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';
 
   const navigateAwayFromCreateAvatar = () => {
+    const stack = navigation.getParent();
+    if (stack) {
+      stack.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: ROUTES.AVATAR_SCAN_FORM as never }],
+        }),
+      );
+    }
     navigate(NAVIGATORS.DRAWER as any, {
       screen: NAVIGATORS.BOTTOM,
       params: { screen: NAVIGATORS.HOME_STACK },

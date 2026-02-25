@@ -9,6 +9,7 @@ import Input from "../../../components/Input";
 import Row from "../../../components/Row";
 import Tabs from "../../../components/Tabs";
 import Text from "../../../components/Text";
+import Upload from "../../../components/Upload";
 import colors from "../../../utils/colors";
 import { TABS } from "../../../utils/data";
 import { heightPixel } from "../../../utils/helper";
@@ -18,7 +19,7 @@ import useAddEntryController from "./useAddEntryController";
 
 const UserEntry = () => {
 
-    const { schema, refs: { formik_ref }, values: { selected, remember, initial, isLoading }, functions: { toggleRemember, setSelected, onSubmit } } = useAddEntryController()
+    const { schema, refs: { formik_ref }, values: { selected, remember, initial, isLoading }, functions: { toggleRemember, setSelected, onSubmit, onPressUploadProfile } } = useAddEntryController()
 
     const renderForm = ({ handleChange, values: data, errors, touched, setFieldValue }) => {
         if (selected === "login") {
@@ -62,7 +63,7 @@ const UserEntry = () => {
                 <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
                 <Input key={`${selected}-6`} label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
                 <Input key={`${selected}-7`} label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />
-                {/* <Upload text="Upload Profile Picture" style={styles.upload_margin} /> */}
+                <Upload text="Upload Profile Image" style={styles.upload_margin} required onPress={onPressUploadProfile} />
             </>
         );
     };

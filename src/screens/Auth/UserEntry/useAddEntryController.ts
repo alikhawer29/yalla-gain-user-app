@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useModal } from "../../../contexts/ModalContext";
+import usePicker from "../../../hooks/usePicker";
 import useToggle from "../../../hooks/useToggle";
 import { useLoginMutation, useSignupMutation } from "../../../redux/Apis/Auth";
 import { TABS } from "../../../utils/data";
@@ -20,6 +21,7 @@ const initial = {
         dialing_code: "+971",
         country_code: "AE",
         phone: "",
+        profile_picture: null as any,
     }
 }
 
@@ -27,12 +29,19 @@ const useAddEntryController = () => {
 
     const formik_ref = useRef(null)
     const { showOkModal } = useModal()
+    const { image: profileImage, openGallery } = usePicker()
 
     const [login, { isLoading: isLoginLoading }] = useLoginMutation()
     const [signup, { isSuccess: isSignupSuccess, isLoading: isSignupLoading }] = useSignupMutation()
 
     const [selected, setSelected] = useState<string>(TABS[0].value);
     const [toggleRemember, remember] = useToggle();
+
+    useEffect(() => {
+        if (profileImage && formik_ref.current) {
+            (formik_ref.current as any).setFieldValue("profile_picture", profileImage);
+        }
+    }, [profileImage]);
 
     useEffect(() => {
         if (isSignupSuccess) {
@@ -77,7 +86,8 @@ const useAddEntryController = () => {
         functions: {
             toggleRemember,
             setSelected,
-            onSubmit
+            onSubmit,
+            onPressUploadProfile: openGallery
         }
     }
 
