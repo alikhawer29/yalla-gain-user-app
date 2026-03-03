@@ -30,15 +30,10 @@ const CreateAvatar = () => {
   renderCountRef.current += 1;
   console.log('[CreateAvatar] render', renderCountRef.current, Platform.OS, isFocused, userId);
 
-  // Socket: connect, emit sendUserId, listen for receiveUserId (iOS only)
+  // Socket: connect on iOS and Android, emit sendUserId on Unity SocketConnectedGame, listen for receiveUserId
   useEffect(() => {
-    const isIOS = Platform.OS === 'ios';
-    console.log('[Socket] Effect run', { isIOS, isFocused, userId });
+    console.log('[Socket] Effect run', { platform: Platform.OS, isFocused, userId });
 
-    if (!isIOS) {
-      console.log('[Socket] Skip: not iOS');
-      return;
-    }
     if (!isFocused) {
       console.log('[Socket] Skip: not focused');
       return;
@@ -48,7 +43,7 @@ const CreateAvatar = () => {
       return;
     }
 
-    console.log('[Socket] Setup (iOS)', SOCKET_URL, 'userId:', userId);
+    console.log('[Socket] Setup', Platform.OS, SOCKET_URL, 'userId:', userId);
 
     let socket: Socket;
     try {

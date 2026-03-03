@@ -24,10 +24,9 @@ const AvatarVisualization = () => {
   const user = useSelector(selectUser);
   const userId = user?.id;
 
-  // Socket: connect on iOS, wait for Unity SocketConnectedGame then emit sendUserId
+  // Socket: connect on iOS and Android, wait for Unity SocketConnectedGame then emit sendUserId
   useEffect(() => {
-    const isIOS = Platform.OS === 'ios';
-    if (!isIOS || !isFocused || userId == null || userId === '') {
+    if (!isFocused || userId == null || userId === '') {
       return;
     }
     let socket: Socket;
