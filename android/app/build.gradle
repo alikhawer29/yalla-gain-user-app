@@ -134,8 +134,19 @@ dependencies {
         implementation jscFlavor
     }
 
+    // Force a single ExoPlayer version to resolve class cast conflicts
+    implementation("androidx.media3:media3-exoplayer:1.2.1")
+    implementation("androidx.media3:media3-exoplayer-dash:1.2.1")
+    implementation("androidx.media3:media3-exoplayer-hls:1.2.1")
+    implementation("androidx.media3:media3-ui:1.2.1")
+    implementation("androidx.media3:media3-common:1.2.1")
+
     // Zoom Meeting SDK
-    implementation 'us.zoom.meetingsdk:zoomsdk:6.6.0'
+    implementation('us.zoom.meetingsdk:zoomsdk:6.6.0') {
+        exclude group: 'com.google.android.exoplayer', module: 'exoplayer'
+        exclude group: 'androidx.media3', module: 'media3-exoplayer'
+        exclude group: 'androidx.media3', module: 'media3-ui'
+    }
     
       // Coil image loading library (required by Zoom SDK)
     implementation "io.coil-kt:coil:2.5.0"
@@ -159,6 +170,18 @@ dependencies {
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
+}
+
+// Force ExoPlayer version resolution across all dependencies
+configurations.all {
+    resolutionStrategy {
+        force "androidx.media3:media3-exoplayer:1.2.1"
+        force "androidx.media3:media3-exoplayer-dash:1.2.1"
+        force "androidx.media3:media3-exoplayer-hls:1.2.1"
+        force "androidx.media3:media3-ui:1.2.1"
+        force "androidx.media3:media3-common:1.2.1"
+        force "com.google.android.exoplayer:exoplayer:2.19.1"
+    }
 }
 
 // Workaround: externalNativeBuildClean runs CMake which expects codegen JNI dirs

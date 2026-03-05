@@ -68,10 +68,11 @@ const EditProfile = () => {
                                 country={data?.country_code}
                                 onChangeCountry={e => {
                                     setFieldValue("country_code", e?.cca2)
-                                    setFieldValue("dialing_code", e?.callingCode?.[0])
+                                    const code = `${e?.callingCode?.[0] ?? ""}`
+                                    setFieldValue("dialing_code", code ? (code.startsWith("+") ? code : `+${code}`) : "")
                                 }}
                             />
-                            <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={errors?.dob} maximumDate={maxDobDate} />
+                            <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : null} maximumDate={maxDobDate} />
                             <Button text="Update" onPress={handleSubmit} loading={isLoading} style={styles.button} />
                         </>
                     )}

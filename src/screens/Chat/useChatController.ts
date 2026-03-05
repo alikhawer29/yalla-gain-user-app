@@ -12,10 +12,16 @@ const CHAT_TYPES = [
 ];
 
 const useChatController = () => {
-  const [selectedTab, setSelectedTab] = useState<string | number>(CHAT_TYPES[0].value);
+  const [selectedTab, setSelectedTab] = useState<string | number>(
+    CHAT_TYPES[0].value,
+  );
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data, isFetching: isLoading, refetch } = useGetChatListQuery(undefined);
+  const {
+    data,
+    isFetching: isLoading,
+    refetch,
+  } = useGetChatListQuery(undefined);
 
   const chatList: IChat[] = data?.data || [];
 
@@ -42,15 +48,15 @@ const useChatController = () => {
     // Filter by user role (tab)
     if (selectedTab) {
       filtered = filtered.filter(
-        (chat) => chat.user_role?.toLowerCase() === selectedTab
+        chat => chat.user_role?.toLowerCase() === selectedTab,
       );
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (chat) => chat.name?.toLowerCase().includes(query)
+      filtered = filtered.filter(chat =>
+        chat.name?.toLowerCase().includes(query),
       );
     }
 
@@ -89,4 +95,3 @@ const useChatController = () => {
 };
 
 export default useChatController;
-
