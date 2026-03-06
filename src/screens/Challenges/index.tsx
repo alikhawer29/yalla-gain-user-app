@@ -41,7 +41,7 @@ const Challenges = () => {
         </View>
         <Touchable onPress={onFilterPress}>
           <Icon
-            source={images.challenges?.filter ?? images.filters}
+            source={images.filters}
             size={40}
             rounded
             less_rounded
@@ -67,11 +67,11 @@ const Challenges = () => {
             type={item.type ?? 'Activity'}
             status={
               item.user_challenge?.id ||
-              item.user_challenge_id ||
-              item.is_started === true ||
-              item.is_joined ||
-              item.challenge_progress?.id ||
-              item.challenge_status === 'ongoing'
+                item.user_challenge_id ||
+                item.is_started === true ||
+                item.is_joined ||
+                item.challenge_progress?.id ||
+                item.challenge_status === 'ongoing'
                 ? 'ongoing'
                 : (item.challenge_status ?? item.status ?? 'new')
             }

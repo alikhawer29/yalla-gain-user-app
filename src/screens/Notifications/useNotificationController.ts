@@ -1,89 +1,120 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useMarkNotificationUnreadMutation,
+} from '../../redux/Apis/User';
 
 const NOTIFICATION_TABS = [
-    { label: 'All', value: 'all' },
-    { label: 'Accounts', value: 'accounts' },
-    { label: 'Updates', value: 'updates' },
-    { label: 'Status', value: 'status' },
+  { label: 'All', value: 'all' },
+  { label: 'Read', value: 'read' },
+  { label: 'Unread', value: 'unread' },
 ];
 
-const MOCK_NOTIFICATIONS = [
-    {
-        id: '1',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: false,
-        type: 'all',
-    },
-    {
-        id: '2',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: true,
-        type: 'all',
-    },
-    {
-        id: '3',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: true,
-        type: 'accounts',
-    },
-    {
-        id: '4',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: true,
-        type: 'updates',
-    },
-    {
-        id: '5',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: true,
-        type: 'status',
-    },
-     {
-        id: '6',
-        message: 'Get notifications for winding down, reflecting, and prepping for tomorrow.',
-        date: 'mm/dd/yyy',
-        time: '01:30 PM',
-        is_read: true,
-        type: 'all',
-    },
-];
+const PER_PAGE = 15;
 
 const useNotificationController = () => {
-    const [selectedTab, setSelectedTab] = useState<string | number>(NOTIFICATION_TABS[0].value);
-    const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [selectedTab, setSelectedTab] = useState<string>(
+    NOTIFICATION_TABS[0].value,
+  );
+  const [page, setPage] = useState(1);
+  const [accumulatedNotifications, setAccumulatedNotifications] = useState<
+    any[]
+  >([]);
 
-    const filteredNotifications = useMemo(() => {
-        if (selectedTab === 'all') return notifications;
-        return notifications.filter(n => n.type === selectedTab);
-    }, [notifications, selectedTab]);
+  const statusParam = useMemo(() => {
+    if (selectedTab === 'all') return undefined;
+    return selectedTab;
+  }, [selectedTab]);
 
-    const toggleReadStatus = useCallback((id: string) => {
-        setNotifications(prev => prev.map(n => 
-            n.id === id ? { ...n, is_read: !n.is_read } : n
-        ));
-    }, []);
+  const {
+    data,
+    isFetching: isLoading,
+    refetch,
+    fulfilledTimeStamp,
+  } = useGetNotificationsQuery({
+    per_page: PER_PAGE,
+    page,
+    status: statusParam,
+  });
 
-    return {
-        values: {
-            tabs: NOTIFICATION_TABS,
-            selectedTab,
-            notifications: filteredNotifications,
-        },
-        functions: {
-            setSelectedTab,
-            toggleReadStatus,
+  const [markRead] = useMarkNotificationReadMutation();
+  const [markUnread] = useMarkNotificationUnreadMutation();
+
+  const meta = data?.meta;
+  const currentPage = meta?.current_page ?? 1;
+  const lastPage = meta?.last_page ?? 1;
+  const hasMore = currentPage < lastPage;
+  const isLoadingMore = isLoading && page > 1;
+
+  useEffect(() => {
+    setPage(1);
+    setAccumulatedNotifications([]);
+  }, [selectedTab]);
+
+  useEffect(() => {
+    const rows = data?.data;
+    if (!rows) return;
+
+    const responsePage = meta?.current_page ?? 1;
+    if (responsePage === 1) {
+      setAccumulatedNotifications(rows);
+    } else if (responsePage === page) {
+      setAccumulatedNotifications(prev => [...prev, ...rows]);
+    }
+  }, [fulfilledTimeStamp, page, meta?.current_page]);
+
+  const notifications = useMemo(() => {
+    return accumulatedNotifications.map((n: any) => ({
+      ...n,
+      is_read: !!n?.read,
+    }));
+  }, [accumulatedNotifications]);
+
+  const onReload = useCallback(() => {
+    if (page === 1) {
+      refetch();
+    } else {
+      setPage(1);
+    }
+  }, [page, refetch]);
+
+  const onLoadMore = useCallback(() => {
+    if (hasMore && !isLoadingMore) {
+      setPage(p => p + 1);
+    }
+  }, [hasMore, isLoadingMore]);
+
+  const toggleReadStatus = useCallback(
+    async (uuid: string, isCurrentlyRead: boolean) => {
+      try {
+        if (isCurrentlyRead) {
+          await markUnread({ uuid }).unwrap();
+        } else {
+          await markRead({ uuid }).unwrap();
         }
-    };
+      } finally {
+        refetch();
+      }
+    },
+    [markRead, markUnread, refetch],
+  );
+
+  return {
+    values: {
+      tabs: NOTIFICATION_TABS,
+      selectedTab,
+      notifications,
+      isLoading,
+      hasMore,
+    },
+    functions: {
+      setSelectedTab,
+      toggleReadStatus,
+      onReload,
+      onLoadMore,
+    },
+  };
 };
 
 export default useNotificationController;

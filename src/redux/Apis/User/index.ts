@@ -14,6 +14,7 @@ export const userApi = createApi({
     'BlockedUsers',
     'Wallet',
     'Challenges',
+    'Notifications',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -197,6 +198,33 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+    }),
+
+    getNotifications: builder.query({
+      query: params => ({
+        url: `notification/all/list`,
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Notifications'],
+    }),
+
+    markNotificationRead: builder.mutation({
+      query: body => ({
+        url: `notification/read`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
+    markNotificationUnread: builder.mutation({
+      query: body => ({
+        url: `notification/unread`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
     }),
     getVideosByWorkout: builder.query({
       query: data => ({
@@ -604,6 +632,9 @@ export const {
   useGetWalletCoinsQuery,
   useTransferYallaCoinMutation,
   useBuyYallaCoinMutation,
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useMarkNotificationUnreadMutation,
   useConfirmPaymentMutation,
   useScanAvatarMutation,
   useUpdateAvatarMutation,

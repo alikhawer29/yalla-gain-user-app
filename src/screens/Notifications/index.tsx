@@ -1,5 +1,5 @@
 import React, { FC } from "react"
-import { FlatList, View, TouchableOpacity } from "react-native"
+import { ActivityIndicator, FlatList, RefreshControl, View, TouchableOpacity } from "react-native"
 import images from "../../assets/images"
 import Icon from "../../components/Icon"
 import Row from "../../components/Row"
@@ -12,8 +12,8 @@ import { heightPixel, widthPixel } from "../../utils/helper"
 
 const Notifications: FC = () => {
     const {
-        values: { tabs, selectedTab, notifications },
-        functions: { setSelectedTab, toggleReadStatus },
+        values: { tabs, selectedTab, notifications, isLoading, hasMore },
+        functions: { setSelectedTab, toggleReadStatus, onReload, onLoadMore },
     } = useNotificationController()
 
     const renderTabItem = ({ item }: { item: any }) => {
@@ -36,6 +36,11 @@ const Notifications: FC = () => {
 
     const renderNotificationItem = ({ item }: { item: any }) => (
         <View style={[styles.card, item.is_read ? styles.readCard : styles.unreadCard]}>
+            {item?.title ? (
+                <Text size={16} weight="bold" color={colors.white} style={styles.message}>
+                    {item.title}
+                </Text>
+            ) : null}
             <Text size={16} color={colors.white} style={styles.message}>
                 {item.message}
             </Text>
@@ -50,7 +55,7 @@ const Notifications: FC = () => {
                         <Text size={12} color={colors.white}>{item.time}</Text>
                     </View>
                 </View>
-                <TouchableOpacity onPress={() => toggleReadStatus(item.id)}>
+                <TouchableOpacity onPress={() => toggleReadStatus(item.uuid ?? item.id, item.is_read)}>
                     <Text
                         size={16}
                         weight="semibold"
@@ -82,6 +87,34 @@ const Notifications: FC = () => {
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.list}
                     showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isLoading && notifications.length === 0}
+                            onRefresh={onReload}
+                            colors={[colors.primary]}
+                            tintColor={colors.primary}
+                        />
+                    }
+                    onEndReachedThreshold={0.6}
+                    onEndReached={() => {
+                        if (hasMore) {
+                            onLoadMore()
+                        }
+                    }}
+                    ListEmptyComponent={
+                        isLoading ? (
+                            <View style={{ paddingVertical: heightPixel(20) }}>
+                                <ActivityIndicator size="small" color={colors.primary} />
+                            </View>
+                        ) : null
+                    }
+                    ListFooterComponent={
+                        isLoading && notifications.length > 0 ? (
+                            <View style={{ paddingVertical: heightPixel(20) }}>
+                                <ActivityIndicator size="small" color={colors.primary} />
+                            </View>
+                        ) : null
+                    }
                 />
             </View>
         </Wrapper>

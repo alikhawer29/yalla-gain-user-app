@@ -1,32 +1,61 @@
-import { useCallback } from "react";
-import useSearch from "../../hooks/useSearch";
-import { useGetWorkoutQuery } from "../../redux/Apis/User";
-import { navigate } from "../../utils/navigation";
-import { ROUTES } from "../../utils/routes";
+import { useCallback, useState } from 'react';
+import useSearch from '../../hooks/useSearch';
+import { useGetWorkoutQuery } from '../../redux/Apis/User';
+import { navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 
 const useWorkoutController = () => {
+  const { search, debouncedSearch, onChange: onSearch } = useSearch();
 
-    const { search, debouncedSearch, onChange: onSearch } = useSearch()
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
+  const [showFilterModal, setShowFilterModal] = useState(false);
 
-    const { data, isFetching: isLoading, refetch } = useGetWorkoutQuery({ search: debouncedSearch })
+  const {
+    data,
+    isFetching: isLoading,
+    refetch,
+  } = useGetWorkoutQuery({
+    search: debouncedSearch,
+    from: fromDate || undefined,
+    to: toDate || undefined,
+  });
 
-    const onPress = useCallback((id: number, title: string) => {
-        navigate(ROUTES.WORKOUT_DETAILS, { id, title })
-    }, [])
+  const onWorkoutPress = useCallback((id: number) => {
+    navigate(ROUTES.WORKOUT_DETAILS, { id });
+  }, []);
 
-    return {
-        values: {
-            data: data?.data || [],
-            isLoading,
-            search
-        },
-        functions: {
-            onReload: refetch,
-            onPress,
-            onSearch
-        }
-    }
+  const onFilterPress = () => {
+    setShowFilterModal(true);
+  };
 
-}
+  const onCloseFilterModal = () => {
+    setShowFilterModal(false);
+  };
 
-export default useWorkoutController
+  const onApplyFilter = (from: string | null, to: string | null) => {
+    setFromDate(from);
+    setToDate(to);
+  };
+
+  return {
+    values: {
+      data: data?.data || [],
+      isLoading,
+      search,
+      showFilterModal,
+      fromDate,
+      toDate,
+    },
+    functions: {
+      onReload: refetch,
+      onWorkoutPress,
+      onSearch,
+      onFilterPress,
+      onCloseFilterModal,
+      onApplyFilter,
+    },
+  };
+};
+
+export default useWorkoutController;
