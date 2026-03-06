@@ -17,6 +17,7 @@ const HelpDesk = () => {
     const [deleteAccount, { isLoading }] = useDeleteAccountMutation()
     const [showConfirmModal, setShowConfirmModal] = useState(false)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [showRateModal, setShowRateModal] = useState(false)
 
     const handleDeleteAccount = async () => {
         try {
@@ -40,7 +41,7 @@ const HelpDesk = () => {
         { icon: images.helpdesk.wallet, title: "Wallet", onPress: () => navigate(NAVIGATORS.WALLET_STACK) },
         { icon: images.helpdesk.basic_details, title: "Basic Details", onPress: () => navigate(ROUTES.BASIC_DETAILS) },
         { icon: images.helpdesk.languages, title: "Choose Language", onPress: () => navigate(ROUTES.CHOOSE_LANGUAGE) },
-        { icon: images.helpdesk.rate, title: "Rate App" },
+        { icon: images.helpdesk.rate, title: "Rate App", onPress: () => setShowRateModal(true) },
         { icon: images.helpdesk.myposts, title: "My Posts", onPress: () => navigate(ROUTES.MY_POSTS) },
         { icon: images.helpdesk.blocked_user, title: "Blocked User", onPress: () => navigate(ROUTES.BLOCKED_USERS) },
         { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
@@ -78,6 +79,16 @@ const HelpDesk = () => {
                 title="Account Deleted"
                 message="Your account has been successfully deleted. You will now be logged out."
                 onOk={handleSuccessOk}
+            />
+
+            {/* Rate App Modal */}
+            <AlertModal
+                visible={showRateModal}
+                onClose={() => setShowRateModal(false)}
+                type="error"
+                title="Rate App"
+                message="Rating will be available once the app is live on Google Play Store / App Store."
+                onOk={() => setShowRateModal(false)}
             />
         </Wrapper>
     )

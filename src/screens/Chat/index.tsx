@@ -1,10 +1,12 @@
 import { ActivityIndicator, FlatList, View, TextInput } from "react-native"
 import React, { useCallback, useRef, useState } from "react"
 import images from "../../assets/images"
+import ChatFilterModal from "../../components/ChatFilterModal"
 import Icon from "../../components/Icon"
 import Row from "../../components/Row"
 import Seperator from "../../components/Seperator"
 import Tabs from "../../components/Tabs"
+import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import ChatListCard from "../../components/Cards/ChatListCard"
@@ -15,8 +17,8 @@ import { heightPixel } from "../../utils/helper"
 
 const Chat = () => {
     const {
-        values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading },
-        functions: { setSelectedTab, onSearchChange, onChatPress },
+        values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading, selectedFilter, showFilterModal },
+        functions: { setSelectedTab, onSearchChange, onChatPress, onFilterPress, onCloseFilterModal, onFilterChange },
     } = useChatController();
 
     const searchInputRef = useRef<TextInput>(null)
@@ -84,7 +86,15 @@ const Chat = () => {
                         </View>
                     </View>
                     <View style={styles.filter_container}>
-                        <Icon source={images.filters} border={colors.white} size={40} rounded less_rounded />
+                        <Touchable onPress={onFilterPress}>
+                            <Icon
+                                source={images.filters}
+                                border={selectedFilter !== 'all' ? colors.primary : colors.white}
+                                size={40}
+                                rounded
+                                less_rounded
+                            />
+                        </Touchable>
                     </View>
                 </Row>
                 <Tabs tabs={chatTypes} selected={selectedTab} setSelected={setSelectedTab} />
@@ -105,6 +115,15 @@ const Chat = () => {
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="none"
             />
+
+            {showFilterModal && (
+                <ChatFilterModal
+                    visible={showFilterModal}
+                    onClose={onCloseFilterModal}
+                    onApply={onFilterChange}
+                    selectedFilter={selectedFilter}
+                />
+            )}
         </Wrapper>
     )
 }

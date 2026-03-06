@@ -115,7 +115,7 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
 
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
-    const { showYesNoModal } = useModal()
+    const { showYesNoModal, showOkModal } = useModal()
     const { data: walletData } = useGetWalletCoinsQuery({}, { refetchOnMountOrArgChange: true })
 
     const onPressLogout = () => {
@@ -136,6 +136,15 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
     }
 
     const handleNavigation = (childItem: any) => {
+        if (childItem?.title === "VR Connect") {
+            showOkModal({
+                type: "info",
+                title: "VR Instructions",
+                message: "In order to use the VR Environment download the (Yalla Gain) and required VR device.",
+            })
+            return
+        }
+
         if (navigationRef.isReady()) {
             // For screens that need fresh params (like ConsultantsList with different types)
             // we use navigate with a unique key to force re-mount
