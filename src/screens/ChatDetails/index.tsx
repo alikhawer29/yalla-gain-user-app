@@ -176,7 +176,7 @@ const ChatDetails = () => {
               paddingVertical: heightPixel(10),
               paddingBottom:
                 Platform.OS === 'ios'
-                  ? heightPixel(30) + insets.bottom
+                  ? null
                   : (isKeyboardOpen ? heightPixel(80) : heightPixel(30)) + insets.bottom,
             },
           ]}

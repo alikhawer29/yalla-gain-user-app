@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
 import fonts from '../../assets/fonts';
@@ -59,9 +59,9 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: widthPixel(10),
     color: colors.white,
-    height: heightPixel(50),
+    height: Platform.OS === 'ios' ? heightPixel(30) : heightPixel(40),
     fontFamily: fonts.sfpro.regular,
     fontSize: 14,
   },
