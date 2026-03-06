@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import React from 'react';
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import images from '../../assets/images';
 import Icon from '../../components/Icon';
@@ -40,8 +42,10 @@ const ChatDetails = () => {
   } = useChatDetailsController();
 
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const keyboardHeight = useKeyboard();
-  const isNewAndroid = Platform.OS === 'android' && Platform.Version >= 35;
+  const isKeyboardOpen = keyboardHeight > 0;
+  const [inputBarHeight, setInputBarHeight] = React.useState(0);
 
   const formatRole = (role: string) => {
     if (!role) return '';
@@ -137,7 +141,7 @@ const ChatDetails = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
     >
       <Wrapper hide_bottom_bar>
         {renderHeader()}
@@ -154,8 +158,12 @@ const ChatDetails = () => {
             ItemSeparatorComponent={() => <Seperator size={10} />}
             showsVerticalScrollIndicator={false}
             style={styles.messages_container}
-            contentContainerStyle={styles.messages_content}
+            contentContainerStyle={[
+              styles.messages_content,
+            ]}
             onContentSizeChange={() => flatlistRef.current?.scrollToEnd()}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           />
         )}
 
@@ -169,12 +177,11 @@ const ChatDetails = () => {
               paddingBottom:
                 Platform.OS === 'ios'
                   ? heightPixel(30) + insets.bottom
-                  : heightPixel(30) + insets.bottom,
+                  : (isKeyboardOpen ? heightPixel(80) : heightPixel(30)) + insets.bottom,
             },
           ]}
+          onLayout={e => setInputBarHeight(e.nativeEvent.layout.height)}
         >
-
-
           <View style={styles.input_wrapper}>
             <TextInput
               style={styles.input}
