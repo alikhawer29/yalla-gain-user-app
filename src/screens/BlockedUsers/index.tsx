@@ -9,7 +9,7 @@ import { useGetBlockedUsersQuery, useUnblockUserMutation } from "../../redux/Api
 import { useModal } from "../../contexts/ModalContext"
 
 const BlockedUsers = () => {
-    const { data, isLoading, isFetching, refetch } = useGetBlockedUsersQuery();
+    const { data, isLoading, isFetching, refetch } = useGetBlockedUsersQuery(undefined);
     const [unblockUser, { isLoading: isUnblocking }] = useUnblockUserMutation();
     const { showYesNoModal, showOkModal } = useModal();
     const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -58,9 +58,9 @@ const BlockedUsers = () => {
                 align="center"
                 style={{
                     paddingVertical: heightPixel(15),
-                    paddingHorizontal: widthPixel(20),
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.dark_gray
+                    // paddingHorizontal: widthPixel(20),
+                    // borderBottomWidth: 1,
+                    // borderBottomColor: colors.dark_gray
                 }}
             >
                 <Text size={14} style={{ flex: 0.15 }}>{index + 1}</Text>
@@ -89,10 +89,10 @@ const BlockedUsers = () => {
             justify="space-between"
             style={{
                 paddingVertical: heightPixel(15),
-                paddingHorizontal: widthPixel(20),
-                backgroundColor: colors.blackish_gray,
-                borderBottomWidth: 2,
-                borderBottomColor: colors.primary
+                // paddingHorizontal: widthPixel(20),
+                // backgroundColor: colors.blackish_gray,
+                // borderBottomWidth: 2,
+                // borderBottomColor: colors.primary
             }}
         >
             <Text size={14} weight="bold" style={{ flex: 0.15 }}>ID</Text>
@@ -142,6 +142,7 @@ const BlockedUsers = () => {
             <FlatList
                 data={data?.data || []}
                 renderItem={renderItem}
+                style={{ flex: 1, }}
                 keyExtractor={(item, index) => `blocked-user-${item.id}-${index}`}
                 ListHeaderComponent={renderHeader}
                 ListEmptyComponent={renderEmpty}
