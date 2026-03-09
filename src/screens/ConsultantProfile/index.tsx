@@ -32,11 +32,9 @@ const ConsultantProfile = () => {
         <Wrapper
             scrollable
             loading={isLoading}
-            onRefresh={onReload}
-            refreshing={isLoading}
         >
             <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
-                <View style={{ width: "85%" }}>
+                <View style={{ width: "100%" }}>
                     <Input
                         placeholder={placeholder}
                         height={40}
@@ -45,9 +43,9 @@ const ConsultantProfile = () => {
                         onChangeText={onSearch}
                     />
                 </View>
-                <View style={{ width: "15%" }}>
+                {/* <View style={{ width: "15%" }}>
                     <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} />
-                </View>
+                </View> */}
             </Row>
 
             {/* Profile Header */}

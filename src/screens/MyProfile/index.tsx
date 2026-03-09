@@ -147,12 +147,6 @@ const MyProfile = () => {
             ({user?.dialing_code}) {user?.phone}
           </Text>
         </View>
-        <View style={[styles.item, styles.item_width]}>
-          <Text color={colors.icon_gray} lines={1}>
-            Email Address
-          </Text>
-          <Text weight="bold">{user?.email}</Text>
-        </View>
         {user?.dob && (
           <View style={[styles.item, styles.item_width]}>
             <Text color={colors.icon_gray}>DOB</Text>
@@ -165,6 +159,13 @@ const MyProfile = () => {
             {user?.language}
           </Text>
         </View>
+        <View style={[styles.item, styles.item_last]}>
+          <Text color={colors.icon_gray} lines={1}>
+            Email Address
+          </Text>
+          <Text weight="bold">{user?.email}</Text>
+        </View>
+
       </Row>
 
       {/* Unity Game File Status */}

@@ -1,5 +1,5 @@
-import React, { FC, memo, useEffect, useState } from 'react';
-import { LayoutAnimation, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { FC, memo, useState } from 'react';
+import { TextInput, TouchableOpacity, View, type TextInputProps } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import PhoneInput from "react-native-phone-number-input";
 import fonts from '../../assets/fonts';
@@ -24,23 +24,19 @@ const Input: FC<IInput> = props => {
         setIsPasswordVisible(!isPasswordVisible);
     };
 
-    useEffect(() => {
-        if (error) {
-            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        }
-    }, [error]);
+    // Removed LayoutAnimation to prevent keyboard dismissal during typing
 
-    const getKeyboardProps = () => {
+    const getKeyboardProps = (): Pick<TextInputProps, 'keyboardType' | 'autoCapitalize'> => {
         switch (type) {
             case "email":
                 return {
                     keyboardType: "email-address",
-                    autoCapitalize: "none",
+                    autoCapitalize: "none" as const,
                 };
             case "number":
-                return { keyboardType: "numeric" };
+                return { keyboardType: "numeric" as const };
             default:
-                return { keyboardType: "default" };
+                return { keyboardType: "default" as const };
         }
     };
 
@@ -61,7 +57,7 @@ const Input: FC<IInput> = props => {
                         placeholder={placeholder}
                         defaultValue={value}
                         value={value}
-                        defaultCode={country}
+                        defaultCode={country as any}
                         onChangeText={onChangeText}
                         onChangeCountry={onChangeCountry}
                         containerStyle={[{ padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
@@ -93,7 +89,7 @@ const Input: FC<IInput> = props => {
                             selectionColor={colors.primary}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            value={type === "time" && value != "" ? timeFormatter(value) : value}
+                            value={type === "time" && (value ?? "") !== "" ? timeFormatter(value as string) : (value ?? "")}
                             onChangeText={onChangeText}
                             maxLength={maxLength}
                             multiline={type === "textarea"}
@@ -125,7 +121,7 @@ const Input: FC<IInput> = props => {
                     maximumDate={maximumDate}
                     onConfirm={(date) => {
                         toggleDate()
-                        onChangeText(type === "time" ? date?.toISOString() : dateFormatter(date))
+                        onChangeText?.(type === "time" ? date?.toISOString() : dateFormatter(date))
                     }}
                     onCancel={() => {
                         toggleDate()

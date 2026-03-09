@@ -14,6 +14,7 @@ export const userApi = createApi({
     'BlockedUsers',
     'Wallet',
     'Challenges',
+    'Notifications',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl:
@@ -156,7 +157,7 @@ export const userApi = createApi({
       }),
     }),
     getMyFeeds: builder.query({
-      query: (query) => ({
+      query: query => ({
         url: `posts/my/get`,
         method: 'GET',
         params: query,
@@ -197,6 +198,33 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+    }),
+
+    getNotifications: builder.query({
+      query: params => ({
+        url: `notification/all/list`,
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['Notifications'],
+    }),
+
+    markNotificationRead: builder.mutation({
+      query: body => ({
+        url: `notification/read`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
+    }),
+
+    markNotificationUnread: builder.mutation({
+      query: body => ({
+        url: `notification/unread`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Notifications'],
     }),
     getVideosByWorkout: builder.query({
       query: data => ({
@@ -407,21 +435,21 @@ export const userApi = createApi({
       providesTags: ['Wallet'],
     }),
     transferYallaCoin: builder.mutation({
-      query: (payload) => ({
+      query: payload => ({
         url: 'transfer-yalla-coin',
         method: 'POST',
         body: payload,
       }),
     }),
     buyYallaCoin: builder.mutation({
-      query: (payload) => ({
+      query: payload => ({
         url: 'buy-yalla-coin',
         method: 'POST',
         body: payload,
       }),
     }),
     confirmPayment: builder.mutation({
-      query: (payload) => ({
+      query: payload => ({
         url: 'buy-yalla-coin/after-payment',
         method: 'POST',
         body: payload,
@@ -436,7 +464,10 @@ export const userApi = createApi({
       }),
     }),
     updateAvatar: builder.mutation({
-      query: (body: { avatar: 'initial' | 'future'; type: 'view' | 'edit' }) => ({
+      query: (body: {
+        avatar: 'initial' | 'future';
+        type: 'view' | 'edit';
+      }) => ({
         url: 'avatar/update',
         method: 'POST',
         body,
@@ -479,7 +510,10 @@ export const userApi = createApi({
         url: `challenge/${id}/start`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+      invalidatesTags: (result, error, id) => [
+        { type: 'Challenges', id },
+        'Challenges',
+      ],
       async onQueryStarted(id, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
@@ -488,10 +522,12 @@ export const userApi = createApi({
               const target = (draft as any)?.data ?? draft;
               if (target && typeof target === 'object') {
                 (target as any).is_started = true;
-                (target as any).challenge_status = (target as any).challenge_status ?? 'ongoing';
-                (target as any).challenge_progress = (target as any).challenge_progress ?? { id: id, status: 'ongoing' };
+                (target as any).challenge_status =
+                  (target as any).challenge_status ?? 'ongoing';
+                (target as any).challenge_progress = (target as any)
+                  .challenge_progress ?? { id: id, status: 'ongoing' };
               }
-            })
+            }),
           );
         } catch (_) {}
       },
@@ -501,21 +537,30 @@ export const userApi = createApi({
         url: `challenge/${id}/startTodayTask`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+      invalidatesTags: (result, error, id) => [
+        { type: 'Challenges', id },
+        'Challenges',
+      ],
     }),
     completeTodayTask: builder.mutation({
       query: (id: number) => ({
         url: `challenge/${id}/completeTodayTask`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+      invalidatesTags: (result, error, id) => [
+        { type: 'Challenges', id },
+        'Challenges',
+      ],
     }),
     leaveChallenge: builder.mutation({
       query: (id: number) => ({
         url: `challenge/${id}/leave`,
         method: 'POST',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'Challenges', id }, 'Challenges'],
+      invalidatesTags: (result, error, id) => [
+        { type: 'Challenges', id },
+        'Challenges',
+      ],
     }),
     getChallengeLogs: builder.query({
       query: (params?: { search?: string; from?: string; to?: string }) => ({
@@ -524,6 +569,12 @@ export const userApi = createApi({
         params,
       }),
       providesTags: ['Challenges'],
+    }),
+    deleteAccount: builder.mutation({
+      query: () => ({
+        url: `delete-account`,
+        method: 'DELETE',
+      }),
     }),
   }),
 });
@@ -581,6 +632,9 @@ export const {
   useGetWalletCoinsQuery,
   useTransferYallaCoinMutation,
   useBuyYallaCoinMutation,
+  useGetNotificationsQuery,
+  useMarkNotificationReadMutation,
+  useMarkNotificationUnreadMutation,
   useConfirmPaymentMutation,
   useScanAvatarMutation,
   useUpdateAvatarMutation,
@@ -594,4 +648,5 @@ export const {
   useCompleteTodayTaskMutation,
   useLeaveChallengeMutation,
   useGetChallengeLogsQuery,
+  useDeleteAccountMutation,
 } = userApi;

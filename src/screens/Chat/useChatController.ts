@@ -11,11 +11,25 @@ const CHAT_TYPES = [
   { label: 'Doctor', value: 'doctor' },
 ];
 
-const useChatController = () => {
-  const [selectedTab, setSelectedTab] = useState<string | number>(CHAT_TYPES[0].value);
-  const [searchQuery, setSearchQuery] = useState('');
+const CHAT_FILTERS = [
+  { label: 'All', value: 'all' },
+  { label: 'Read', value: 'read' },
+  { label: 'Unread', value: 'unread' },
+];
 
-  const { data, isFetching: isLoading, refetch } = useGetChatListQuery(undefined);
+const useChatController = () => {
+  const [selectedTab, setSelectedTab] = useState<string | number>(
+    CHAT_TYPES[0].value,
+  );
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  const {
+    data,
+    isFetching: isLoading,
+    refetch,
+  } = useGetChatListQuery(undefined);
 
   const chatList: IChat[] = data?.data || [];
 
@@ -42,20 +56,32 @@ const useChatController = () => {
     // Filter by user role (tab)
     if (selectedTab) {
       filtered = filtered.filter(
-        (chat) => chat.user_role?.toLowerCase() === selectedTab
+        chat => chat.user_role?.toLowerCase() === selectedTab,
       );
+    }
+
+    // Filter by read/unread status
+    if (selectedFilter !== 'all') {
+      filtered = filtered.filter(chat => {
+        if (selectedFilter === 'read') {
+          return !chat.is_unread;
+        } else if (selectedFilter === 'unread') {
+          return chat.is_unread;
+        }
+        return true;
+      });
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (chat) => chat.name?.toLowerCase().includes(query)
+      filtered = filtered.filter(chat =>
+        chat.name?.toLowerCase().includes(query),
       );
     }
 
     return filtered;
-  }, [chatList, selectedTab, searchQuery]);
+  }, [chatList, selectedTab, selectedFilter, searchQuery]);
 
   const onChatPress = useCallback((chat: IChat) => {
     navigate(ROUTES.CHAT_DETAILS, {
@@ -71,6 +97,18 @@ const useChatController = () => {
     setSearchQuery(text);
   }, []);
 
+  const onFilterPress = useCallback(() => {
+    setShowFilterModal(true);
+  }, []);
+
+  const onCloseFilterModal = useCallback(() => {
+    setShowFilterModal(false);
+  }, []);
+
+  const onFilterChange = useCallback((filter: string) => {
+    setSelectedFilter(filter);
+  }, []);
+
   return {
     values: {
       chatTypes: CHAT_TYPES,
@@ -78,15 +116,19 @@ const useChatController = () => {
       searchQuery,
       filteredChats,
       isLoading,
+      selectedFilter,
+      showFilterModal,
     },
     functions: {
       setSelectedTab,
       onSearchChange,
       onChatPress,
+      onFilterPress,
+      onCloseFilterModal,
+      onFilterChange,
       refetch,
     },
   };
 };
 
 export default useChatController;
-

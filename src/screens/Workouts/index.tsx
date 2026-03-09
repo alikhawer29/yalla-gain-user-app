@@ -1,6 +1,7 @@
 import { FlatList, RefreshControl, View } from "react-native"
 import images from "../../assets/images"
 import VideoCard from "../../components/Cards/VideoCard"
+import DateFilterModal from "../../components/DateFilterModal"
 import Icon from "../../components/Icon"
 import Input from "../../components/Input"
 import Row from "../../components/Row"
@@ -17,12 +18,18 @@ const Workouts = () => {
         values: {
             isLoading,
             data,
-            search
+            search,
+            showFilterModal,
+            fromDate,
+            toDate,
         },
         functions: {
             onReload,
-            onPress,
-            onSearch
+            onWorkoutPress,
+            onSearch,
+            onFilterPress,
+            onCloseFilterModal,
+            onApplyFilter,
         }
     } = useWorkoutController()
 
@@ -39,7 +46,14 @@ const Workouts = () => {
                     />
                 </View>
                 <View style={{ width: "15%" }}>
-                    <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} />
+                    <Icon
+                        source={images.filters}
+                        size={40}
+                        rounded
+                        less_rounded
+                        border={fromDate || toDate ? colors.primary : colors.white}
+                        onPress={onFilterPress}
+                    />
                 </View>
             </Row>
             <FlatList
@@ -48,7 +62,7 @@ const Workouts = () => {
                     <VideoCard
                         {...item}
                         image={{ uri: item.image }}
-                        onPress={() => onPress(item.id, item.title)}
+                        onPress={() => onWorkoutPress(item.id)}
                         is_video={false}
                     />
                 )}
@@ -61,6 +75,14 @@ const Workouts = () => {
                         onRefresh={onReload}
                     />
                 }
+            />
+
+            <DateFilterModal
+                visible={showFilterModal}
+                onClose={onCloseFilterModal}
+                onApply={onApplyFilter}
+                initialFromDate={fromDate}
+                initialToDate={toDate}
             />
         </Wrapper>
     )

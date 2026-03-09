@@ -16,12 +16,12 @@ const ConsultantsList = () => {
         functions: { onReload, onSearch, onPress },
     } = useConsultantsListController();
 
-    const placeholder = type === "doctor" ? "Search Doctor" : "Search Trainer";
+    const placeholder = type === "doctor" ? "Search Doctors" : "Search Trainer";
 
     return (
         <Wrapper>
             <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
-                <View style={{ width: "85%" }}>
+                <View style={{ width: "100%" }}>
                     <Input
                         placeholder={placeholder}
                         height={40}
@@ -30,7 +30,7 @@ const ConsultantsList = () => {
                         onChangeText={onSearch}
                     />
                 </View>
-                <View style={{ width: "15%" }}>
+                {/* <View style={{ width: "15%" }}>
                     <Icon
                         source={images.filters}
                         size={40}
@@ -38,7 +38,7 @@ const ConsultantsList = () => {
                         less_rounded
                         border={colors.white}
                     />
-                </View>
+                </View> */}
             </Row>
             <FlatList
                 data={data}
