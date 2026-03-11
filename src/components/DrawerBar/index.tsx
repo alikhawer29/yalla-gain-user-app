@@ -16,6 +16,7 @@ import Button from "../Button"
 import Icon from "../Icon"
 import Row from "../Row"
 import Text from "../Text"
+import Touchable from "../Touchable"
 import styles from "./styles"
 
 const DRAWER_ROUTES = [
@@ -196,9 +197,9 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }} showsVerticalScrollIndicator={false}>
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
-                <View>
+                <Touchable onPress={() => handleNavigation({ route: NAVIGATORS.BOTTOM, child: NAVIGATORS.MY_PROFILE_STACK })}>
                     <Icon source={{ uri: user?.photo }} size={50} rounded no_padding border={colors.white} resize="cover" />
-                </View>
+                </Touchable>
                 <View>
                     <Text size={18} weight="bold">{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>

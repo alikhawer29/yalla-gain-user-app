@@ -13,12 +13,27 @@ import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import { PROGRESS_TRACKING, RECOMMENDED_VIDEOS, WORKOUT_PLANS } from "../../utils/data"
+import { PROGRESS_TRACKING, WORKOUT_PLANS, RECOMMENDED_VIDEOS } from "../../utils/data"
+import { useGetWorkoutQuery } from "../../redux/Apis/User"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
-import { ROUTES } from "../../utils/routes"
+import { navigate, navigationRef } from "../../utils/navigation"
+import { ROUTES, NAVIGATORS } from "../../utils/routes"
 
 const Home = () => {
+    const { data: workoutData, isLoading: workoutLoading } = useGetWorkoutQuery(undefined);
+    const recommendedVideos = workoutData?.data || []
+
+    const navigateToWorkoutDetails = (id: number) => {
+        if (navigationRef.isReady()) {
+            (navigationRef as any).navigate(NAVIGATORS.WORKOUT_STACK, {
+                screen: ROUTES.WORKOUT_DETAILS,
+                params: { id },
+            });
+        }
+    };
+
+    const getRecommendedImage = (index: number) => RECOMMENDED_VIDEOS[index % RECOMMENDED_VIDEOS.length]?.image;
+    const getWorkoutPlanImage = (index: number) => WORKOUT_PLANS[index % WORKOUT_PLANS.length]?.image;
 
     const data = {
         labels: ["Mon", "Tues", "Wed", "Thu", "Fri"],
@@ -59,8 +74,18 @@ const Home = () => {
                 <Text weight="semibold" size={20}>Recommended Videos</Text>
                 <FlatList
                     horizontal
-                    data={RECOMMENDED_VIDEOS}
-                    renderItem={({ item }) => <VideoCard {...item} type="secondary" is_video={false} />}
+                    data={recommendedVideos}
+                    renderItem={({ item, index }) => (
+                        <VideoCard
+                            title={item.title}
+                            description={item.description}
+                            created_at={item.created_at}
+                            image={getRecommendedImage(index)}
+                            type="secondary"
+                            is_video={true}
+                            onPress={() => navigateToWorkoutDetails(item.id)}
+                        />
+                    )}
                     showsHorizontalScrollIndicator={false}
                     ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
                 />
@@ -131,11 +156,20 @@ const Home = () => {
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Workout Plans</Text>
                 <FlatList
-                    data={WORKOUT_PLANS}
-                    renderItem={({ item }) => <WorkoutCard {...item} />}
+                    data={recommendedVideos}
+                    renderItem={({ item, index }) => (
+                        <VideoCard
+                            title={item.title}
+                            description={item.description}
+                            created_at={item.created_at}
+                            image={getWorkoutPlanImage(index)}
+                            type="secondary"
+                            is_video={true}
+                            onPress={() => navigateToWorkoutDetails(item.id)}
+                        />
+                    )}
                     showsVerticalScrollIndicator={false}
                     ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
-                    scrollEnabled={false}
                 />
             </View>
         </Wrapper>
