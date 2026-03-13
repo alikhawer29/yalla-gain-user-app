@@ -79,9 +79,14 @@ const useAppointmentBookingController = () => {
   };
 
   const onCountryChange = (country: any) => {
+    const callingCode = country?.callingCode?.[0];
+    if (!callingCode) {
+      console.error('Invalid country selected: missing calling code', country);
+      return;
+    }
     setFormData(prev => ({
       ...prev,
-      dialing_code: `+${country.callingCode[0]}`,
+      dialing_code: `+${callingCode}`,
       country_code: country.cca2,
     }));
   };
@@ -152,20 +157,111 @@ const useAppointmentBookingController = () => {
   };
 
   const onBook = () => {
-    if (
-      !formData.first_name ||
-      !formData.last_name ||
-      !formData.email ||
-      !formData.phone
-    ) {
+    // Name validations
+    if (!formData.first_name?.trim()) {
       showOkModal({
         type: 'error',
         title: 'Error',
-        message: 'Please fill all required fields.',
+        message: 'First name is required.',
       });
       return;
     }
-    if (formData.phone.length < 6 || formData.phone.length > 15) {
+    if (formData.first_name.trim().length < 2) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'First name must be at least 2 characters.',
+      });
+      return;
+    }
+    if (formData.first_name.trim().length > 50) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'First name must be 50 characters or less.',
+      });
+      return;
+    }
+    if (!/^[a-zA-Z\s]+$/.test(formData.first_name.trim())) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'First name can only contain letters.',
+      });
+      return;
+    }
+
+    if (!formData.last_name?.trim()) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Last name is required.',
+      });
+      return;
+    }
+    if (formData.last_name.trim().length < 2) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Last name must be at least 2 characters.',
+      });
+      return;
+    }
+    if (formData.last_name.trim().length > 50) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Last name must be 50 characters or less.',
+      });
+      return;
+    }
+    if (!/^[a-zA-Z\s]+$/.test(formData.last_name.trim())) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Last name can only contain letters.',
+      });
+      return;
+    }
+
+    // Email validation
+    if (!formData.email?.trim()) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Email address is required.',
+      });
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Please enter a valid email address.',
+      });
+      return;
+    }
+
+    // Phone validation
+    if (!formData.phone?.trim()) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Phone number is required.',
+      });
+      return;
+    }
+    if (!formData.dialing_code || formData.dialing_code === '+') {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Please select a valid country.',
+      });
+      return;
+    }
+    const phoneDigits = formData.phone.replace(/\D/g, '');
+    if (phoneDigits.length < 6 || phoneDigits.length > 15) {
       showOkModal({
         type: 'error',
         title: 'Error',
@@ -173,6 +269,8 @@ const useAppointmentBookingController = () => {
       });
       return;
     }
+
+    // Date and slot validation
     if (!selectedDate || !selectedSlot) {
       showOkModal({
         type: 'error',
