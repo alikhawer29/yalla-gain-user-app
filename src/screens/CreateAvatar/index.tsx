@@ -5,7 +5,12 @@ import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
   UnityViewNativeIOSRef,
 } from '../../components/UnityView/UnityViewNativeIOS';
-import { CommonActions, useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  CommonActions,
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
 import { navigate } from '../../utils/navigation';
@@ -28,11 +33,21 @@ const CreateAvatar = () => {
   // Debug: log every time CreateAvatar renders (proves component + bundle is current)
   const renderCountRef = useRef(0);
   renderCountRef.current += 1;
-  console.log('[CreateAvatar] render', renderCountRef.current, Platform.OS, isFocused, userId);
+  console.log(
+    '[CreateAvatar] render',
+    renderCountRef.current,
+    Platform.OS,
+    isFocused,
+    userId,
+  );
 
   // Socket: connect on iOS and Android, emit sendUserId on Unity SocketConnectedGame, listen for receiveUserId
   useEffect(() => {
-    console.log('[Socket] Effect run', { platform: Platform.OS, isFocused, userId });
+    console.log('[Socket] Effect run', {
+      platform: Platform.OS,
+      isFocused,
+      userId,
+    });
 
     if (!isFocused) {
       console.log('[Socket] Skip: not focused');
@@ -64,7 +79,20 @@ const CreateAvatar = () => {
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('[Socket] Connected — waiting for Unity message SocketConnectedGame to send user_id');
+      console.log(
+        '[Socket] Connected — waiting for Unity message SocketConnectedGame to send user_id',
+      );
+      if (Platform.OS === 'android' && userId) {
+        const userIdNum = Number(userId);
+        socket.emit('sendUserId', {
+          user_id: userIdNum,
+          signature: USER_SIGNATURE,
+        });
+        console.log(
+          '[Socket] Emitted sendUserId immediately on connect (Android shortcut)',
+          { user_id: userIdNum },
+        );
+      }
     });
 
     socket.on('receiveUserId', (data: { user_id: string }) => {
@@ -147,22 +175,30 @@ const CreateAvatar = () => {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'android') {
-        const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+        const sub = BackHandler.addEventListener(
+          'hardwareBackPress',
+          () => true,
+        );
         return () => sub.remove();
       }
       return undefined;
     }, []),
   );
 
-  const handleUnityMessage = (nativeEvent: { message: string; gameObject?: string }) => {
+  const handleUnityMessage = (nativeEvent: {
+    message: string;
+    gameObject?: string;
+  }) => {
     const message = nativeEvent.message ?? '';
     const gameObject = nativeEvent.gameObject;
     console.log('[UnityMessage]', { gameObject, message });
 
     const isSocketConnectedGame =
-      (gameObject === GAME_OBJECT_MESSAGE_SENT && message === EVENT_SOCKET_CONNECTED_GAME) ||
+      (gameObject === GAME_OBJECT_MESSAGE_SENT &&
+        message === EVENT_SOCKET_CONNECTED_GAME) ||
       (!gameObject && message === EVENT_SOCKET_CONNECTED_GAME) ||
-      (message.includes(GAME_OBJECT_MESSAGE_SENT) && message.includes(EVENT_SOCKET_CONNECTED_GAME));
+      (message.includes(GAME_OBJECT_MESSAGE_SENT) &&
+        message.includes(EVENT_SOCKET_CONNECTED_GAME));
 
     if (isSocketConnectedGame) {
       const socket = socketRef.current;
@@ -172,9 +208,15 @@ const CreateAvatar = () => {
           user_id: userIdNum,
           signature: USER_SIGNATURE,
         });
-        console.log('[Socket] Emitted sendUserId (after Unity MessageSent/SocketConnectedGame)', { user_id: userIdNum });
+        console.log(
+          '[Socket] Emitted sendUserId (after Unity MessageSent/SocketConnectedGame)',
+          { user_id: userIdNum },
+        );
       } else {
-        console.warn('[Socket] SocketConnectedGame received but socket not ready', { connected: socket?.connected, userId });
+        console.warn(
+          '[Socket] SocketConnectedGame received but socket not ready',
+          { connected: socket?.connected, userId },
+        );
       }
       return;
     }
@@ -191,7 +233,9 @@ const CreateAvatar = () => {
       // Convert userId to JSON format that matches RNReceiver.cs
       // Expects: {"user_id":2} (number)
       const userIdJson = JSON.stringify({ user_id: Number(userId) });
-      console.log('[CreateAvatar] SendUserId effect (Socket code is in this file)');
+      console.log(
+        '[CreateAvatar] SendUserId effect (Socket code is in this file)',
+      );
       console.log('[SendUserId] JSON payload:', userIdJson);
 
       const sendSetUserId = () => {
@@ -206,11 +250,7 @@ const CreateAvatar = () => {
             console.log('[SendUserId-iOS] ✅ Sent');
           } else if (Platform.OS === 'android' && unityRef.current) {
             console.log('[SendUserId-Android] Sending...');
-            unityRef.current.postMessage(
-              'ApiManager',
-              'SetUserId',
-              userIdJson,
-            );
+            unityRef.current.postMessage('ApiManager', 'SetUserId', userIdJson);
             console.log('[SendUserId-Android] ✅ Sent');
           }
         } catch (error) {
@@ -248,7 +288,9 @@ const CreateAvatar = () => {
                 ref={unityNativeIOSRef}
                 style={{ flex: 1 }}
                 pointerEvents="box-none"
-                onUnityMessage={(result: { nativeEvent: { message: string; gameObject?: string } }) => {
+                onUnityMessage={(result: {
+                  nativeEvent: { message: string; gameObject?: string };
+                }) => {
                   handleUnityMessage(result.nativeEvent);
                 }}
               />
@@ -256,7 +298,9 @@ const CreateAvatar = () => {
               <UnityView
                 ref={unityRef}
                 style={{ flex: 1 }}
-                onUnityMessage={(result: { nativeEvent: { message: string; gameObject?: string } }) => {
+                onUnityMessage={(result: {
+                  nativeEvent: { message: string; gameObject?: string };
+                }) => {
                   handleUnityMessage(result.nativeEvent);
                 }}
               />

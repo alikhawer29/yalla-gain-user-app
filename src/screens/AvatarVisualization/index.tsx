@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { BackHandler, Platform, View } from 'react-native';
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import { io, Socket } from 'socket.io-client';
 import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
@@ -45,7 +49,20 @@ const AvatarVisualization = () => {
       return;
     }
     socket.on('connect', () => {
-      console.log('[AvatarVisualization Socket] Connected — waiting for Unity message SocketConnectedGame to send user_id');
+      console.log(
+        '[AvatarVisualization Socket] Connected — waiting for Unity message SocketConnectedGame to send user_id',
+      );
+      if (Platform.OS === 'android' && userId) {
+        const userIdNum = Number(userId);
+        socket.emit('sendUserId', {
+          user_id: userIdNum,
+          signature: USER_SIGNATURE,
+        });
+        console.log(
+          '[AvatarVisualization Socket] Emitted sendUserId immediately on connect (Android shortcut)',
+          { user_id: userIdNum },
+        );
+      }
     });
     socket.on('receiveUserId', (data: { user_id: string }) => {
       console.log('[AvatarVisualization Socket] receiveUserId', data);
@@ -99,22 +116,30 @@ const AvatarVisualization = () => {
   useFocusEffect(
     React.useCallback(() => {
       if (Platform.OS === 'android') {
-        const sub = BackHandler.addEventListener('hardwareBackPress', () => true);
+        const sub = BackHandler.addEventListener(
+          'hardwareBackPress',
+          () => true,
+        );
         return () => sub.remove();
       }
       return undefined;
     }, []),
   );
 
-  const handleUnityMessage = (nativeEvent: { message: string; gameObject?: string }) => {
+  const handleUnityMessage = (nativeEvent: {
+    message: string;
+    gameObject?: string;
+  }) => {
     const message = nativeEvent.message ?? '';
     const gameObject = nativeEvent.gameObject;
     console.log('[AvatarVisualization UnityMessage]', { gameObject, message });
 
     const isSocketConnectedGame =
-      (gameObject === GAME_OBJECT_MESSAGE_SENT && message === EVENT_SOCKET_CONNECTED_GAME) ||
+      (gameObject === GAME_OBJECT_MESSAGE_SENT &&
+        message === EVENT_SOCKET_CONNECTED_GAME) ||
       (!gameObject && message === EVENT_SOCKET_CONNECTED_GAME) ||
-      (message.includes(GAME_OBJECT_MESSAGE_SENT) && message.includes(EVENT_SOCKET_CONNECTED_GAME));
+      (message.includes(GAME_OBJECT_MESSAGE_SENT) &&
+        message.includes(EVENT_SOCKET_CONNECTED_GAME));
 
     if (isSocketConnectedGame) {
       const socket = socketRef.current;
@@ -124,9 +149,15 @@ const AvatarVisualization = () => {
           user_id: userIdNum,
           signature: USER_SIGNATURE,
         });
-        console.log('[AvatarVisualization Socket] Emitted sendUserId (after Unity SocketConnectedGame)', { user_id: userIdNum });
+        console.log(
+          '[AvatarVisualization Socket] Emitted sendUserId (after Unity SocketConnectedGame)',
+          { user_id: userIdNum },
+        );
       } else {
-        console.warn('[AvatarVisualization Socket] SocketConnectedGame received but socket not ready', { connected: socket?.connected, userId });
+        console.warn(
+          '[AvatarVisualization Socket] SocketConnectedGame received but socket not ready',
+          { connected: socket?.connected, userId },
+        );
       }
       return;
     }
@@ -143,7 +174,11 @@ const AvatarVisualization = () => {
     const sendSetUserId = () => {
       try {
         if (Platform.OS === 'ios' && unityNativeIOSRef.current) {
-          unityNativeIOSRef.current?.postMessage('RNReceiver', 'SetUserId', userIdJson);
+          unityNativeIOSRef.current?.postMessage(
+            'RNReceiver',
+            'SetUserId',
+            userIdJson,
+          );
         } else if (Platform.OS === 'android' && unityRef.current) {
           unityRef.current.postMessage('ApiManager', 'SetUserId', userIdJson);
         }
@@ -175,7 +210,9 @@ const AvatarVisualization = () => {
                 ref={unityNativeIOSRef}
                 style={{ flex: 1 }}
                 pointerEvents="box-none"
-                onUnityMessage={(result: { nativeEvent: { message: string; gameObject?: string } }) => {
+                onUnityMessage={(result: {
+                  nativeEvent: { message: string; gameObject?: string };
+                }) => {
                   handleUnityMessage(result.nativeEvent);
                 }}
               />
@@ -183,7 +220,9 @@ const AvatarVisualization = () => {
               <UnityView
                 ref={unityRef}
                 style={{ flex: 1 }}
-                onUnityMessage={(result: { nativeEvent: { message: string; gameObject?: string } }) => {
+                onUnityMessage={(result: {
+                  nativeEvent: { message: string; gameObject?: string };
+                }) => {
                   handleUnityMessage(result.nativeEvent);
                 }}
               />
