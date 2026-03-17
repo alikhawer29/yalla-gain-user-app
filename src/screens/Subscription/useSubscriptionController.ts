@@ -34,12 +34,13 @@ const useSubscriptionController = () => {
           message: 'Payment has been Made Successfully.',
         });
       } else {
+        console.log(subscribeData);
         setAlertModal({
           visible: true,
           type: 'error',
           title: 'Unsuccessful!',
           message:
-            subscribeData?.message ||
+            subscribeData?.error ||
             'Payment was Unsuccessful.\nPlease try again.',
         });
       }
