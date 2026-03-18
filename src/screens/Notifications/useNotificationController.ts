@@ -46,6 +46,8 @@ const useNotificationController = () => {
   const lastPage = meta?.last_page ?? 1;
   const hasMore = currentPage < lastPage;
   const isLoadingMore = isLoading && page > 1;
+  const isInitialLoading = isLoading && page === 1 && accumulatedNotifications.length === 0;
+  const isRefreshing = isLoading && page === 1 && accumulatedNotifications.length > 0;
 
   useEffect(() => {
     setPage(1);
@@ -106,6 +108,9 @@ const useNotificationController = () => {
       selectedTab,
       notifications,
       isLoading,
+      isInitialLoading,
+      isRefreshing,
+      isLoadingMore,
       hasMore,
     },
     functions: {

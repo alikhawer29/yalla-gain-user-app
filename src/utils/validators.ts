@@ -128,7 +128,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         dob.setHours(0, 0, 0, 0);
-        return dob < today;
+        return dob < today;               
       },
     )
     .test(
