@@ -77,7 +77,7 @@ export const formHandler = (data: any) => {
                             formdata.append(`${item[0]}[${index}]`, i)
                         }
                     })
-                } else if (item[0] !== "image" && item[0] !== "photo" && item[0] !== "file" && item[0] !== "profile_picture" && typeof item[1] === "object") {
+                } else if (item[0] !== "image" && item[0] !== "photo" && item[0] !== "file" && item[0] !== "photo" && typeof item[1] === "object") {
                     Object.entries(item[1]).forEach(element => {
                         formdata.append(`${item[0]}[${element[0]}]`, element[1])
                     })

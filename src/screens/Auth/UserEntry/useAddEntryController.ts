@@ -15,13 +15,14 @@ const initial = {
     register: {
         first_name: "",
         last_name: "",
+        dob: "",
         email: "",
         password: "",
         password_confirmation: "",
         dialing_code: "+971",
         country_code: "AE",
         phone: "",
-        profile_picture: null as any,
+        photo: null as any,
     }
 }
 
@@ -39,7 +40,7 @@ const useAddEntryController = () => {
 
     useEffect(() => {
         if (profileImage && formik_ref.current) {
-            (formik_ref.current as any).setFieldValue("profile_picture", profileImage);
+            (formik_ref.current as any).setFieldValue("photo", profileImage);
         }
     }, [profileImage]);
 

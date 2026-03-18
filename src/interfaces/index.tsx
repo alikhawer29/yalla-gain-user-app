@@ -330,6 +330,7 @@ export interface IUpload {
     style?: StyleProp<ViewStyle>
     required?: boolean
     onPress?: () => void
+    image?: any
 }
 
 export interface ICheckbox {

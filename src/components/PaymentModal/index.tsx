@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import {
+    View,
+    Text,
+    Modal,
+    TouchableOpacity,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+} from 'react-native';
 import Input from '../Input';
 import Button from '../Button';
 import colors from '../../utils/colors';
@@ -24,12 +32,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     const [amount, setAmount] = useState('');
 
     const handlePayment = () => {
+        Keyboard.dismiss();
         if (amount) {
             onPayment(amount);
         }
     };
 
     const handleClose = () => {
+        Keyboard.dismiss();
         setAmount('');
         onClose();
     };
@@ -41,54 +51,59 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             animationType="fade"
             onRequestClose={handleClose}
         >
-            <TouchableOpacity
-                style={styles.overlay}
-                activeOpacity={1}
-                onPress={handleClose}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
                 <TouchableOpacity
-                    style={styles.modalContainer}
+                    style={styles.overlay}
                     activeOpacity={1}
-                    onPress={(e) => e.stopPropagation()}
+                    onPress={handleClose}
                 >
-                    <View style={styles.header}>
-                        <Text style={styles.title}>Payment</Text>
-                    </View>
-
-                    <View style={styles.content}>
-                        <Text style={styles.coinValue}>
-                            1 Yalla Coin Is Equal To {coinValue}
-                        </Text>
-
-                        <View style={styles.inputContainer}>
-                            <Input
-                                label="Fund Amount"
-                                required
-                                placeholder="Enter amount"
-                                onChangeText={setAmount}
-                                type="number"
-                                value={amount}
-                            />
+                    <TouchableOpacity
+                        style={styles.modalContainer}
+                        activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <View style={styles.header}>
+                            <Text style={styles.title}>Payment</Text>
                         </View>
 
-                        <View style={styles.buttonContainer}>
-                            <Button
-                                text="Cancel"
-                                type="outlined"
-                                onPress={handleClose}
-                                style={styles.cancelButton}
-                            />
-                            <Button
-                                text="Pay Now"
-                                type="primary"
-                                onPress={handlePayment}
-                                loading={isLoading}
-                                style={styles.confirmButton}
-                            />
+                        <View style={styles.content}>
+                            <Text style={styles.coinValue}>
+                                1 Yalla Coin Is Equal To {coinValue}
+                            </Text>
+
+                            <View style={styles.inputContainer}>
+                                <Input
+                                    label="Fund Amount"
+                                    required
+                                    placeholder="Enter amount"
+                                    onChangeText={setAmount}
+                                    type="number"
+                                    value={amount}
+                                />
+                            </View>
+
+                            <View style={styles.buttonContainer}>
+                                <Button
+                                    text="Cancel"
+                                    type="outlined"
+                                    onPress={handleClose}
+                                    style={styles.cancelButton}
+                                />
+                                <Button
+                                    text="Pay Now"
+                                    type="primary"
+                                    onPress={handlePayment}
+                                    loading={isLoading}
+                                    style={styles.confirmButton}
+                                />
+                            </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 </TouchableOpacity>
-            </TouchableOpacity>
+            </KeyboardAvoidingView>
         </Modal>
     );
 };

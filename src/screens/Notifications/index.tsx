@@ -12,7 +12,7 @@ import { heightPixel, widthPixel } from "../../utils/helper"
 
 const Notifications: FC = () => {
     const {
-        values: { tabs, selectedTab, notifications, isLoading, hasMore },
+        values: { tabs, selectedTab, notifications, isInitialLoading, isRefreshing, isLoadingMore, hasMore },
         functions: { setSelectedTab, toggleReadStatus, onReload, onLoadMore },
     } = useNotificationController()
 
@@ -89,7 +89,7 @@ const Notifications: FC = () => {
                     showsVerticalScrollIndicator={false}
                     refreshControl={
                         <RefreshControl
-                            refreshing={isLoading && notifications.length === 0}
+                            refreshing={isRefreshing}
                             onRefresh={onReload}
                             colors={[colors.primary]}
                             tintColor={colors.primary}
@@ -102,14 +102,14 @@ const Notifications: FC = () => {
                         }
                     }}
                     ListEmptyComponent={
-                        isLoading ? (
+                        isInitialLoading ? (
                             <View style={{ paddingVertical: heightPixel(20) }}>
                                 <ActivityIndicator size="small" color={colors.primary} />
                             </View>
                         ) : null
                     }
                     ListFooterComponent={
-                        isLoading && notifications.length > 0 ? (
+                        isLoadingMore ? (
                             <View style={{ paddingVertical: heightPixel(20) }}>
                                 <ActivityIndicator size="small" color={colors.primary} />
                             </View>
