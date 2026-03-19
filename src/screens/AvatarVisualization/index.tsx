@@ -12,6 +12,7 @@ import UnityViewNativeIOS, {
 } from '../../components/UnityView/UnityViewNativeIOS';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
+import { useModal } from '../../contexts/ModalContext';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 
 const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
@@ -21,6 +22,7 @@ const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';
 
 const AvatarVisualization = () => {
   const navigation = useNavigation();
+  const { showOkModal } = useModal();
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -162,7 +164,14 @@ const AvatarVisualization = () => {
       return;
     }
 
-    if (message === 'SaveGame' || message === 'GoBack') {
+    if (message === 'SaveGame') {
+      leaveAndUnloadUnity();
+      showOkModal({
+        type: 'success',
+        title: 'Success',
+        message: 'Avatar Saved Successfully',
+      });
+    } else if (message === 'GoBack') {
       leaveAndUnloadUnity();
     }
   };

@@ -13,6 +13,7 @@ import {
 } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
+import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { selectUser } from '../../redux/Slices/AuthSlice';
@@ -23,6 +24,7 @@ const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
 const CreateAvatar = () => {
   // ✅ ALL HOOKS AT TOP LEVEL (before any conditionals)
   const navigation = useNavigation();
+  const { showOkModal } = useModal();
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -221,7 +223,14 @@ const CreateAvatar = () => {
       return;
     }
 
-    if (message === 'SaveGame' || message === 'GoBack') {
+    if (message === 'SaveGame') {
+      leaveAndKillUnity();
+      showOkModal({
+        type: 'success',
+        title: 'Success',
+        message: 'Avatar Saved Successfully',
+      });
+    } else if (message === 'GoBack') {
       leaveAndKillUnity();
     }
   };

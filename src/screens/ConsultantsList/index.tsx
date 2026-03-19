@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, View } from "react-native";
 import images from "../../assets/images";
+import Button from "../../components/Button";
 import ConsultantCard from "../../components/Cards/ConsultantCard";
-import Icon from "../../components/Icon";
 import Input from "../../components/Input";
 import Row from "../../components/Row";
 import Seperator from "../../components/Seperator";
@@ -12,8 +12,8 @@ import useConsultantsListController from "./useConsultantsListController";
 
 const ConsultantsList = () => {
     const {
-        values: { data, isLoading, search, type },
-        functions: { onReload, onSearch, onPress },
+        values: { data, isLoading, isLoadingMore, hasMore, search, type },
+        functions: { onReload, onLoadMore, onSearch, onPress },
     } = useConsultantsListController();
 
     const placeholder = type === "doctor" ? "Search Doctors" : "Search Trainer";
@@ -30,15 +30,6 @@ const ConsultantsList = () => {
                         onChangeText={onSearch}
                     />
                 </View>
-                {/* <View style={{ width: "15%" }}>
-                    <Icon
-                        source={images.filters}
-                        size={40}
-                        rounded
-                        less_rounded
-                        border={colors.white}
-                    />
-                </View> */}
             </Row>
             <FlatList
                 data={data}
@@ -59,7 +50,25 @@ const ConsultantsList = () => {
                 ItemSeparatorComponent={() => <Seperator size={15} />}
                 showsVerticalScrollIndicator={false}
                 refreshControl={
-                    <RefreshControl refreshing={isLoading} onRefresh={onReload} />
+                    <RefreshControl
+                        refreshing={isLoading}
+                        onRefresh={onReload}
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
+                    />
+                }
+                ListFooterComponent={
+                    hasMore && data.length > 0 ? (
+                        <View style={{ paddingVertical: heightPixel(20), alignItems: "center" }}>
+                            <Button
+                                text="Load More"
+                                type="outlined"
+                                onPress={onLoadMore}
+                                loading={isLoadingMore}
+                                style={{ minWidth: 160 }}
+                            />
+                        </View>
+                    ) : null
                 }
             />
         </Wrapper>
