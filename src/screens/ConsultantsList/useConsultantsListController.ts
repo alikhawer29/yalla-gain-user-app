@@ -1,5 +1,5 @@
 import { useRoute } from '@react-navigation/native';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   useGetAllDoctorsQuery,
   useGetAllTrainersQuery,
@@ -8,45 +8,87 @@ import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import useDebounce from '../../hooks/useDebounce';
 
+const PER_PAGE = 15;
+
 const useConsultantsListController = () => {
   const route = useRoute();
   const { type } = route.params as { type: 'doctor' | 'trainer' };
 
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [accumulatedData, setAccumulatedData] = useState<any[]>([]);
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    setPage(1);
+    setAccumulatedData([]);
+  }, [debouncedSearch]);
+
+  const queryParams = useMemo(
+    () => ({
+      search: debouncedSearch,
+      page,
+      per_page: PER_PAGE,
+    }),
+    [debouncedSearch, page],
+  );
 
   const {
     data: doctorsData,
     isFetching: isDoctorsFetching,
     refetch: refetchDoctors,
-  } = useGetAllDoctorsQuery(
-    { search: debouncedSearch },
-    { skip: type !== 'doctor' },
-  );
+  } = useGetAllDoctorsQuery(queryParams, { skip: type !== 'doctor' });
 
   const {
     data: trainersData,
     isFetching: isTrainersFetching,
     refetch: refetchTrainers,
-  } = useGetAllTrainersQuery(
-    { search: debouncedSearch },
-    { skip: type !== 'trainer' },
-  );
+  } = useGetAllTrainersQuery(queryParams, { skip: type !== 'trainer' });
 
-  const data = useMemo(() => {
-    if (type === 'doctor') {
-      return doctorsData?.data || [];
+  const apiData = type === 'doctor' ? doctorsData : trainersData;
+  const isFetching = type === 'doctor' ? isDoctorsFetching : isTrainersFetching;
+
+  const rows = Array.isArray(apiData?.data) ? apiData.data : [];
+
+  const meta = apiData?.meta;
+  const currentPage = meta?.current_page ?? page;
+  const lastPage = meta?.last_page ?? 1;
+  const hasMore =
+    meta != null
+      ? currentPage < lastPage
+      : rows.length >= PER_PAGE;
+
+  useEffect(() => {
+    const nextRows = Array.isArray(apiData?.data) ? apiData.data : [];
+    if (!nextRows.length) {
+      if (page === 1) setAccumulatedData([]);
+      return;
     }
-    return trainersData?.data || [];
-  }, [type, doctorsData, trainersData]);
+    if (page === 1) {
+      setAccumulatedData(nextRows);
+    } else if (currentPage === page) {
+      setAccumulatedData(prev => [...prev, ...nextRows]);
+    }
+  }, [apiData, page, currentPage]);
 
-  const isLoading = type === 'doctor' ? isDoctorsFetching : isTrainersFetching;
+  const data = accumulatedData;
+
+  const isInitialLoading = isFetching && page === 1;
+  const isLoadingMore = isFetching && page > 1;
 
   const onReload = () => {
+    setPage(1);
+    setAccumulatedData([]);
     if (type === 'doctor') {
       refetchDoctors();
     } else {
       refetchTrainers();
+    }
+  };
+
+  const onLoadMore = () => {
+    if (hasMore && !isLoadingMore) {
+      setPage(p => p + 1);
     }
   };
 
@@ -62,12 +104,15 @@ const useConsultantsListController = () => {
   return {
     values: {
       data,
-      isLoading,
+      isLoading: isInitialLoading,
+      isLoadingMore,
+      hasMore,
       search,
       type,
     },
     functions: {
       onReload,
+      onLoadMore,
       onSearch,
       onPress,
     },

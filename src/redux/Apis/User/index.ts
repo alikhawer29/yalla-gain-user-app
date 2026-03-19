@@ -473,6 +473,13 @@ export const userApi = createApi({
         body,
       }),
     }),
+    getAvatarWithChallenge: builder.query({
+      query: (userId: number | string) => ({
+        url: 'avatar/with-challenge',
+        method: 'GET',
+        params: { user_id: userId },
+      }),
+    }),
     getFaqs: builder.query({
       query: () => ({
         url: `faqs`,

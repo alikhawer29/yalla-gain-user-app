@@ -52,6 +52,8 @@ function App() {
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
                     <AppStackNavigator />
                     <NetworkLoggerFAB                   />
+                    {/* <NetworkLoggerFAB 
+                    /> */}
                     <Toast />
                   </NavigationContainer>
                 </ModalProvider>
