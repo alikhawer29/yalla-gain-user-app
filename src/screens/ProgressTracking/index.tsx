@@ -1,4 +1,5 @@
 import { View } from "react-native"
+import { LineChart } from "react-native-chart-kit"
 import images from "../../assets/images"
 import Button from "../../components/Button"
 import CardWrapper from "../../components/CardWrapper"
@@ -7,7 +8,7 @@ import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import { heightPixel } from "../../utils/helper"
+import { heightPixel, vw } from "../../utils/helper"
 import useProgressTrackingController from "./useProgressTrackingController"
 
 const ProgressTracking = () => {
@@ -17,6 +18,8 @@ const ProgressTracking = () => {
             isLoadingInitialEdit,
             isLoadingFutureView,
             isLoadingFutureEdit,
+            progressChartData,
+            currentProgress,
         },
         functions: {
             handleInitialAvatarView,
@@ -31,7 +34,23 @@ const ProgressTracking = () => {
             <Row gap={5}>
                 <View style={{ flex: 1 }}>
                     <CardWrapper height={352} padding={10} color={colors.blackish_gray} >
-                        <View style={{ flex: 0.9, padding: heightPixel(0) }}>
+                        <View style={{ flex: 0.9, padding: heightPixel(0), position: "relative" }}>
+                            <Text
+                                weight="semibold"
+                                size={12}
+                                style={{
+                                    position: "absolute",
+                                    top: heightPixel(8),
+                                    // left: heightPixel(8),
+                                    zIndex: 1,
+                                    backgroundColor: "rgba(0,0,0,0.55)",
+                                    paddingHorizontal: heightPixel(8),
+                                    paddingVertical: heightPixel(4),
+                                    borderRadius: 6,
+                                }}
+                            >
+                                Initial
+                            </Text>
                             <Image source={images.avatar.fat} />
                         </View>
                         <Row style={{ flex: 0.1 }} justify="space-between" align="center">
@@ -63,13 +82,29 @@ const ProgressTracking = () => {
                 </View>
                 <View style={{ flex: 1 }}>
                     <CardWrapper height={352} padding={10} color={colors.blackish_gray} >
-                        <View style={{ flex: 0.9, padding: heightPixel(10) }}>
+                        <View style={{ flex: 0.9, padding: heightPixel(10), position: "relative" }}>
+                            <Text
+                                weight="semibold"
+                                size={12}
+                                style={{
+                                    position: "absolute",
+                                    top: heightPixel(8),
+                                    // left: heightPixel(7),
+                                    zIndex: 1,
+                                    backgroundColor: "rgba(0,0,0,0.55)",
+                                    paddingHorizontal: heightPixel(8),
+                                    paddingVertical: heightPixel(4),
+                                    borderRadius: 6,
+                                }}
+                            >
+                                Target
+                            </Text>
                             <Image source={images.avatar.slim} />
                         </View>
-                        <Row style={{ flex: 0.1 }} justify="space-between" align="center">
+                        <Row style={{ flex: 0.1 }} justify="center" align="center">
                             <Button
                                 font_size={10}
-                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0,paddingVertical: heightPixel(0) }}
                                 text="View"
                                 // onPress={handleFutureAvatarView}
                                 // loading={isLoadingFutureView}
@@ -78,7 +113,7 @@ const ProgressTracking = () => {
                                 onPress={handleFutureAvatarView}
                                 loading={isLoadingFutureView}
                             />
-                            <Button
+                            {/* <Button
                                 font_size={10}
                                 type="outlined"
                                 style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0 }}
@@ -88,15 +123,47 @@ const ProgressTracking = () => {
 
                                 // Sending initial visualization API call opens future visualization ??? Why?
                                 onPress={handleFutureAvatarEdit}
-                                loading={isLoadingFutureEdit}
-                            />
+                                  loading={isLoadingFutureEdit}
+                            /> */}
                         </Row>
                     </CardWrapper>
                 </View>
             </Row>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>20% Progress</Text>
-                <Image source={images.graph} style={{ width: "100%", height: heightPixel(276) }} />
+                <Text weight="semibold" size={20}>{currentProgress}% Progress</Text>
+                <View style={{ marginLeft: -heightPixel(12) }}>
+                    <LineChart
+                        data={progressChartData}
+                        width={vw * 90}
+                        height={heightPixel(276)}
+                        withInnerLines
+                        withOuterLines={false}
+                        withVerticalLines={false}
+                        withHorizontalLabels={false}
+                        withShadow={false}
+                        fromZero
+                        chartConfig={{
+                            color: () => colors.primary,
+                            labelColor: () => colors.white,
+                            decimalPlaces: 0,
+                            propsForDots: {
+                                r: "4",
+                                strokeWidth: "3",
+                                stroke: colors.primary,
+                                fill: colors.white,
+                            },
+                            propsForBackgroundLines: {
+                                strokeDasharray: "8,8",
+                                stroke: colors.gray,
+                                strokeWidth: 1,
+                            },
+                        }}
+                        bezier
+                        style={{
+                            borderRadius: 16,
+                        }}
+                    />
+                </View>
             </View>
         </Wrapper>
     )

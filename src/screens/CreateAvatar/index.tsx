@@ -13,6 +13,7 @@ import {
 } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
+import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { selectUser } from '../../redux/Slices/AuthSlice';
@@ -26,6 +27,7 @@ const { UnityLogcatModule } = NativeModules;
 
 const CreateAvatar = () => {
   const navigation = useNavigation();
+  const { showOkModal } = useModal();
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const socketRef = useRef<Socket | null>(null);
@@ -135,6 +137,55 @@ const CreateAvatar = () => {
   // ─── Core Unity message handler ────────────────────────────────────────────
   // iOS  → called from onUnityMessage prop on UnityViewNativeIOS
   // Android → called from DeviceEventEmitter('UnityMessage') via logcat module
+  // const handleUnityMessage = useCallback(
+  //   (nativeEvent: { message: string; gameObject?: string } | string) => {
+  //     const message =
+  //       typeof nativeEvent === 'string'
+  //         ? nativeEvent
+  //         : (nativeEvent?.message ?? '');
+  //     const gameObject =
+  //       typeof nativeEvent === 'string' ? undefined : nativeEvent?.gameObject;
+
+  //     console.log('[UnityMessage] ✅', { gameObject, message });
+
+  //     const isSocketConnectedGame =
+  //       message === EVENT_SOCKET_CONNECTED_GAME ||
+  //       message === `${EVENT_SOCKET_CONNECTED_GAME}()` ||
+  //       message.includes(EVENT_SOCKET_CONNECTED_GAME) ||
+  //       message.includes(`${GAME_OBJECT_MESSAGE_SENT}:${EVENT_SOCKET_CONNECTED_GAME}`) ||
+  //       gameObject === GAME_OBJECT_MESSAGE_SENT;
+
+  //     if (isSocketConnectedGame) {
+  //       if (hasSentUserIdRef.current) {
+  //         console.log('[CreateAvatar] sendUserId already sent, ignoring duplicate SocketConnectedGame');
+  //         return;
+  //       }
+  //       hasSentUserIdRef.current = true;
+  //       console.log('[UnityMessage] SocketConnectedGame — emitting sendUserId');
+  //       const socket = socketRef.current;
+  //       if (socket?.connected && userId) {
+  //         const userIdNum = Number(userId);
+  //         socket.emit('sendUserId', {
+  //           user_id: userIdNum,
+  //           signature: USER_SIGNATURE,
+  //         });
+  //         console.log('[Socket] Emitted sendUserId ✅', { user_id: userIdNum });
+  //       } else {
+  //         console.warn('[Socket] SocketConnectedGame but socket not ready', {
+  //           connected: socket?.connected,
+  //           userId,
+  //         });
+  //       }
+  //       return;
+  //     }
+
+  //     if (message === 'SaveGame' || message === 'GoBack') {
+  //       leaveAndKillUnity();
+  //     }
+  //   },
+  //   [userId, leaveAndKillUnity],
+  // );
+
   const handleUnityMessage = useCallback(
     (nativeEvent: { message: string; gameObject?: string } | string) => {
       const message =
@@ -160,6 +211,7 @@ const CreateAvatar = () => {
         }
         hasSentUserIdRef.current = true;
         console.log('[UnityMessage] SocketConnectedGame — emitting sendUserId');
+
         const socket = socketRef.current;
         if (socket?.connected && userId) {
           const userIdNum = Number(userId);
@@ -177,7 +229,14 @@ const CreateAvatar = () => {
         return;
       }
 
-      if (message === 'SaveGame' || message === 'GoBack') {
+      if (message === 'SaveGame') {
+        leaveAndKillUnity();
+        showOkModal({
+          type: 'success',
+          title: 'Success',
+          message: 'Avatar Saved Successfully',
+        });
+      } else if (message === 'GoBack') {
         leaveAndKillUnity();
       }
     },
@@ -225,7 +284,55 @@ const CreateAvatar = () => {
     }, []),
   );
 
-  // ─── Send userId to Unity via postMessage at 5s, 10s, 15s ─────────────────
+  // const handleUnityMessage = (nativeEvent: {
+  //   message: string;
+  //   gameObject?: string;
+  // }) => {
+  //   const message = nativeEvent.message ?? '';
+  //   const gameObject = nativeEvent.gameObject;
+  //   console.log('[UnityMessage]', { gameObject, message });
+
+  //   const isSocketConnectedGame =
+  //     (gameObject === GAME_OBJECT_MESSAGE_SENT &&
+  //       message === EVENT_SOCKET_CONNECTED_GAME) ||
+  //     (!gameObject && message === EVENT_SOCKET_CONNECTED_GAME) ||
+  //     (message.includes(GAME_OBJECT_MESSAGE_SENT) &&
+  //       message.includes(EVENT_SOCKET_CONNECTED_GAME));
+
+  //   if (isSocketConnectedGame) {
+  //     const socket = socketRef.current;
+  //     if (socket?.connected && userId) {
+  //       const userIdNum = Number(userId);
+  //       socket.emit('sendUserId', {
+  //         user_id: userIdNum,
+  //         signature: USER_SIGNATURE,
+  //       });
+  //       console.log(
+  //         '[Socket] Emitted sendUserId (after Unity MessageSent/SocketConnectedGame)',
+  //         { user_id: userIdNum },
+  //       );
+  //     } else {
+  //       console.warn(
+  //         '[Socket] SocketConnectedGame received but socket not ready',
+  //         { connected: socket?.connected, userId },
+  //       );
+  //     }
+  //     return;
+  //   }
+
+  //   if (message === 'SaveGame') {
+  //     leaveAndKillUnity();
+  //     showOkModal({
+  //       type: 'success',
+  //       title: 'Success',
+  //       message: 'Avatar Saved Successfully',
+  //     });
+  //   } else if (message === 'GoBack') {
+  //     leaveAndKillUnity();
+  //   }
+  // };
+
+  // ✅ FIXED: Send userId as JSON format
   useEffect(() => {
     if (!isFocused || !userId) return;
 
