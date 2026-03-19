@@ -34,8 +34,6 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
 
         logcatThread = Thread {
             try {
-                // Clear buffer BEFORE starting — so we only read NEW lines from this moment on.
-                // Prevents replaying SocketConnectedGame from a previous session.
                 clearLogcatBuffer()
                 Log.d("UnityLogcat", "Started — listening for new Unity messages only")
 
@@ -52,34 +50,18 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
 
                     Log.d("UnityLogcat", "Unity → $trimmed")
 
-                    when {
-                        trimmed.contains("SocketConnectedGame") -> {
-                            Log.d("UnityLogcat", "SocketConnectedGame → emitting to JS")
-                            emitToJS("SocketConnectedGame")
-                        }
-                        trimmed == "SaveGame" || trimmed == "GoBack" -> {
-                            Log.d("UnityLogcat", "$trimmed detected → pausing Unity + emitting to JS")
-                            // Step 1: Pause Unity immediately on the main thread to stop the render loop.
-                            // This must happen before JS navigation to prevent the SIGSEGV crash.
-                            val handler = android.os.Handler(android.os.Looper.getMainLooper())
-                            handler.post {
-                                try {
-                                    com.azesmwayreactnativeunity.ReactNativeUnity.pause()
-                                    Log.d("UnityLogcat", "Unity paused for $trimmed")
-                                } catch (e: Exception) {
-                                    Log.e("UnityLogcat", "Failed to pause Unity: ${e.message}")
-                                }
-                            }
-                            // Step 2: Emit to JS so RN cleans up state and navigates
-                            emitToJS(trimmed)
-                        }
+                    if (trimmed.contains("SocketConnectedGame")) {
+                        Log.d("UnityLogcat", "SocketConnectedGame → emitting to JS then stopping")
+                        emitToJS("SocketConnectedGame")
+                        isRunning = false
+                        break
                     }
                 }
 
                 reader.close()
                 process.destroy()
                 logcatProcess = null
-                Log.d("UnityLogcat", "Logcat listener stopped")
+                Log.d("UnityLogcat", "Logcat listener stopped after SocketConnectedGame")
             } catch (e: Exception) {
                 Log.e("UnityLogcat", "Logcat error: ${e.message}")
             }
@@ -92,19 +74,16 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun stopListening() {
+        if (!isRunning && logcatProcess == null) {
+            Log.d("UnityLogcat", "Already stopped, skipping")
+            return
+        }
         Log.d("UnityLogcat", "Stopping logcat listener")
         isRunning = false
-
-        // Kill the logcat process so the readLine() unblocks immediately
         logcatProcess?.destroy()
         logcatProcess = null
-
-        logcatThread?.interrupt()
         logcatThread = null
-
-        // Clear buffer on stop so next session starts completely fresh
-        clearLogcatBuffer()
-        Log.d("UnityLogcat", "Logcat listener stopped and buffer cleared")
+        Log.d("UnityLogcat", "Logcat listener stopped")
     }
 
     private fun emitToJS(message: String) {

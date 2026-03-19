@@ -43,8 +43,8 @@ const ProgressTracking = () => {
                                 // loading={isLoadingInitialView}
 
                                 // Sending future visualization API call opens initial visualization ??? Why?
-                                onPress={handleFutureAvatarView}
-                                loading={isLoadingFutureView}
+                                onPress={handleInitialAvatarView}
+                                loading={isLoadingInitialView}
                             />
                             <Button
                                 font_size={10}
@@ -55,8 +55,8 @@ const ProgressTracking = () => {
                                 // loading={isLoadingInitialEdit}
 
                                 // Sending future visualization API call opens initial visualization ??? Why?
-                                onPress={handleFutureAvatarEdit}
-                                loading={isLoadingFutureEdit}
+                                onPress={handleInitialAvatarEdit}
+                                loading={isLoadingInitialEdit}
                             />
                         </Row>
                     </CardWrapper>
@@ -75,8 +75,8 @@ const ProgressTracking = () => {
                                 // loading={isLoadingFutureView}
 
                                 // Sending initial visualization API call opens future visualization ??? Why?
-                                onPress={handleInitialAvatarView}
-                                loading={isLoadingInitialView}
+                                onPress={handleFutureAvatarView}
+                                loading={isLoadingFutureView}
                             />
                             <Button
                                 font_size={10}
@@ -87,8 +87,8 @@ const ProgressTracking = () => {
                                 // loading={isLoadingFutureEdit}
 
                                 // Sending initial visualization API call opens future visualization ??? Why?
-                                onPress={handleInitialAvatarEdit}
-                                loading={isLoadingInitialEdit}
+                                onPress={handleFutureAvatarEdit}
+                                loading={isLoadingFutureEdit}
                             />
                         </Row>
                     </CardWrapper>
