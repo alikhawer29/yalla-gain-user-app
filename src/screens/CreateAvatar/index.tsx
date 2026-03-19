@@ -393,7 +393,7 @@ const CreateAvatar = () => {
                   const gameObject = nativeEvent?.gameObject;
                   handleUnityMessage({ message, gameObject });
                 }}
-                androidKeepPlayerMounted={false}
+                // androidKeepPlayerMounted={false}
               />
             )}
           </>
