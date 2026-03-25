@@ -28,6 +28,7 @@ const DRAWER_ROUTES = [
                 icon: images.drawer_icons.home,
                 route: NAVIGATORS.BOTTOM,
                 child: NAVIGATORS.HOME_STACK,
+                // reset: true,
             },
             {
                 title: "Movement Correction with Live Camera",

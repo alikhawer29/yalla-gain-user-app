@@ -1,4 +1,4 @@
-import { FlatList, View } from "react-native"
+import { ScrollView, View } from "react-native"
 import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
@@ -72,33 +72,39 @@ const Home = () => {
             </View>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Recommended Videos</Text>
-                <FlatList
+                <ScrollView
                     horizontal
-                    data={recommendedVideos}
-                    renderItem={({ item, index }) => (
-                        <VideoCard
-                            title={item.title}
-                            description={item.description}
-                            created_at={item.created_at}
-                            image={getRecommendedImage(index)}
-                            type="secondary"
-                            is_video={true}
-                            onPress={() => navigateToWorkoutDetails(item.id)}
-                        />
-                    )}
                     showsHorizontalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
-                />
+                    contentContainerStyle={{ flexDirection: "row", alignItems: "flex-start" }}
+                >
+                    {recommendedVideos.map((item: any, index: number) => (
+                        <View key={item?.id ?? index} style={{ marginRight: widthPixel(10) }}>
+                            <VideoCard
+                                title={item.title}
+                                description={item.description}
+                                created_at={item.created_at}
+                                image={getRecommendedImage(index)}
+                                type="secondary"
+                                is_video={true}
+                                onPress={() => navigateToWorkoutDetails(item.id)}
+                            />
+                        </View>
+                    ))}
+                </ScrollView>
             </View>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Progress Tracking</Text>
-                <FlatList
+                <ScrollView
                     horizontal
-                    data={PROGRESS_TRACKING}
-                    renderItem={({ item }) => <ProgressCard {...item} />}
                     showsHorizontalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
-                />
+                    contentContainerStyle={{ flexDirection: "row", alignItems: "flex-start" }}
+                >
+                    {PROGRESS_TRACKING.map((item, index) => (
+                        <View key={item?.title ?? index} style={{ marginRight: widthPixel(10) }}>
+                            <ProgressCard {...item} />
+                        </View>
+                    ))}
+                </ScrollView>
             </View>
             <View style={{ marginTop: heightPixel(30), width: "100%", gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Calories</Text>
@@ -155,22 +161,21 @@ const Home = () => {
             </View>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Workout Plans</Text>
-                <FlatList
-                    data={recommendedVideos}
-                    renderItem={({ item, index }) => (
-                        <VideoCard
-                            title={item.title}
-                            description={item.description}
-                            created_at={item.created_at}
-                            image={getWorkoutPlanImage(index)}
-                            type="secondary"
-                            is_video={true}
-                            onPress={() => navigateToWorkoutDetails(item.id)}
-                        />
-                    )}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
-                />
+                <View>
+                    {recommendedVideos.map((item: any, index: number) => (
+                        <View key={item?.id ?? index} style={{ marginBottom: heightPixel(10) }}>
+                            <VideoCard
+                                title={item.title}
+                                description={item.description}
+                                created_at={item.created_at}
+                                image={getWorkoutPlanImage(index)}
+                                type="secondary"
+                                is_video={true}
+                                onPress={() => navigateToWorkoutDetails(item.id)}
+                            />
+                        </View>
+                    ))}
+                </View>
             </View>
         </Wrapper>
     )

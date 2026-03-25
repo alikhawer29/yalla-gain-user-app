@@ -60,6 +60,22 @@ const BottomBar = ({ state, descriptors, navigation }) => {
                             canPreventDefault: true,
                         });
 
+                        // If user tapped "Home" we always reset HomeStack to its initial
+                        // screen. This prevents nested navigation state like
+                        // params.screen === ROUTES.CHALLENGES from persisting after
+                        // coming back from Unity/Challenges flows.
+                        if (route.name === NAVIGATORS.HOME_STACK) {
+                            if (!event.defaultPrevented) {
+                                navigation.dispatch(
+                                    CommonActions.reset({
+                                        index: 0,
+                                        routes: [{ name: NAVIGATORS.HOME_STACK }],
+                                    })
+                                );
+                            }
+                            return;
+                        }
+
                         if (!isFocused && !event.defaultPrevented) {
                             // Reset stack for Chat tab to go back to Chat list
                             if (route.name === NAVIGATORS.CHAT_STACK) {

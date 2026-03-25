@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { BackHandler, DeviceEventEmitter, NativeModules, Platform, View } from 'react-native';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { BackHandler, DeviceEventEmitter, NativeModules, Platform, StyleSheet, View } from 'react-native';
 import {
   useFocusEffect,
   useIsFocused,
@@ -32,6 +32,8 @@ const AvatarVisualization = () => {
   const isFocused = useIsFocused();
   const user = useSelector(selectUser);
   const userId = user?.id;
+  // Prevent showing previous Unity frame until Unity signals SocketConnectedGame.
+  const [isUnityReady, setIsUnityReady] = useState(false);
 
   // ─── Socket Setup ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -128,6 +130,7 @@ const AvatarVisualization = () => {
         gameObject === GAME_OBJECT_MESSAGE_SENT;
 
       if (isSocketConnectedGame) {
+        setIsUnityReady(true);
         if (hasSentUserIdRef.current) {
           console.log('[AvatarVisualization] sendUserId already sent, ignoring duplicate SocketConnectedGame');
           return;
@@ -278,6 +281,7 @@ const AvatarVisualization = () => {
   // ─── Clean up socket on focus loss ────────────────────────────────────────
   useFocusEffect(
     React.useCallback(() => {
+      setIsUnityReady(false);
       return () => {
         const socket = socketRef.current;
         if (socket) {
@@ -364,11 +368,26 @@ const AvatarVisualization = () => {
                 }}
               />
             )}
+
+            {!isUnityReady && (
+              <View
+                pointerEvents="none"
+                style={styles.unityLoadingOverlay}
+              />
+            )}
           </>
         )}
       </View>
     </Wrapper>
   );
 };
+
+const styles = StyleSheet.create({
+  unityLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
+    zIndex: 9999,
+  },
+});
 
 export default AvatarVisualization;

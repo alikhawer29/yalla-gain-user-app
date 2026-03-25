@@ -17,7 +17,6 @@ const ProgressTracking = () => {
             isLoadingInitialView,
             isLoadingInitialEdit,
             isLoadingFutureView,
-            isLoadingFutureEdit,
             progressChartData,
             currentProgress,
         },
@@ -25,7 +24,6 @@ const ProgressTracking = () => {
             handleInitialAvatarView,
             handleInitialAvatarEdit,
             handleFutureAvatarView,
-            handleFutureAvatarEdit,
         },
     } = useProgressTrackingController()
 

@@ -473,6 +473,15 @@ export const userApi = createApi({
         body,
       }),
     }),
+    // Used by ProgressTracking to decide if user can open initial Unity avatar.
+    // POST /scan/status with body: { user_id }
+    scanStatus: builder.mutation({
+      query: (userId: number | string) => ({
+        url: 'scan/status',
+        method: 'POST',
+        body: { user_id: userId },
+      }),
+    }),
     getAvatarWithChallenge: builder.query({
       query: (userId: number | string) => ({
         url: 'avatar/with-challenge',

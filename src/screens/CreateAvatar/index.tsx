@@ -1,22 +1,20 @@
-import React, { useEffect, useRef, useCallback } from 'react';
-import { BackHandler, DeviceEventEmitter, NativeModules, Platform, View } from 'react-native';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
+import { BackHandler, DeviceEventEmitter, NativeModules, Platform, StyleSheet, View } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
   UnityViewNativeIOSRef,
 } from '../../components/UnityView/UnityViewNativeIOS';
 import {
-  CommonActions,
   useFocusEffect,
   useIsFocused,
-  useNavigation,
 } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
-import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { selectUser } from '../../redux/Slices/AuthSlice';
+import { NAVIGATORS } from '../../utils/routes';
 
 const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
 const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
@@ -26,15 +24,34 @@ const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';
 const { UnityLogcatModule } = NativeModules;
 
 const CreateAvatar = () => {
-  const navigation = useNavigation();
   const { showOkModal } = useModal();
   const unityRef = useRef<UnityView>(null);
   const unityNativeIOSRef = useRef<UnityViewNativeIOSRef>(null);
   const socketRef = useRef<Socket | null>(null);
   const hasSentUserIdRef = useRef(false);
+  // Guards against duplicate SaveGame/GoBack messages firing navigation twice.
+  const isLeavingRef = useRef(false);
+  // When true the <UnityView> is removed from the tree BEFORE we navigate,
+  // so Unity tears down cleanly and the next visit always starts fresh.
+  const [unityVisible, setUnityVisible] = useState(true);
+  // Prevent showing the previous Unity frame on remount.
+  // Unity is considered "ready" only after we receive SocketConnectedGame
+  // for this visit.
+  const [isUnityReady, setIsUnityReady] = useState(false);
+
   const isFocused = useIsFocused();
   const user = useSelector(selectUser);
   const userId = user?.id;
+
+  // ─── Reset all per-visit state on focus ───────────────────────────────────
+  useFocusEffect(
+    React.useCallback(() => {
+      hasSentUserIdRef.current = false;
+      isLeavingRef.current = false;
+      setUnityVisible(true);
+      setIsUnityReady(false);
+    }, []),
+  );
 
   // ─── Socket Setup ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -100,33 +117,50 @@ const CreateAvatar = () => {
 
   // ─── Navigate away helper ──────────────────────────────────────────────────
   const navigateAwayFromCreateAvatar = useCallback(() => {
-    const stack = navigation.getParent();
-    if (stack) {
-      stack.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: ROUTES.AVATAR_SCAN_FORM as never }],
-        }),
-      );
-    }
     navigate(NAVIGATORS.DRAWER as any, {
       screen: NAVIGATORS.BOTTOM,
       params: { screen: NAVIGATORS.HOME_STACK },
     });
-  }, [navigation]);
+  }, []);
 
   // ─── Leave / Unload Unity ──────────────────────────────────────────────────
-  const leaveAndKillUnity = useCallback(() => {
+  // Key principle (learned from the original simple version of this screen):
+  //   Do NOT call unloadUnity(). It is async/slow and causes the "flash of
+  //   previous state" on the next visit. Simply removing <UnityView> from the
+  //   React tree is enough — Unity resets cleanly on its own when unmounted.
+  //
+  // Sequence:
+  //   1. Guard with isLeavingRef so this only ever fires once per visit.
+  //   2. Tear down socket & stop logcat immediately.
+  //   3. setUnityVisible(false) → React unmounts <UnityView> synchronously on
+  //      the next render. This is the teardown — no unloadUnity() needed.
+  //   4. requestAnimationFrame waits for that render to commit, then we
+  //      run the optional callback (e.g. show modal) and navigate away.
+  const leaveAndKillUnity = useCallback((afterLeave?: () => void) => {
+    if (isLeavingRef.current) return;
+    isLeavingRef.current = true;
+
+    // Tear down socket.
     const socket = socketRef.current;
     if (socket) {
       socket.removeAllListeners();
       socket.disconnect();
       socketRef.current = null;
     }
+
+    // Stop logcat on Android.
     if (Platform.OS === 'android') {
       UnityLogcatModule?.stopListening();
     }
-    navigateAwayFromCreateAvatar();
+
+    // Unmount <UnityView> — this IS the teardown, no unloadUnity() call needed.
+    setUnityVisible(false);
+
+    // Wait one animation frame for React to commit the unmount, then navigate.
+    requestAnimationFrame(() => {
+      afterLeave?.();
+      navigateAwayFromCreateAvatar();
+    });
   }, [navigateAwayFromCreateAvatar]);
 
   // ─── Core Unity message handler ────────────────────────────────────────────
@@ -149,6 +183,7 @@ const CreateAvatar = () => {
         gameObject === GAME_OBJECT_MESSAGE_SENT;
 
       if (isSocketConnectedGame) {
+        setIsUnityReady(true);
         if (hasSentUserIdRef.current) {
           console.log('[CreateAvatar] sendUserId already sent, ignoring duplicate SocketConnectedGame');
           return;
@@ -174,25 +209,21 @@ const CreateAvatar = () => {
       }
 
       if (message === 'SaveGame') {
-        leaveAndKillUnity();
-        showOkModal({
-          type: 'success',
-          title: 'Success',
-          message: 'Avatar Saved Successfully',
+        leaveAndKillUnity(() => {
+          showOkModal({
+            type: 'success',
+            title: 'Success',
+            message: 'Avatar Saved Successfully',
+          });
         });
       } else if (message === 'GoBack') {
         leaveAndKillUnity();
       }
     },
-    [userId, leaveAndKillUnity],
+    [userId, leaveAndKillUnity, showOkModal],
   );
 
   // ─── Android: DeviceEventEmitter listener ─────────────────────────────────
-  // The native UnityLogcatModule forwards raw logcat lines such as:
-  //   "Unity → RNReceiver:GoBack(Int32)"
-  //   "Unity → RNReceiver:SaveGame(Int32)"
-  // We normalise those into plain "GoBack" / "SaveGame" before passing
-  // them to handleUnityMessage, which already handles those strings.
   useEffect(() => {
     if (Platform.OS !== 'android' || !isFocused) return;
 
@@ -201,12 +232,9 @@ const CreateAvatar = () => {
     ): string => {
       const text = typeof raw === 'string' ? raw : (raw?.message ?? '');
 
-      // "RNReceiver:GoBack(Int32)"  →  "GoBack"
-      // "RNReceiver:SaveGame"       →  "SaveGame"
       const rnReceiverMatch = text.match(/RNReceiver[:\s]+(\w+)/i);
       if (rnReceiverMatch) return rnReceiverMatch[1];
 
-      // Fallback: bare keyword anywhere in the logcat line
       if (/GoBack/i.test(text)) return 'GoBack';
       if (/SaveGame/i.test(text)) return 'SaveGame';
       if (/SocketConnectedGame/i.test(text)) return 'SocketConnectedGame';
@@ -287,10 +315,16 @@ const CreateAvatar = () => {
   }, [isFocused]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
+  // The render gate is `isFocused && unityVisible`.
+  //
+  // - isFocused:    standard focus guard, same as the original simple version.
+  // - unityVisible: flipped to false by leaveAndKillUnity() before navigation,
+  //                 so the Unity view is always unmounted cleanly. It is reset
+  //                 back to true by useFocusEffect on the next visit.
   return (
     <Wrapper>
       <View style={{ flex: 1 }}>
-        {isFocused && (
+        {isFocused && unityVisible && (
           <>
             {Platform.OS === 'ios' ? (
               <UnityViewNativeIOS
@@ -317,11 +351,28 @@ const CreateAvatar = () => {
                 }}
               />
             )}
+
+            {!isUnityReady && (
+              <View
+                pointerEvents="none"
+                style={styles.unityLoadingOverlay}
+              />
+            )}
           </>
         )}
       </View>
     </Wrapper>
   );
 };
+
+const styles = StyleSheet.create({
+  // Solid black overlay while Unity reloads its scene.
+  // This hides the previous Unity frame that may show briefly on remount.
+  unityLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
+    zIndex: 9999,
+  },
+});
 
 export default CreateAvatar;
