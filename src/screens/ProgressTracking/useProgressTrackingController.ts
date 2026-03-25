@@ -44,25 +44,49 @@ const useProgressTrackingController = () => {
   }, [userId, scanStatus]);
 
   const hasFirstAvatar = scanStatusData?.has_first_avatar === true;
+  const canScan = scanStatusData?.can_scan === true;
+  const nextScanAt = scanStatusData?.next_scan_at as string | null | undefined;
+  const nextScanDateOnly = nextScanAt ? String(nextScanAt).split(' ')[0] : null;
 
-  const gateInitialAvatarOrPrompt = useCallback(() => {
-    // If scan status is loading, do nothing here (no popup).
-    if (isLoadingScanStatus) {
-      return false;
-    }
+  const gateInitialAvatarOrPrompt = useCallback(
+    (action: 'view' | 'edit') => {
+      // If scan status is loading, do nothing here (no popup).
+      if (isLoadingScanStatus) {
+        return false;
+      }
 
-    // If user has not created first avatar yet -> show required popup
-    if (!hasFirstAvatar) {
-      showOkModal({
-        type: 'info',
-        title: 'Create Your Avatar',
-        message: 'Please create your initial avatar.',
-      });
-      return false;
-    }
+      // If user has not created first avatar yet -> show required popup
+      if (!hasFirstAvatar) {
+        showOkModal({
+          type: 'info',
+          title: 'Create Your Avatar',
+          message: 'Please create your initial avatar.',
+        });
+        return false;
+      }
 
-    return true;
-  }, [hasFirstAvatar, isLoadingScanStatus, showOkModal]);
+      // can_scan check applies ONLY to edit button
+      if (action === 'edit' && !canScan) {
+        showOkModal({
+          type: 'info',
+          title: 'Edit Your Avatar',
+          message: `User must wait until next eligible scan window.${
+            nextScanDateOnly ? `\nNext scan: ${nextScanDateOnly}` : ''
+          }`,
+        });
+        return false;
+      }
+
+      return true;
+    },
+    [
+      hasFirstAvatar,
+      canScan,
+      nextScanDateOnly,
+      isLoadingScanStatus,
+      showOkModal,
+    ],
+  );
 
   const fallbackProgressHistory = useMemo(() => {
     const now = new Date();
@@ -197,7 +221,7 @@ const useProgressTrackingController = () => {
       setPendingInitialAction('view');
       return;
     }
-    if (!gateInitialAvatarOrPrompt()) return;
+    if (!gateInitialAvatarOrPrompt('view')) return;
     handleAvatarAction('initial', 'view');
   }, [handleAvatarAction, gateInitialAvatarOrPrompt, isLoadingScanStatus]);
 
@@ -207,7 +231,7 @@ const useProgressTrackingController = () => {
       setPendingInitialAction('edit');
       return;
     }
-    if (!gateInitialAvatarOrPrompt()) return;
+    if (!gateInitialAvatarOrPrompt('edit')) return;
     handleAvatarAction('initial', 'edit');
   }, [handleAvatarAction, gateInitialAvatarOrPrompt, isLoadingScanStatus]);
 
@@ -228,6 +252,20 @@ const useProgressTrackingController = () => {
       return;
     }
 
+    // Only block EDIT when can_scan is false.
+    if (pendingInitialAction === 'edit' && !canScan) {
+      setLoadingButton(null);
+      setPendingInitialAction(null);
+      showOkModal({
+        type: 'info',
+        title: 'Create Your Avatar',
+        message: `User must wait until next eligible scan window.${
+          nextScanDateOnly ? `\nNext scan: ${nextScanDateOnly}` : ''
+        }`,
+      });
+      return;
+    }
+
     const nextAction = pendingInitialAction;
     setPendingInitialAction(null);
     handleAvatarAction('initial', nextAction);
@@ -235,6 +273,8 @@ const useProgressTrackingController = () => {
     pendingInitialAction,
     isLoadingScanStatus,
     hasFirstAvatar,
+    canScan,
+    nextScanDateOnly,
     showOkModal,
     handleAvatarAction,
   ]);
