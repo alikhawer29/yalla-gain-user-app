@@ -69,6 +69,13 @@ const Challenges = () => {
               item.user_challenge?.id ||
                 item.user_challenge_id ||
                 item.is_started === true ||
+                item.user_challenge?.is_started === true ||
+                item.is_started === 1 ||
+                item.user_challenge?.is_started === 1 ||
+                item.is_started === '1' ||
+                item.user_challenge?.is_started === '1' ||
+                item.is_started === 'true' ||
+                item.user_challenge?.is_started === 'true' ||
                 item.is_joined ||
                 item.challenge_progress?.id ||
                 item.challenge_status === 'ongoing'

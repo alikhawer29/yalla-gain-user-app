@@ -169,16 +169,53 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
                     })
                 );
             } else if (childItem?.child && childItem?.params) {
+                // Special-case: from ChallengeDetail, navigating to Challenges must
+                // reset HomeStack back to ROUTES.CHALLENGES, otherwise it can keep
+                // the previous nested screen.
+                if (childItem?.params?.screen === ROUTES.CHALLENGES) {
+                    navigationRef.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [
+                                {
+                                    name: NAVIGATORS.DRAWER,
+                                    state: {
+                                        routes: [
+                                            {
+                                                name: childItem.route, // NAVIGATORS.BOTTOM
+                                                state: {
+                                                    routes: [
+                                                        {
+                                                            name: childItem.child, // NAVIGATORS.HOME_STACK
+                                                            state: {
+                                                                routes: [{ name: ROUTES.CHALLENGES }],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        }),
+                    );
+                    return;
+                }
+
+                // Default: navigate with nested params via root Drawer.
                 navigationRef.dispatch(
                     CommonActions.navigate({
-                        name: childItem.route,
+                        name: NAVIGATORS.DRAWER,
                         params: {
-                            screen: childItem.child,
-                            params: childItem.params,
-                            initial: false,
+                            screen: childItem.route,
+                            params: {
+                                screen: childItem.child,
+                                params: childItem.params,
+                                initial: false,
+                            },
                         },
-                        key: `${childItem.route}-${childItem.child}-${JSON.stringify(childItem.params)}`,
-                    })
+                    }),
                 );
             } else if (childItem?.child) {
                 navigationRef.dispatch(

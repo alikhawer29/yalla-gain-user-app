@@ -25,9 +25,17 @@ const useChallengeDetailController = () => {
 
   const challenge = data?.data ?? data;
   const userChallenge = challenge?.user_challenge ?? challenge?.userChallenge;
+  // API may return `is_started` as boolean, number (1/0), or string ("true"/"1").
+  const rawIsStarted =
+    (challenge?.is_started ?? userChallenge?.is_started) as unknown;
+  const isStarted =
+    rawIsStarted === true ||
+    rawIsStarted === 1 ||
+    rawIsStarted === '1' ||
+    rawIsStarted === 'true';
   const isJoined = !!(
     userChallenge?.id ||
-    challenge?.is_started === true ||
+    isStarted ||
     challenge?.is_joined ||
     challenge?.user_challenge_id ||
     challenge?.challenge_progress?.id ||
