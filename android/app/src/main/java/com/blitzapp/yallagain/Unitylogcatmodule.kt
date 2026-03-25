@@ -35,7 +35,7 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
         logcatThread = Thread {
             try {
                 clearLogcatBuffer()
-                Log.d("UnityLogcat", "Started — listening for new Unity messages only")
+                Log.d("UnityLogcat", "Started — listening for Unity messages")
 
                 val process = Runtime.getRuntime().exec(
                     arrayOf("logcat", "-v", "raw", "-s", "Unity:I")
@@ -50,18 +50,31 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
 
                     Log.d("UnityLogcat", "Unity → $trimmed")
 
-                    if (trimmed.contains("SocketConnectedGame")) {
-                        Log.d("UnityLogcat", "SocketConnectedGame → emitting to JS then stopping")
-                        emitToJS("SocketConnectedGame")
-                        isRunning = false
-                        break
+                    when {
+                        trimmed.contains("SocketConnectedGame") -> {
+                            Log.d("UnityLogcat", "SocketConnectedGame → emitting to JS")
+                            emitToJS("SocketConnectedGame")
+                            // ✅ Do NOT stop here — keep listening for GoBack / SaveGame
+                        }
+                        trimmed.contains("RNReceiver:GoBack") -> {
+                            Log.d("UnityLogcat", "GoBack → emitting to JS then stopping")
+                            emitToJS("GoBack")
+                            isRunning = false
+                            break
+                        }
+                        trimmed.contains("RNReceiver:SaveGame") -> {
+                            Log.d("UnityLogcat", "SaveGame → emitting to JS then stopping")
+                            emitToJS("SaveGame")
+                            isRunning = false
+                            break
+                        }
                     }
                 }
 
                 reader.close()
                 process.destroy()
                 logcatProcess = null
-                Log.d("UnityLogcat", "Logcat listener stopped after SocketConnectedGame")
+                Log.d("UnityLogcat", "Logcat listener stopped")
             } catch (e: Exception) {
                 Log.e("UnityLogcat", "Logcat error: ${e.message}")
             }

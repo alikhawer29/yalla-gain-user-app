@@ -86,9 +86,6 @@ const CreateAvatar = () => {
   }, [isFocused, userId]);
 
   // ─── Android: Start logcat listener when screen is focused ────────────────
-  // UnityLogcatModule clears the buffer on start so only NEW Unity logs are read.
-  // When Unity fires SocketConnectedGame, the module emits 'UnityMessage' via
-  // DeviceEventEmitter which is picked up by the listener below.
   useEffect(() => {
     if (Platform.OS !== 'android' || !isFocused) return;
 
@@ -129,63 +126,10 @@ const CreateAvatar = () => {
     if (Platform.OS === 'android') {
       UnityLogcatModule?.stopListening();
     }
-    // Just navigate away — Unity unloads naturally when the view unmounts.
-    // Calling unloadUnity() while Unity is still rendering causes a SIGSEGV crash.
     navigateAwayFromCreateAvatar();
   }, [navigateAwayFromCreateAvatar]);
 
   // ─── Core Unity message handler ────────────────────────────────────────────
-  // iOS  → called from onUnityMessage prop on UnityViewNativeIOS
-  // Android → called from DeviceEventEmitter('UnityMessage') via logcat module
-  // const handleUnityMessage = useCallback(
-  //   (nativeEvent: { message: string; gameObject?: string } | string) => {
-  //     const message =
-  //       typeof nativeEvent === 'string'
-  //         ? nativeEvent
-  //         : (nativeEvent?.message ?? '');
-  //     const gameObject =
-  //       typeof nativeEvent === 'string' ? undefined : nativeEvent?.gameObject;
-
-  //     console.log('[UnityMessage] ✅', { gameObject, message });
-
-  //     const isSocketConnectedGame =
-  //       message === EVENT_SOCKET_CONNECTED_GAME ||
-  //       message === `${EVENT_SOCKET_CONNECTED_GAME}()` ||
-  //       message.includes(EVENT_SOCKET_CONNECTED_GAME) ||
-  //       message.includes(`${GAME_OBJECT_MESSAGE_SENT}:${EVENT_SOCKET_CONNECTED_GAME}`) ||
-  //       gameObject === GAME_OBJECT_MESSAGE_SENT;
-
-  //     if (isSocketConnectedGame) {
-  //       if (hasSentUserIdRef.current) {
-  //         console.log('[CreateAvatar] sendUserId already sent, ignoring duplicate SocketConnectedGame');
-  //         return;
-  //       }
-  //       hasSentUserIdRef.current = true;
-  //       console.log('[UnityMessage] SocketConnectedGame — emitting sendUserId');
-  //       const socket = socketRef.current;
-  //       if (socket?.connected && userId) {
-  //         const userIdNum = Number(userId);
-  //         socket.emit('sendUserId', {
-  //           user_id: userIdNum,
-  //           signature: USER_SIGNATURE,
-  //         });
-  //         console.log('[Socket] Emitted sendUserId ✅', { user_id: userIdNum });
-  //       } else {
-  //         console.warn('[Socket] SocketConnectedGame but socket not ready', {
-  //           connected: socket?.connected,
-  //           userId,
-  //         });
-  //       }
-  //       return;
-  //     }
-
-  //     if (message === 'SaveGame' || message === 'GoBack') {
-  //       leaveAndKillUnity();
-  //     }
-  //   },
-  //   [userId, leaveAndKillUnity],
-  // );
-
   const handleUnityMessage = useCallback(
     (nativeEvent: { message: string; gameObject?: string } | string) => {
       const message =
@@ -244,15 +188,39 @@ const CreateAvatar = () => {
   );
 
   // ─── Android: DeviceEventEmitter listener ─────────────────────────────────
-  // Receives messages forwarded from UnityLogcatModule
+  // The native UnityLogcatModule forwards raw logcat lines such as:
+  //   "Unity → RNReceiver:GoBack(Int32)"
+  //   "Unity → RNReceiver:SaveGame(Int32)"
+  // We normalise those into plain "GoBack" / "SaveGame" before passing
+  // them to handleUnityMessage, which already handles those strings.
   useEffect(() => {
     if (Platform.OS !== 'android' || !isFocused) return;
 
+    const normaliseLogcatMessage = (
+      raw: string | { message: string },
+    ): string => {
+      const text = typeof raw === 'string' ? raw : (raw?.message ?? '');
+
+      // "RNReceiver:GoBack(Int32)"  →  "GoBack"
+      // "RNReceiver:SaveGame"       →  "SaveGame"
+      const rnReceiverMatch = text.match(/RNReceiver[:\s]+(\w+)/i);
+      if (rnReceiverMatch) return rnReceiverMatch[1];
+
+      // Fallback: bare keyword anywhere in the logcat line
+      if (/GoBack/i.test(text)) return 'GoBack';
+      if (/SaveGame/i.test(text)) return 'SaveGame';
+      if (/SocketConnectedGame/i.test(text)) return 'SocketConnectedGame';
+
+      return text;
+    };
+
     const subscription = DeviceEventEmitter.addListener(
       'UnityMessage',
-      (message: string | { message: string }) => {
-        console.log('[DeviceEventEmitter] UnityMessage ✅', message);
-        handleUnityMessage(message);
+      (raw: string | { message: string }) => {
+        console.log('[DeviceEventEmitter] UnityMessage RAW ✅', raw);
+        const normalised = normaliseLogcatMessage(raw);
+        console.log('[DeviceEventEmitter] UnityMessage NORMALISED ✅', normalised);
+        handleUnityMessage(normalised);
       },
     );
 
@@ -284,55 +252,7 @@ const CreateAvatar = () => {
     }, []),
   );
 
-  // const handleUnityMessage = (nativeEvent: {
-  //   message: string;
-  //   gameObject?: string;
-  // }) => {
-  //   const message = nativeEvent.message ?? '';
-  //   const gameObject = nativeEvent.gameObject;
-  //   console.log('[UnityMessage]', { gameObject, message });
-
-  //   const isSocketConnectedGame =
-  //     (gameObject === GAME_OBJECT_MESSAGE_SENT &&
-  //       message === EVENT_SOCKET_CONNECTED_GAME) ||
-  //     (!gameObject && message === EVENT_SOCKET_CONNECTED_GAME) ||
-  //     (message.includes(GAME_OBJECT_MESSAGE_SENT) &&
-  //       message.includes(EVENT_SOCKET_CONNECTED_GAME));
-
-  //   if (isSocketConnectedGame) {
-  //     const socket = socketRef.current;
-  //     if (socket?.connected && userId) {
-  //       const userIdNum = Number(userId);
-  //       socket.emit('sendUserId', {
-  //         user_id: userIdNum,
-  //         signature: USER_SIGNATURE,
-  //       });
-  //       console.log(
-  //         '[Socket] Emitted sendUserId (after Unity MessageSent/SocketConnectedGame)',
-  //         { user_id: userIdNum },
-  //       );
-  //     } else {
-  //       console.warn(
-  //         '[Socket] SocketConnectedGame received but socket not ready',
-  //         { connected: socket?.connected, userId },
-  //       );
-  //     }
-  //     return;
-  //   }
-
-  //   if (message === 'SaveGame') {
-  //     leaveAndKillUnity();
-  //     showOkModal({
-  //       type: 'success',
-  //       title: 'Success',
-  //       message: 'Avatar Saved Successfully',
-  //     });
-  //   } else if (message === 'GoBack') {
-  //     leaveAndKillUnity();
-  //   }
-  // };
-
-  // ✅ FIXED: Send userId as JSON format
+  // ─── Send userId to Unity via postMessage ─────────────────────────────────
   useEffect(() => {
     if (!isFocused || !userId) return;
 
@@ -388,12 +308,13 @@ const CreateAvatar = () => {
                 ref={unityRef}
                 style={{ flex: 1 }}
                 onUnityMessage={(result: any) => {
+                  console.log('[UnityView] RAW Unity message received:', result);
                   const nativeEvent = result?.nativeEvent ?? result;
                   const message = nativeEvent?.message ?? String(result ?? '');
                   const gameObject = nativeEvent?.gameObject;
+                  console.log('[UnityView] Parsed Unity message:', { message, gameObject });
                   handleUnityMessage({ message, gameObject });
                 }}
-                // androidKeepPlayerMounted={false}
               />
             )}
           </>
