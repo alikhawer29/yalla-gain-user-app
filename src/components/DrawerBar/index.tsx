@@ -148,6 +148,46 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
         }
 
         if (navigationRef.isReady()) {
+            // From Challenges (or any deep HomeStack screen), "Home" must target the Home
+            // screen inside HomeStack — not only the Bottom tab — or the stack stays on Challenges.
+            if (childItem?.title === 'Home') {
+                navigationRef.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [
+                            {
+                                name: NAVIGATORS.DRAWER,
+                                state: {
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: NAVIGATORS.BOTTOM,
+                                            state: {
+                                                index: 0,
+                                                routes: [
+                                                    {
+                                                        name: NAVIGATORS.HOME_STACK,
+                                                        state: {
+                                                            index: 0,
+                                                            routes: [{ name: ROUTES.HOME }],
+                                                        },
+                                                    },
+                                                    { name: NAVIGATORS.NEWSFEED_STACK },
+                                                    { name: NAVIGATORS.PROGRESS_TRACKING_STACK },
+                                                    { name: NAVIGATORS.CHAT_STACK },
+                                                    { name: NAVIGATORS.MY_PROFILE_STACK },
+                                                ],
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    }),
+                );
+                return;
+            }
+
             // For screens that need fresh params (like ConsultantsList with different types)
             // we use navigate with a unique key to force re-mount
             if (childItem?.reset) {
