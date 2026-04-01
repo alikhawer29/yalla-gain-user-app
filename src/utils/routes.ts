@@ -14,6 +14,7 @@ const NAVIGATORS = {
   AVATAR_STACK: 'AvatarStackNavigator',
   CONSULTATION_STACK: 'ConsultationStackNavigator',
   WALLET_STACK: 'WalletStackNavigator',
+  WATCH_STACK: 'WatchStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -75,6 +76,9 @@ const ROUTES = {
   CHALLENGES: 'Challenges',
   CHALLENGE_DETAIL: 'ChallengeDetail',
   CHALLENGE_LOGS: 'ChallengeLogs',
+  // Watch Connect
+  WATCH_CONNECT: 'WatchConnect',
+  WATCH_CONNECTED: 'WatchConnected',
 } as const;
 
 const ROUTES_OPTIONS = [

@@ -97,6 +97,9 @@ export type RootStackParamList = {
     Challenges: undefined;
     ChallengeDetail: { id: number };
     ChallengeLogs: undefined;
+    // Watch Connect
+    WatchConnect: undefined;
+    WatchConnected: undefined;
 };
 
 export interface IWrapper {

@@ -95,8 +95,7 @@ const DRAWER_ROUTES = [
             {
                 title: "Smart Watch Connect",
                 icon: images.drawer_icons.watch,
-                route: NAVIGATORS.BOTTOM,
-                child: NAVIGATORS.HOME_STACK,
+                route: NAVIGATORS.WATCH_STACK,
             },
             {
                 title: "VR Connect",

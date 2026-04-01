@@ -80,6 +80,10 @@
 	<string>YallaGain needs access to your contacts so you can quickly invite and connect with teammates.</string>
 	<key>NSCalendarsUsageDescription</key>
 	<string>YallaGain uses your calendar to help schedule sessions and avoid conflicts.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>YallaGain reads your health data (steps, heart rate, workouts) to show your progress.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>YallaGain can write health data to Apple Health if you choose to enable it.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>YallaGain needs access to your location to provide better location-based services.</string>
 </dict>

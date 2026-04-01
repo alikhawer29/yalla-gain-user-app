@@ -7,6 +7,7 @@ import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import dev.matinzd.healthconnect.permissions.HealthConnectPermissionDelegate
 
 
 class MainActivity : ReactActivity() {
@@ -25,6 +26,7 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    HealthConnectPermissionDelegate.setPermissionDelegate(this)
     RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(null)
   }
