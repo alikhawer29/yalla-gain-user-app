@@ -1,0 +1,38 @@
+diff --git a/node_modules/react-native-health/index.js b/node_modules/react-native-health/index.js
+index 1111111..2222222 100644
+--- a/node_modules/react-native-health/index.js
++++ b/node_modules/react-native-health/index.js
+@@ -1,14 +1,30 @@
+ import { Activities, Observers, Permissions, Units } from './src/constants'
++import { NativeModules } from 'react-native'
+ 
+-const { AppleHealthKit } = require('react-native').NativeModules
+-
+-export const HealthKit = Object.assign({}, AppleHealthKit, {
++const constantsOnly = {
+   Constants: {
+     Activities,
+     Observers,
+     Permissions,
+     Units,
+   },
++}
++
++// Resolve AppleHealthKit lazily on each access. In RN 0.76+ bridgeless mode,
++// NativeModules may not be fully populated when this package first loads, so
++// capturing the module at top level leaves methods undefined (see react-native-health #399).
++export const HealthKit = new Proxy(constantsOnly, {
++  get(target, prop, receiver) {
++    if (prop in target) {
++      return Reflect.get(target, prop, receiver)
++    }
++    const native = NativeModules.AppleHealthKit
++    if (!native) {
++      return undefined
++    }
++    const value = native[prop]
++    return typeof value === 'function' ? value.bind(native) : value
++  },
+ })
+ 
+ module.exports = HealthKit
