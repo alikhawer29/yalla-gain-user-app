@@ -15,6 +15,7 @@ const NAVIGATORS = {
   CONSULTATION_STACK: 'ConsultationStackNavigator',
   WALLET_STACK: 'WalletStackNavigator',
   WATCH_STACK: 'WatchStackNavigator',
+  CHALLENGES_STACK: 'ChallengesStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -79,6 +80,7 @@ const ROUTES = {
   // Watch Connect
   WATCH_CONNECT: 'WatchConnect',
   WATCH_CONNECTED: 'WatchConnected',
+  GO_GUIDE: 'GoGuide',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -217,6 +219,7 @@ const ROUTES_OPTIONS = [
     left: 'back',
     right: null,
     logo: false,
+    title: 'Workout Details',
   },
   {
     route_name: ROUTES.VIDEO_DETAILS,
@@ -452,6 +455,14 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Challenge Logs',
+  },
+  {
+    route_name: ROUTES.GO_GUIDE,
+    left: null,
+    right: null,
+    logo: false,
+    title: 'Go Guide',
+    transparent: true,
   },
 ] as const;
 

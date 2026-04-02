@@ -28,17 +28,17 @@ export const USER = {
 export const PROGRESS_TRACKING = [
     {
         title: "Running Progress",
-        progress: 90,
+        progress: 80,
         icon: images.run
     },
     {
         title: "Fitness Progress",
-        progress: 70,
+        progress: 90,
         icon: images.dumbbell
     },
     {
         title: "Boxing Progress",
-        progress: 40,
+        progress: 100,
         icon: images.kabaddi
     },
     {

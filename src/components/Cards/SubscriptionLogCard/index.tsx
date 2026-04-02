@@ -34,7 +34,7 @@ const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subs
                     <View style={styles.second}>
                         <Text weight="semibold">Amount</Text>
                         <Row gap={4} align="center">
-                            <Text size={12} weight="semibold">${amount}</Text>
+                            <Text size={12} weight="semibold">${amount ?? 0}</Text>
                             <Icon size={12} source={images.coin} />
                             <Text size={12} weight="semibold">Yalla Coins</Text>
                         </Row>

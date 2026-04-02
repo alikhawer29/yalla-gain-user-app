@@ -35,6 +35,33 @@ export const navigateToMyProfile = () => {
   }
 };
 
+/** Navigate to Workout stack from drawer level */
+export const navigateToWorkout = () => {
+  if (navigationRef.isReady()) {
+    (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+      screen: NAVIGATORS.WORKOUT_STACK,
+    });
+  }
+};
+
+/** Navigate to Home stack from drawer level */
+export const navigateToHome = () => {
+    if (navigationRef.isReady()) {
+        (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+            screen: NAVIGATORS.HOME_STACK,
+        });
+    }
+};
+
+/** Navigate to Challenges stack from drawer level */
+export const navigateToChallenges = () => {
+  if (navigationRef.isReady()) {
+    (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+      screen: NAVIGATORS.CHALLENGES_STACK,
+    });
+  }
+};
+
 export const navigate = <RouteName extends keyof CombinedParamList>(
   name: RouteName,
   params?: undefined extends CombinedParamList[RouteName]

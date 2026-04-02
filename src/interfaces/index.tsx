@@ -17,6 +17,7 @@ export type AppStackParamList = {
     DrawerNavigator: undefined
     Chatbot: undefined
     WalletStackNavigator: undefined
+    GoGuide: undefined
 };
 
 export type AuthStackParamList = {
@@ -231,6 +232,20 @@ export interface IProgressCard extends IProgressBar {
     title: string
 }
 
+export interface ITrackingStats {
+    icon: any;
+    text: string;
+}
+
+export interface ITrackingCard {
+    icon?: any
+    title: string
+    subtext?: string
+    progress?: number | string
+    type?: 'graph' | 'progress' | 'workout'
+    stats?: ITrackingStats[]
+}
+
 export interface IVideoCard {
     image: ImageSourcePropType
     title: string
@@ -262,11 +277,7 @@ export interface IAuthSelectionCard {
 }
 
 
-export interface ITrackingCard extends IProgressBar {
-    icon: ImageSourcePropType
-    title: string
-    subtext: string
-}
+// Tracking card interface removed as it was duplicate
 
 
 
@@ -334,6 +345,7 @@ export interface IUpload {
     required?: boolean
     onPress?: () => void
     image?: any
+    error?: string | null
 }
 
 export interface ICheckbox {

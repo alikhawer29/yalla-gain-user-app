@@ -13,6 +13,7 @@ import { navigate } from "../../../utils/navigation"
 import { ROUTES } from "../../../utils/routes"
 import styles from "./styles"
 import Loader from "../../../components/Loader"
+import colors from "../../../utils/colors"
 
 const MusicAuth = () => {
 
@@ -51,7 +52,7 @@ const MusicAuth = () => {
                     }
                 </>
             ) : (
-                <CardWrapper height="90%" padding={30}>
+                <CardWrapper height="90%" padding={30} color={colors.blackish_gray}>
                     <View style={styles.auth_container}>
                         <Text size={20} weight="semibold">
                             Welcome to the Platform

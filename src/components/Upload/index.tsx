@@ -8,7 +8,7 @@ import Text from "../Text";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel } from "../../utils/helper";
 
-const Upload: FC<IUpload> = ({ text = "Upload", style, required, onPress, image }) => {
+const Upload: FC<IUpload> = ({ text = "Upload", style, required, onPress, image, error }) => {
     const content = (
         <View style={style}>
             <Row align="center" gap={10}>
@@ -19,11 +19,12 @@ const Upload: FC<IUpload> = ({ text = "Upload", style, required, onPress, image 
             {image?.uri && (
                 <View style={styles.preview_container}>
                     <Image source={{ uri: image.uri }} style={styles.preview_image} />
-                    <Text size={14} color={colors.text_secondary} style={styles.preview_text}>
+                    <Text size={14} color={colors.gray} style={styles.preview_text}>
                         {image.fileName || 'Profile Image'}
                     </Text>
                 </View>
             )}
+            {error && <Text size={12} color={colors.error}>{error}</Text>}
         </View>
     );
 

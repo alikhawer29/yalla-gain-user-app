@@ -63,7 +63,7 @@ const UserEntry = () => {
                 <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
                 <Input key={`${selected}-6`} label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
                 <Input key={`${selected}-7`} label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />
-                <Upload text="Upload Profile Image" style={styles.upload_margin} onPress={onPressUploadProfile} image={data?.photo} />
+                <Upload text="Upload Profile Image" style={styles.upload_margin} onPress={onPressUploadProfile} required image={data?.photo} error={touched?.photo ? errors?.photo : null} />
             </>
         );
     };

@@ -1,0 +1,161 @@
+diff --git a/node_modules/react-native-app-auth/android/.project b/node_modules/react-native-app-auth/android/.project
+new file mode 100644
+index 0000000..fd2ab94
+--- /dev/null
++++ b/node_modules/react-native-app-auth/android/.project
+@@ -0,0 +1,28 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>react-native-app-auth</name>
++	<comment>Project react-native-app-auth created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++	<filteredResources>
++		<filter>
++			<id>1775127557129</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
++</projectDescription>
+diff --git a/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java b/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
+index dd35442..41a4cf1 100644
+--- a/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
++++ b/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
+@@ -669,7 +669,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+         }
+ 
+         final Context context = this.reactContext;
+-        final Activity currentActivity = getCurrentActivity();
+ 
+         AuthorizationRequest.Builder authRequestBuilder = new AuthorizationRequest.Builder(
+                 serviceConfiguration,
+@@ -725,27 +724,45 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+             authRequestBuilder.setNonce(null);
+         }
+ 
+-        AuthorizationRequest authRequest = authRequestBuilder.build();
++        final AuthorizationRequest authRequest = authRequestBuilder.build();
+ 
+-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+-            AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
++        // @ReactMethod runs off the main thread; getCurrentActivity() is often null until we
++        // post to the UI queue (especially with New Architecture / ReactHost).
++        reactContext.runOnUiQueueThread(new Runnable() {
++            @Override
++            public void run() {
++                final Activity currentActivity = getCurrentActivity();
++                if (currentActivity == null) {
++                    if (RNAppAuthModule.this.promise != null) {
++                        RNAppAuthModule.this.promise.reject(
++                                "no_current_activity",
++                                "No Activity available to start OAuth.");
++                        RNAppAuthModule.this.promise = null;
++                    }
++                    return;
++                }
+ 
+-            CustomTabsIntent.Builder intentBuilder = authService.createCustomTabsIntentBuilder();
+-            CustomTabsIntent customTabsIntent = intentBuilder.build();
++                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
++                    AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
+ 
+-            if (androidTrustedWebActivity) {
+-                customTabsIntent.intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
+-            }
++                    CustomTabsIntent.Builder intentBuilder = authService.createCustomTabsIntentBuilder();
++                    CustomTabsIntent customTabsIntent = intentBuilder.build();
+ 
+-            Intent authIntent = authService.getAuthorizationRequestIntent(authRequest, customTabsIntent);
++                    if (androidTrustedWebActivity) {
++                        customTabsIntent.intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
++                    }
+ 
+-            currentActivity.startActivityForResult(authIntent, 52);
+-        } else {
+-            AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
+-            PendingIntent pendingIntent = currentActivity.createPendingResult(52, new Intent(), 0);
++                    Intent authIntent = authService.getAuthorizationRequestIntent(authRequest, customTabsIntent);
+ 
+-            authService.performAuthorizationRequest(authRequest, pendingIntent);
+-        }
++                    currentActivity.startActivityForResult(authIntent, 52);
++                } else {
++                    AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
++                    PendingIntent pendingIntent = currentActivity.createPendingResult(52, new Intent(), 0);
++
++                    authService.performAuthorizationRequest(authRequest, pendingIntent);
++                }
++            }
++        });
+     }
+ 
+     /*
+@@ -820,7 +837,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+             final String postLogoutRedirectUri,
+             final Map<String, String> additionalParametersMap) {
+         final Context context = this.reactContext;
+-        final Activity currentActivity = getCurrentActivity();
+ 
+         EndSessionRequest.Builder endSessionRequestBuilder = new EndSessionRequest.Builder(serviceConfiguration)
+                 .setIdTokenHint(idTokenHint)
+@@ -834,19 +850,35 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+             endSessionRequestBuilder.setAdditionalParameters(additionalParametersMap);
+         }
+ 
+-        EndSessionRequest endSessionRequest = endSessionRequestBuilder.build();
++        final EndSessionRequest endSessionRequest = endSessionRequestBuilder.build();
+ 
+-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+-            AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
+-            Intent endSessionIntent = authService.getEndSessionRequestIntent(endSessionRequest);
++        reactContext.runOnUiQueueThread(new Runnable() {
++            @Override
++            public void run() {
++                final Activity currentActivity = getCurrentActivity();
++                if (currentActivity == null) {
++                    if (RNAppAuthModule.this.promise != null) {
++                        RNAppAuthModule.this.promise.reject(
++                                "no_current_activity",
++                                "No Activity available to end session.");
++                        RNAppAuthModule.this.promise = null;
++                    }
++                    return;
++                }
+ 
+-            currentActivity.startActivityForResult(endSessionIntent, 53);
+-        } else {
+-            AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
+-            PendingIntent pendingIntent = currentActivity.createPendingResult(53, new Intent(), 0);
++                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
++                    AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
++                    Intent endSessionIntent = authService.getEndSessionRequestIntent(endSessionRequest);
+ 
+-            authService.performEndSessionRequest(endSessionRequest, pendingIntent);
+-        }
++                    currentActivity.startActivityForResult(endSessionIntent, 53);
++                } else {
++                    AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
++                    PendingIntent pendingIntent = currentActivity.createPendingResult(53, new Intent(), 0);
++
++                    authService.performEndSessionRequest(endSessionRequest, pendingIntent);
++                }
++            }
++        });
+     }
+ 
+     private void parseHeaderMap(ReadableMap headerMap) {

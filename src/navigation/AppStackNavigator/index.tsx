@@ -3,6 +3,7 @@ import { useAppSelector } from '../../hooks';
 import { AppStackParamList } from '../../interfaces';
 import { selectLoggedIn } from '../../redux/Slices/AuthSlice';
 import Chatbot from '../../screens/Chatbot';
+import GoGuide from '../../screens/GoGuide';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import AuthStackNavigator from '../AuthStackNavigator';
 import DrawerNavigator from '../DrawerNavigator';
@@ -19,6 +20,7 @@ const AppStackNavigator = () => {
             {
                 authenticated ?
                     <>
+                        <Stack.Screen name={ROUTES.GO_GUIDE} component={GoGuide} />
                         <Stack.Screen name={NAVIGATORS.DRAWER} component={DrawerNavigator} />
                         <Stack.Screen name={ROUTES.CHATBOT} component={Chatbot} options={Options} />
                     </>

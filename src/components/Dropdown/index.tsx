@@ -24,6 +24,10 @@ const Dropdown = props => {
     height = 54,
     required = false,
     isLoading = false,
+    textStyle,
+    style,
+    dropDownContainerStyle,
+    arrowIconStyle,
   } = props;
 
   useEffect(() => {
@@ -61,13 +65,13 @@ const Dropdown = props => {
         open={open}
         setOpen={toggle}
         items={options}
-        style={[styles.inputContainer, { height: heightPixel(height) }]}
+        style={[styles.inputContainer, { height: heightPixel(height) }, style]}
         placeholder={placeholder}
         value={value}
         placeholderStyle={styles.placeholder}
         onSelectItem={onChangeText}
-        dropDownContainerStyle={styles.dropdown}
-        textStyle={styles.text}
+        dropDownContainerStyle={[styles.dropdown, dropDownContainerStyle]}
+        textStyle={[styles.text, textStyle]}
         listMode="SCROLLVIEW"
         multiple={multiple}
         mode="BADGE"
@@ -77,7 +81,7 @@ const Dropdown = props => {
         zIndexInverse={zIndexInverse}
         labelProps={{ allowFontScaling: false }}
         itemProps={{ allowFontScaling: false }}
-        arrowIconStyle={{ tintColor: colors.white }}
+        arrowIconStyle={[{ tintColor: colors.white }, arrowIconStyle]}
         loading={isLoading}
       />
       {error && (

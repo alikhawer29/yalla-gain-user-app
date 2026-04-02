@@ -25,6 +25,8 @@ const images = {
   comment: require('./comment.png'),
   like: require('./like.png'),
   heart: require('./heart.png'),
+  fire: require('./fire.png'),
+  cal: require('./cal.png'),
   post_like: require('./post_like.png'),
   polling: require('./polling.png'),
   gallery: require('./gallery.png'),
@@ -127,6 +129,7 @@ const images = {
     chat: require('./helpdesk/chat.png'),
     pdf: require('./helpdesk/pdf.png'),
   },
+  guide_video: require('./guide_video.mp4'),
 };
 
 export default images;

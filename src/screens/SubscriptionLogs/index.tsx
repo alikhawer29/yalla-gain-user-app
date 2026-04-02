@@ -17,7 +17,8 @@ const SubscriptionLogs = () => {
             isCancelSubscriptionLoading
         },
         functions: {
-            onCancel
+            onCancel,
+            isActiveSubscription
         }
     } = useSubscriptionLogsController()
 
@@ -26,7 +27,7 @@ const SubscriptionLogs = () => {
             <Text weight="semibold" size={20} style={styles.heading}>Current Subscription</Text>
             {
                 isLoading ? <Loader /> :
-                    data?.current ?
+                    data?.current && isActiveSubscription(data?.current) ?
                         <SubscriptionLogCard
                             subscription_type={data?.current?.subscription_plan?.title}
                             subscribed_on={data?.current?.subscribed_on}
@@ -38,7 +39,7 @@ const SubscriptionLogs = () => {
                                 onPress: isCancelSubscriptionLoading ? undefined : () => onCancel(data?.current?.id),
                                 underline: true
                             }}
-                        /> : <Empty message="No Current Subscription Found" />
+                        /> : <Empty message={data?.current ? "Subscription has expired" : "No Current Subscription Found"} />
             }
             <Text weight="semibold" size={20} style={styles.heading}>Past Subscription</Text>
             {
