@@ -26,6 +26,7 @@ const ChallengeDetail = () => {
 
   const imageUrl = challenge?.image_url ?? challenge?.image;
   const isOngoing = challenge?.is_started === true || challenge?.status === 'ongoing';
+  const challengeType = capitalizeFirst(challenge?.type ?? 'Activity');
 
   return (
     <Wrapper
@@ -126,16 +127,19 @@ const ChallengeDetail = () => {
           <Button text="Start Challenge" onPress={onStart} />
         ) : (
           <>
-            <Button text="Start Today's Task" onPress={onStartTodayTask} />
             <Button
-              text="Complete Today's Task"
+              text={`Start ${challengeType}`}
+              onPress={onStartTodayTask}
+            />
+            <Button
+              text={`Complete ${challengeType}`}
               type="outlined"
               style={styles.button_spacer}
               onPress={onCompleteTodayTask}
             />
             <Button
               text="Leave Challenge"
-              type="secondary"
+              type="outlined"
               textColor={colors.danger}
               style={styles.button_spacer}
               onPress={onLeave}
