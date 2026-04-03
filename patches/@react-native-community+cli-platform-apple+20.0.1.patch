@@ -1,0 +1,122 @@
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/createRun.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/createRun.js
+index a217a62..7e00238 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/createRun.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/createRun.js
+@@ -132,7 +132,8 @@ const createRun = ({
+       mode,
+       scheme,
+       target: args.target,
+-      binaryPath: args.binaryPath
++      binaryPath: args.binaryPath,
++      buildFolder: args.buildFolder
+     });
+     return;
+   }
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
+index b9f4279..aceb942 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/getBuildSettings.js
+@@ -26,8 +26,8 @@ function _child_process() {
+   return data;
+ }
+ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+-async function getBuildSettings(xcodeProject, mode, buildOutput, scheme, target) {
+-  const buildSettings = _child_process().default.execFileSync('xcodebuild', [xcodeProject.isWorkspace ? '-workspace' : '-project', xcodeProject.name, '-scheme', scheme, '-sdk', getPlatformName(buildOutput), '-configuration', mode, '-showBuildSettings', '-json'], {
++async function getBuildSettings(xcodeProject, mode, buildOutput, scheme, target, buildFolder) {
++  const buildSettings = _child_process().default.execFileSync('xcodebuild', [...(xcodeProject.isWorkspace ? ['-workspace', xcodeProject.name] : ['-project', xcodeProject.name]), ...(buildFolder ? ['-derivedDataPath', buildFolder] : []), '-scheme', scheme, '-sdk', getPlatformName(buildOutput), '-configuration', mode, '-showBuildSettings', '-json'], {
+     encoding: 'utf8'
+   });
+   const settings = JSON.parse(buildSettings);
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/installApp.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/installApp.js
+index 452bd72..90f0867 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/installApp.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/installApp.js
+@@ -51,10 +51,11 @@ async function installApp({
+   udid,
+   binaryPath,
+   platform,
+-  isSimulator = true
++  isSimulator = true,
++  buildFolder
+ }) {
+   let appPath = binaryPath;
+-  const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme, target);
++  const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme, target, buildFolder);
+   if (!buildSettings) {
+     throw new (_cliTools().CLIError)('Failed to get build settings for your project');
+   }
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/openApp.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/openApp.js
+index e5c88be..40e0f53 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/openApp.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/openApp.js
+@@ -34,10 +34,11 @@ async function openApp({
+   mode,
+   scheme,
+   target,
+-  binaryPath
++  binaryPath,
++  buildFolder
+ }) {
+   let appPath = binaryPath;
+-  const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme, target);
++  const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme, target, buildFolder);
+   if (!buildSettings) {
+     throw new (_cliTools().CLIError)('Failed to get build settings for your project');
+   }
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnDevice.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnDevice.js
+index ff3a0ca..dcb4888 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnDevice.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnDevice.js
+@@ -29,7 +29,7 @@ async function runOnDevice(selectedDevice, platform, mode, scheme, xcodeProject,
+   }
+   if (selectedDevice.type === 'catalyst') {
+     const buildOutput = await (0, _buildProject.buildProject)(xcodeProject, platform, selectedDevice.udid, mode, scheme, args);
+-    const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme);
++    const buildSettings = await (0, _getBuildSettings.getBuildSettings)(xcodeProject, mode, buildOutput, scheme, undefined, args.buildFolder);
+     if (!buildSettings) {
+       throw new (_cliTools().CLIError)('Failed to get build settings for your project');
+     }
+@@ -42,7 +42,8 @@ async function runOnDevice(selectedDevice, platform, mode, scheme, xcodeProject,
+   } else {
+     const {
+       binaryPath,
+-      target
++      target,
++      buildFolder
+     } = args;
+     let buildOutput;
+     if (!binaryPath) {
+@@ -57,7 +58,8 @@ async function runOnDevice(selectedDevice, platform, mode, scheme, xcodeProject,
+       target,
+       udid: selectedDevice.udid,
+       binaryPath,
+-      isSimulator: false
++      isSimulator: false,
++      buildFolder
+     });
+   }
+   return _cliTools().logger.success('Installed the app on the device.');
+diff --git a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnSimulator.js b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnSimulator.js
+index 6df6d1c..c2055c1 100644
+--- a/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnSimulator.js
++++ b/node_modules/@react-native-community/cli-platform-apple/build/commands/runCommand/runOnSimulator.js
+@@ -25,7 +25,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
+ async function runOnSimulator(xcodeProject, platform, mode, scheme, args, simulator) {
+   const {
+     binaryPath,
+-    target
++    target,
++    buildFolder
+   } = args;
+ 
+   /**
+@@ -57,7 +58,8 @@ async function runOnSimulator(xcodeProject, platform, mode, scheme, args, simula
+     scheme,
+     target,
+     udid: simulator.udid,
+-    binaryPath
++    binaryPath,
++    buildFolder
+   });
+ }
+ function bootSimulator(selectedSimulator) {

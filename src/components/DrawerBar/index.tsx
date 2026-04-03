@@ -7,6 +7,7 @@ import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import { useGetWalletCoinsQuery } from "../../redux/Apis/User"
+import { setWatchHealthLinked } from "../../services/health/healthProvider"
 import { deleteUnityGameUserData } from "../../utils/unityGameData"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
@@ -131,6 +132,7 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
             } catch (err) {
                 console.error('Error deleting Unity game data on logout:', err);
             }
+            await setWatchHealthLinked(false);
             // Dispatch logout action
             dispatch(logout());
         })
