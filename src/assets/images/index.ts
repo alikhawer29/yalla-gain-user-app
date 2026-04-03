@@ -21,6 +21,12 @@ const images = {
   puzzle: require('./puzzle.png'),
   right_arrow: require('./right_arrow.png'),
   steps_graph: require('./steps_graph.png'),
+  /** Figma hKEbq9iM9t3wzCuroWuqUK — node 192:1874 (icons: 192:1876, 192:1880, 192:1886) */
+  watch_connected: {
+    metric_calories: require('./watch/watch_metric_calories.png'),
+    metric_heart: require('./watch/watch_metric_heart.png'),
+    metric_steps: require('./watch/watch_metric_steps.png'),
+  },
   challenge_graph: require('./challenge_graph.png'),
   comment: require('./comment.png'),
   like: require('./like.png'),

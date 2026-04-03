@@ -13,6 +13,7 @@ import {
   getHealthPermissionState,
   openHealthSettings,
   requestPermissions,
+  setWatchHealthLinked,
 } from '../../../services/health/healthProvider';
 
 const WatchConnect = () => {
@@ -42,6 +43,7 @@ const WatchConnect = () => {
         return;
       }
 
+      await setWatchHealthLinked(true);
       navigate(ROUTES.WATCH_CONNECTED as any);
     } catch (e: any) {
       setErrorText(e?.message || 'Something went wrong. Please try again.');
@@ -64,35 +66,49 @@ const WatchConnect = () => {
     <Wrapper no_padding>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Icon
-            source={images.back}
-            size={40}
-            rounded
-            less_rounded
-            less_padding
-            border={colors.white}
-            onPress={goBack}
-          />
-          <Text size={24} weight="semibold" style={styles.headerTitle}>
-            Connect Watch
-          </Text>
-          <View style={styles.headerSpacer} />
+          <View style={styles.headerSide}>
+            <Icon
+              source={images.back}
+              size={40}
+              rounded
+              less_rounded
+              less_padding
+              border={colors.white}
+              onPress={goBack}
+            />
+          </View>
+          <View style={styles.headerCenter}>
+            <Text size={24} weight="semibold" position="center">
+              Connect Watch
+            </Text>
+          </View>
+          <View style={styles.headerSide} />
         </View>
 
         <View style={styles.card}>
           <Text size={20} weight="semibold" position="center" line_height={26}>
-            Scan QR Code to connect smart watch with the app
+            Sync your health and fitness data
           </Text>
-
-          <View style={styles.scanBox}>
-            <View style={styles.cornerTL} />
-            <View style={styles.cornerTR} />
-            <View style={styles.cornerBL} />
-            <View style={styles.cornerBR} />
-            <Text size={14} color={colors.icon_gray} position="center">
-              HealthKit / Health Connect permissions
-            </Text>
-          </View>
+          <Text
+            size={14}
+            weight="regular"
+            color={colors.icon_gray}
+            position="center"
+            line_height={20}
+            style={styles.permissionHint}
+          >
+            HealthKit / Health Connect permissions
+          </Text>
+          <Text
+            size={13}
+            weight="regular"
+            color={colors.icon_gray}
+            position="center"
+            line_height={18}
+            style={styles.helperLine}
+          >
+            Tap Connect to allow access on this device.
+          </Text>
 
           <Button
             text="Connect"
@@ -130,13 +146,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: heightPixel(20),
+    width: '100%',
   },
-  headerTitle: {
+  headerSide: {
+    width: widthPixel(40),
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  headerCenter: {
     flex: 1,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: heightPixel(40),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   card: {
     backgroundColor: colors.blackish_gray,
@@ -145,62 +165,16 @@ const styles = StyleSheet.create({
     paddingVertical: heightPixel(22),
     alignItems: 'center',
   },
-  scanBox: {
-    width: '100%',
-    height: heightPixel(320),
-    borderRadius: heightPixel(10),
-    backgroundColor: '#121212',
-    marginTop: heightPixel(18),
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
+  permissionHint: {
+    marginTop: heightPixel(10),
+    paddingHorizontal: widthPixel(4),
   },
-  cornerTL: {
-    position: 'absolute',
-    left: widthPixel(22),
-    top: heightPixel(22),
-    width: widthPixel(26),
-    height: heightPixel(26),
-    borderLeftWidth: 3,
-    borderTopWidth: 3,
-    borderColor: colors.white,
-    borderRadius: 2,
-  },
-  cornerTR: {
-    position: 'absolute',
-    right: widthPixel(22),
-    top: heightPixel(22),
-    width: widthPixel(26),
-    height: heightPixel(26),
-    borderRightWidth: 3,
-    borderTopWidth: 3,
-    borderColor: colors.white,
-    borderRadius: 2,
-  },
-  cornerBL: {
-    position: 'absolute',
-    left: widthPixel(22),
-    bottom: heightPixel(22),
-    width: widthPixel(26),
-    height: heightPixel(26),
-    borderLeftWidth: 3,
-    borderBottomWidth: 3,
-    borderColor: colors.white,
-    borderRadius: 2,
-  },
-  cornerBR: {
-    position: 'absolute',
-    right: widthPixel(22),
-    bottom: heightPixel(22),
-    width: widthPixel(26),
-    height: heightPixel(26),
-    borderRightWidth: 3,
-    borderBottomWidth: 3,
-    borderColor: colors.white,
-    borderRadius: 2,
+  helperLine: {
+    marginTop: heightPixel(8),
+    paddingHorizontal: widthPixel(4),
   },
   cta: {
-    marginTop: heightPixel(20),
+    marginTop: heightPixel(22),
     width: '100%',
     borderRadius: heightPixel(12),
   },

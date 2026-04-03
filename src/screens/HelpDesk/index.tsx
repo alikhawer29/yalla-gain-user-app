@@ -11,6 +11,7 @@ import { navigate } from "../../utils/navigation"
 import { ROUTES, NAVIGATORS } from "../../utils/routes"
 import { useDeleteAccountMutation } from "../../redux/Apis/User"
 import { logout } from "../../redux/Slices/AuthSlice"
+import { setWatchHealthLinked } from "../../services/health/healthProvider"
 
 const HelpDesk = () => {
     const dispatch = useDispatch()
@@ -30,8 +31,9 @@ const HelpDesk = () => {
         }
     }
 
-    const handleSuccessOk = () => {
+    const handleSuccessOk = async () => {
         setShowSuccessModal(false)
+        await setWatchHealthLinked(false)
         dispatch(logout())
     }
 
