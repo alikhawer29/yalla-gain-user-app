@@ -20,24 +20,6 @@ const ChallengeLogs = () => {
     functions: { onSearch, onReload },
   } = useChallengeLogsController();
 
-  // const renderHeader = () => (
-  //   <Row align="center" justify="space-between" style={styles.header}>
-  //     <Icon
-  //       source={images.back}
-  //       size={40}
-  //       onPress={() => goBack()}
-  //       border={colors.border}
-  //       rounded
-  //       less_rounded
-  //       tint_color={colors.white}
-  //     />
-  //     <Text weight="semibold" size={24} color={colors.white}>
-  //       Challenge Logs
-  //     </Text>
-  //     <View style={{ width: heightPixel(40) }} />
-  //   </Row>
-  // );
-
   const renderSearch = () => (
     <Row style={styles.searchContainer} align="center" gap={10}>
       <View style={{ flex: 1 }}>
@@ -74,6 +56,7 @@ const ChallengeLogs = () => {
         color={colors.blackish_gray}
         padding={15}
         border_radius={15}
+        height="auto"
         style={styles.card}
       >
         <Row justify="space-between" align="flex-start">

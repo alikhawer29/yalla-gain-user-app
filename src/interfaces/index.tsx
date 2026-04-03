@@ -129,6 +129,7 @@ export interface ICardWrapper extends IWrapper {
     border_color?: ColorValue
     color?: ColorValue
     onPress?: (event: GestureResponderEvent) => void
+    style?: StyleProp<ViewStyle>
 }
 
 export interface IImage {

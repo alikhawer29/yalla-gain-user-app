@@ -25,8 +25,10 @@ const useChallengeDetailController = () => {
     skip: !id,
     refetchOnMountOrArgChange: true,
   });
-  const [startChallenge, { isLoading: isStarting }] = useStartChallengeMutation();
-  const [leaveChallenge, { isLoading: isLeaving }] = useLeaveChallengeMutation();
+  const [startChallenge, { isLoading: isStarting }] =
+    useStartChallengeMutation();
+  const [leaveChallenge, { isLoading: isLeaving }] =
+    useLeaveChallengeMutation();
   const [startTodayTask, { isLoading: isStartingTask }] =
     useStartTodayTaskMutation();
   const [completeTodayTask, { isLoading: isCompletingTask }] =
@@ -34,8 +36,8 @@ const useChallengeDetailController = () => {
 
   const challenge = data?.data ?? data;
   const userChallenge = challenge?.user_challenge ?? challenge?.userChallenge;
-  const rawIsStarted =
-    (challenge?.is_started ?? userChallenge?.is_started) as unknown;
+  const rawIsStarted = (challenge?.is_started ??
+    userChallenge?.is_started) as unknown;
   const isStarted =
     rawIsStarted === true ||
     rawIsStarted === 1 ||
@@ -122,4 +124,3 @@ const useChallengeDetailController = () => {
 };
 
 export default useChallengeDetailController;
-

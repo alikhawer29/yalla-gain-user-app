@@ -6,7 +6,7 @@ import { heightPixel, widthPixel } from "../../utils/helper"
 import Touchable from "../Touchable"
 import styles from "./styles"
 
-const CardWrapper: FC<ICardWrapper> = ({ children, height = "100%", width = "100%", padding = 0, border = false, border_color = colors.white, border_radius = 10, color = colors.gray, onPress }) => {
+const CardWrapper: FC<ICardWrapper> = ({ children, height = "100%", width = "100%", padding = 0, border = false, border_color = colors.white, border_radius = 10, color = colors.gray, onPress, style }) => {
 
     const Component = onPress ? Touchable : View
 
@@ -19,7 +19,7 @@ const CardWrapper: FC<ICardWrapper> = ({ children, height = "100%", width = "100
             borderColor: border_color,
             backgroundColor: color,
             borderRadius: heightPixel(border_radius ?? 10)
-        }]}>
+        }, style]}>
             {children}
         </Component>
     )
