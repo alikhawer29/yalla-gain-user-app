@@ -50,6 +50,8 @@ const images = {
   search: require('./search.png'),
   filters: require('./filters.png'),
   save: require('./save.png'),
+  milestone: require('./milestone.png'),
+  duration: require('./duration.png'),
   dots: require('./dots.png'),
   coin: require('./coin.png'),
   spotify_logo: require('./spotify_logo.png'),

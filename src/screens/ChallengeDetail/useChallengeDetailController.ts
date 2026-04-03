@@ -12,7 +12,12 @@ const useChallengeDetailController = () => {
   const route = useRoute();
   const { id } = (route.params ?? {}) as { id: number };
 
-  const { data, isFetching, refetch } = useGetChallengeByIdQuery(id, {
+  const {
+    data,
+    isFetching,
+    isLoading: isChallengeInitialLoad,
+    refetch,
+  } = useGetChallengeByIdQuery(id, {
     skip: !id,
     refetchOnMountOrArgChange: true,
   });
@@ -42,7 +47,9 @@ const useChallengeDetailController = () => {
     challenge?.challenge_status === 'ongoing'
   );
 
-  const onReload = () => refetch();
+  const onReload = (): void => {
+    void refetch();
+  };
   const onStart = async () => {
     try {
       await startChallenge(id).unwrap();
@@ -70,15 +77,23 @@ const useChallengeDetailController = () => {
     } catch (e) {}
   };
 
-  const loading =
-    isFetching ||
-    isStarting ||
-    isLeaving ||
-    isStartingTask ||
-    isCompletingTask;
+  const isMutationLoading =
+    isStarting || isLeaving || isStartingTask || isCompletingTask;
+
+  /** Full-screen / content-blocking loader (initial fetch or mutations). */
+  const isBlockingLoad = isChallengeInitialLoad || isMutationLoading;
+
+  /** Pull-to-refresh only when data already exists — avoids double spinner with `loading`. */
+  const isPullRefreshing =
+    isFetching && !isChallengeInitialLoad && !isMutationLoading;
 
   return {
-    values: { challenge, isJoined, isLoading: loading },
+    values: {
+      challenge,
+      isJoined,
+      isBlockingLoad,
+      isPullRefreshing,
+    },
     functions: {
       onReload,
       onStart,

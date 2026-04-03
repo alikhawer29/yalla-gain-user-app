@@ -7,6 +7,7 @@ import Image from '../../Image';
 import Text from '../../Text';
 import colors from '../../../utils/colors';
 import styles from './styles';
+import { capitalizeFirst } from '../../../utils/data';
 
 const CARD_BG = '#131313';
 
@@ -71,7 +72,7 @@ const ChallengeCard: FC<IChallengeCard> = ({
                 {
                   backgroundColor: isOngoing
                     ? colors.transparent_primary
-                    : colors.primary,
+                    : colors.new_badge,
                 },
               ]}
             >
@@ -83,11 +84,11 @@ const ChallengeCard: FC<IChallengeCard> = ({
         </View>
         <View style={styles.title_row}>
           <View style={styles.title_block}>
-            <Text weight="semibold" size={16} lines={1} style={styles.title}>
-              {title}
+            <Text weight="semibold" size={13} lines={1} style={styles.title}>
+              {capitalizeFirst(title)}
             </Text>
-            <Text size={12} color={colors.icon_gray} lines={1} style={styles.type_label}>
-              Challenge Type: {type}
+            <Text size={11} weight="bold" lines={1} style={styles.type_label}>
+              Challenge Type: <Text weight="regular" size={11} color={colors.icon_gray}>{capitalizeFirst(type)}</Text>
             </Text>
           </View>
           <View style={styles.icon_wrap}>

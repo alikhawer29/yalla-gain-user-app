@@ -441,6 +441,7 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'Challenges',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.CHALLENGE_DETAIL,
@@ -448,6 +449,7 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Challenge Details',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.CHALLENGE_LOGS,

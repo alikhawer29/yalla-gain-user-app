@@ -1,6 +1,8 @@
 import { StyleSheet } from 'react-native';
 import { heightPixel, widthPixel } from '../../utils/helper';
 
+const BADGE_BORDER_RADIUS = 4;
+
 const styles = StyleSheet.create({
   image_container: {
     width: '100%',
@@ -18,6 +20,14 @@ const styles = StyleSheet.create({
   title_main: {
     marginBottom: heightPixel(4),
   },
+  badge: {
+    position: 'absolute',
+    top: heightPixel(4),
+    right: widthPixel(4),
+    paddingHorizontal: widthPixel(6),
+    paddingVertical: heightPixel(2),
+    borderRadius: heightPixel(BADGE_BORDER_RADIUS),
+  },
   challenge_type_label: {},
   detail_row: {
     flexDirection: 'row',
@@ -33,6 +43,7 @@ const styles = StyleSheet.create({
   detail_text: {
     flex: 1,
     minWidth: 0,
+    marginBottom: heightPixel(5),
   },
   description: {
     marginTop: heightPixel(8),

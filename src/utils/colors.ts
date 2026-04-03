@@ -24,6 +24,7 @@ const colors = {
   placeholder: '#999999',
   cardBackground: '#1F1F1F',
   success: '#32cd32',
+  new_badge: '#C85929',
 };
 
 export default colors;

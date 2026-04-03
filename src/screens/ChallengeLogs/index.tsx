@@ -1,12 +1,18 @@
-import { FlatList, RefreshControl, View } from 'react-native';
+import React from 'react';
+import { FlatList, RefreshControl, View, StyleSheet } from 'react-native';
 import images from '../../assets/images';
 import Input from '../../components/Input';
 import Row from '../../components/Row';
 import Text from '../../components/Text';
 import Wrapper from '../../components/Wrapper';
+import Icon from '../../components/Icon';
+import Touchable from '../../components/Touchable';
+import CardWrapper from '../../components/CardWrapper';
 import colors from '../../utils/colors';
-import { heightPixel } from '../../utils/helper';
+import { font, heightPixel, widthPixel } from '../../utils/helper';
+import { goBack } from '../../utils/navigation';
 import useChallengeLogsController from './useChallengeLogsController';
+import { capitalizeFirst } from '../../utils/data';
 
 const ChallengeLogs = () => {
   const {
@@ -14,56 +20,183 @@ const ChallengeLogs = () => {
     functions: { onSearch, onReload },
   } = useChallengeLogsController();
 
-  return (
-    <Wrapper>
-      <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
-        <View style={{ flex: 1 }}>
-          <Input
-            placeholder="Search challenge logs"
-            height={40}
-            icon={images.search}
-            value={search}
-            onChangeText={onSearch}
-          />
-        </View>
-      </Row>
-      <FlatList
-        data={logs}
-        keyExtractor={(item) => String(item.id ?? item.challenge_id ?? Math.random())}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              padding: heightPixel(12),
-              backgroundColor: colors.grayish_black,
-              borderRadius: heightPixel(8),
-              marginBottom: heightPixel(10),
-            }}
-          >
-            <Text weight="semibold" size={15}>
-              {item.challenge?.title ?? item.title ?? 'Challenge'}
-            </Text>
-            <Text size={13} color={colors.icon_gray} style={{ marginTop: 4 }}>
-              {item.completed_at
-                ? `Completed: ${new Date(item.completed_at).toLocaleDateString()}`
-                : item.created_at
-                  ? `Started: ${new Date(item.created_at).toLocaleDateString()}`
-                  : ''}
+  // const renderHeader = () => (
+  //   <Row align="center" justify="space-between" style={styles.header}>
+  //     <Icon
+  //       source={images.back}
+  //       size={40}
+  //       onPress={() => goBack()}
+  //       border={colors.border}
+  //       rounded
+  //       less_rounded
+  //       tint_color={colors.white}
+  //     />
+  //     <Text weight="semibold" size={24} color={colors.white}>
+  //       Challenge Logs
+  //     </Text>
+  //     <View style={{ width: heightPixel(40) }} />
+  //   </Row>
+  // );
+
+  const renderSearch = () => (
+    <Row style={styles.searchContainer} align="center" gap={10}>
+      <View style={{ flex: 1 }}>
+        <Input
+          placeholder="Search challenge logs"
+          height={40}
+          icon={images.search}
+          value={search}
+          onChangeText={onSearch}
+          style={styles.searchInput}
+        />
+      </View>
+      {/* <Icon
+        source={images.filters}
+        size={50}
+        border={colors.border}
+        rounded
+        less_rounded
+        tint_color={colors.white}
+        no_padding
+        onPress={() => { }} // Handle filter
+      /> */}
+    </Row>
+  );
+
+  const renderItem = ({ item }: { item: any }) => {
+    const challenge = item.challenge || {};
+    const status = item.status || 'ongoing';
+    const isCompleted = status === 'completed';
+    const isFailed = status === 'failed';
+
+    return (
+      <CardWrapper
+        color={colors.blackish_gray}
+        padding={15}
+        border_radius={15}
+        style={styles.card}
+      >
+        <Row justify="space-between" align="flex-start">
+          <View style={{ flex: 1 }}>
+            <Text weight="bold" size={20} color={colors.white}>
+              {capitalizeFirst(challenge.title) || 'Challenge Title'}
             </Text>
           </View>
-        )}
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text size={14} color={colors.white} weight="semibold">
+              Challenge Type: <Text size={14} color={colors.icon_gray}>{capitalizeFirst(challenge.type) || 'N/A'}</Text>
+            </Text>
+          </View>
+        </Row>
+
+        <Row justify="space-between" align="center" style={{ marginTop: heightPixel(8) }}>
+          <Row align="center" gap={8} style={{ flex: 1 }}>
+            <Icon source={images.calendar} size={18} tint_color={colors.white} />
+            <Text size={14} color={colors.white}>
+              {item.created_at || item.start_date || 'N/A'}
+            </Text>
+          </Row>
+          <Text size={14} color={colors.white} weight="semibold">
+            Avail : <Text size={14} color={colors.icon_gray}>{challenge.reward || '0'} Points</Text>
+          </Text>
+        </Row>
+
+        <Row align="center" gap={8} style={{ marginTop: heightPixel(12) }}>
+          <Icon source={images.milestone} size={18} tint_color={colors.white} />
+          <Text size={14} color={colors.white} style={{ flex: 1 }}>
+            {challenge.milestone || 'No Milestone available'}
+          </Text>
+        </Row>
+
+        <Row justify="space-between" align="center" style={{ marginTop: heightPixel(12) }}>
+          <Row align="center" gap={8}>
+            <Icon source={images.duration} size={18} tint_color={colors.white} />
+            <Text size={14} color={colors.white}>
+              Duration {challenge.duration || '0'} Days
+            </Text>
+          </Row>
+          <View
+            style={[
+              styles.statusBadge,
+              {
+                backgroundColor: isCompleted ? colors.success : isFailed ? colors.danger : colors.primary,
+              },
+            ]}
+          >
+            <Text weight="semibold" size={12} color={colors.white}>
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </Text>
+          </View>
+        </Row>
+      </CardWrapper>
+    );
+  };
+
+  return (
+    <Wrapper>
+      {/* {renderHeader()} */}
+      {renderSearch()}
+      <FlatList
+        data={logs}
+        keyExtractor={(item) => String(item.id ?? Math.random())}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           !isLoading ? (
-            <Text color={colors.icon_gray} position="center" style={{ marginTop: heightPixel(40) }}>
-              No challenge logs yet.
-            </Text>
+            <View style={styles.emptyContainer}>
+              <Text color={colors.icon_gray} position="center">
+                No challenge logs found.
+              </Text>
+            </View>
           ) : null
         }
         refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={onReload} />
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={onReload}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
         }
+        showsVerticalScrollIndicator={false}
       />
     </Wrapper>
   );
 };
 
+const styles = StyleSheet.create({
+  header: {
+    marginTop: heightPixel(10),
+    marginBottom: heightPixel(20),
+  },
+  searchContainer: {
+    marginBottom: heightPixel(20),
+  },
+  searchInput: {
+    backgroundColor: colors.inputBackground,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: heightPixel(10),
+  },
+  listContent: {
+    paddingBottom: heightPixel(100), // More space for bottom bar if any
+  },
+  card: {
+    marginBottom: heightPixel(18),
+  },
+  statusBadge: {
+    paddingHorizontal: widthPixel(12),
+    paddingVertical: heightPixel(5),
+    borderRadius: heightPixel(6),
+    minWidth: widthPixel(80),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    marginTop: heightPixel(100),
+    alignItems: 'center',
+  },
+});
+
 export default ChallengeLogs;
+

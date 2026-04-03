@@ -28,7 +28,7 @@ const Challenges = () => {
   } = useChallengesController();
 
   return (
-    <Wrapper>
+    <Wrapper hide_bottom_bar>
       <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
         <View style={{ flex: 1 }}>
           <Input
