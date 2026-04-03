@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { View } from 'react-native';
 import images from '../../assets/images';
 import Button from '../../components/Button';
@@ -9,24 +10,58 @@ import Text from '../../components/Text';
 import Wrapper from '../../components/Wrapper';
 import colors from '../../utils/colors';
 import useChallengeDetailController from './useChallengeDetailController';
+import AlertModal from '../../components/AlertModal';
+import ConfirmModal from '../../components/ConfirmModal';
+import DailyWorkoutChecklist from './DailyWorkoutChecklist';
 import styles from './styles';
 import { capitalizeFirst } from '../../utils/data';
 
 const ChallengeDetail = () => {
   const {
-    values: { challenge, isJoined, isBlockingLoad, isPullRefreshing },
+    values: {
+      challenge,
+      isJoined,
+      isBlockingLoad,
+      isPullRefreshing,
+      showLeaveConfirm,
+      showLeaveSuccess,
+    },
     functions: {
       onReload,
       onStart,
       onLeave,
+      onConfirmLeave,
+      onSuccessOk,
+      setShowLeaveConfirm,
       onStartTodayTask,
       onCompleteTodayTask,
     },
   } = useChallengeDetailController();
 
   const imageUrl = challenge?.image_url ?? challenge?.image;
-  const isOngoing = challenge?.is_started === true || challenge?.status === 'ongoing';
+  const isOngoing =
+    challenge?.is_started === true ||
+    challenge?.challenge_status === 'ongoing' ||
+    challenge?.challenge_progress?.status === 'ongoing';
   const challengeType = capitalizeFirst(challenge?.type ?? 'Activity');
+
+  const challengeTasks = challenge?.challenge_progress?.challenge_tasks;
+  const sortedChallengeTasks = useMemo(
+    () =>
+      [...(challengeTasks ?? [])].sort((a, b) =>
+        String(a?.date_to_complete_in ?? '').localeCompare(
+          String(b?.date_to_complete_in ?? ''),
+        ),
+      ),
+    [challengeTasks],
+  );
+
+  const showDailyWorkoutChecklist =
+    isJoined &&
+    sortedChallengeTasks.length > 0 &&
+    (challenge?.challenge_status === 'ongoing' ||
+      String(challenge?.challenge_progress?.status ?? '').toLowerCase() ===
+      'ongoing');
 
   return (
     <Wrapper
@@ -44,7 +79,7 @@ const ChallengeDetail = () => {
           style={styles.image}
           resize="cover"
         />
-        {challenge?.status ? (
+        {challenge?.status != null ? (
           <View
             style={[
               styles.badge,
@@ -119,8 +154,16 @@ const ChallengeDetail = () => {
           </View>
           <Seperator size={12} />
         </>
-      ) : null
-      }
+      ) : null}
+      {showDailyWorkoutChecklist ? (
+        <>
+          <DailyWorkoutChecklist
+            tasks={sortedChallengeTasks}
+            challengeType={String(challenge?.type ?? 'run')}
+          />
+          <Seperator size={16} />
+        </>
+      ) : null}
       <Seperator size={24} />
       {
         !isJoined ? (
@@ -148,7 +191,22 @@ const ChallengeDetail = () => {
         )
       }
       <Seperator size={40} />
-    </Wrapper >
+      <ConfirmModal
+        visible={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        onConfirm={onConfirmLeave}
+        title="Leave Challenge"
+        message={`Are You Sure You Want To Leave The Challenge?`}
+      />
+
+      <AlertModal
+        visible={showLeaveSuccess}
+        onClose={onSuccessOk}
+        type="success"
+        title="Successfully"
+        message="Challenge Has Been Left Successfully"
+      />
+    </Wrapper>
   );
 };
 

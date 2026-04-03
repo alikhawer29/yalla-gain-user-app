@@ -3,7 +3,7 @@ import { heightPixel, widthPixel } from '../../../utils/helper';
 
 // Figma 253-9980 / 253-10027: compact card, no arrow
 const CARD_BORDER_RADIUS = 5;
-const BADGE_BORDER_RADIUS = 4;
+const BADGE_BORDER_RADIUS = 2;
 const IMAGE_HEIGHT = 100; // Shorter for compact look
 
 const styles = StyleSheet.create({
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     top: heightPixel(4),
     right: widthPixel(4),
     paddingHorizontal: widthPixel(6),
-    paddingVertical: heightPixel(2),
+    // paddingVertical: heightPixel(2),
     borderRadius: BADGE_BORDER_RADIUS,
   },
   title_row: {

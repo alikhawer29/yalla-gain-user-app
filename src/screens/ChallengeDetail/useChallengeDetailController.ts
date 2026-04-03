@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useRoute } from '@react-navigation/native';
 import {
   useGetChallengeByIdQuery,
@@ -11,6 +12,9 @@ import { goBack } from '../../utils/navigation';
 const useChallengeDetailController = () => {
   const route = useRoute();
   const { id } = (route.params ?? {}) as { id: number };
+
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showLeaveSuccess, setShowLeaveSuccess] = useState(false);
 
   const {
     data,
@@ -30,7 +34,6 @@ const useChallengeDetailController = () => {
 
   const challenge = data?.data ?? data;
   const userChallenge = challenge?.user_challenge ?? challenge?.userChallenge;
-  // API may return `is_started` as boolean, number (1/0), or string ("true"/"1").
   const rawIsStarted =
     (challenge?.is_started ?? userChallenge?.is_started) as unknown;
   const isStarted =
@@ -54,16 +57,28 @@ const useChallengeDetailController = () => {
     try {
       await startChallenge(id).unwrap();
       refetch();
+    } catch (e) {}
+  };
+
+  const onLeave = () => {
+    setShowLeaveConfirm(true);
+  };
+
+  const onConfirmLeave = async () => {
+    try {
+      setShowLeaveConfirm(false);
+      await leaveChallenge(id).unwrap();
+      setShowLeaveSuccess(true);
     } catch (e) {
       // error handled by RTK
     }
   };
-  const onLeave = async () => {
-    try {
-      await leaveChallenge(id).unwrap();
-      goBack();
-    } catch (e) {}
+
+  const onSuccessOk = () => {
+    setShowLeaveSuccess(false);
+    goBack();
   };
+
   const onStartTodayTask = async () => {
     try {
       await startTodayTask(id).unwrap();
@@ -80,10 +95,7 @@ const useChallengeDetailController = () => {
   const isMutationLoading =
     isStarting || isLeaving || isStartingTask || isCompletingTask;
 
-  /** Full-screen / content-blocking loader (initial fetch or mutations). */
   const isBlockingLoad = isChallengeInitialLoad || isMutationLoading;
-
-  /** Pull-to-refresh only when data already exists — avoids double spinner with `loading`. */
   const isPullRefreshing =
     isFetching && !isChallengeInitialLoad && !isMutationLoading;
 
@@ -93,11 +105,16 @@ const useChallengeDetailController = () => {
       isJoined,
       isBlockingLoad,
       isPullRefreshing,
+      showLeaveConfirm,
+      showLeaveSuccess,
     },
     functions: {
       onReload,
       onStart,
       onLeave,
+      onConfirmLeave,
+      onSuccessOk,
+      setShowLeaveConfirm,
       onStartTodayTask,
       onCompleteTodayTask,
     },
@@ -105,3 +122,4 @@ const useChallengeDetailController = () => {
 };
 
 export default useChallengeDetailController;
+
