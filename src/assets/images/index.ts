@@ -81,6 +81,8 @@ const images = {
   splash: require('./splash.jpg'),
   movement_correction_cover: require('./movement_correction_cover.png'),
   camera: require('./camera.png'),
+  male_scan: require('./male_scan.png'),
+  female_scan: require('./female_scan.png'),
   recommended_videos: {
     exercise_one: require('./exercise_one.png'),
     exercise_two: require('./exercise_two.png'),
