@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { BackHandler, DeviceEventEmitter, Image, NativeModules, Platform, StyleSheet, View } from 'react-native';
+import { BackHandler, DeviceEventEmitter, NativeModules, Platform, View } from 'react-native';
 import {
   useFocusEffect,
   useIsFocused,
@@ -15,7 +15,7 @@ import Wrapper from '../../components/Wrapper';
 import { useModal } from '../../contexts/ModalContext';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { SOCKET_SERVER_URL } from '../../utils/data';
-import images from '../../assets/images';
+import UnitySplashOverlay from '../../components/UnitySplashOverlay';
 
 const SOCKET_URL = `${SOCKET_SERVER_URL}/`;
 const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
@@ -371,31 +371,12 @@ const AvatarVisualization = () => {
               />
             )}
 
-            {!isUnityReady && (
-              <View pointerEvents="none" style={styles.unityLoadingOverlay}>
-                <Image
-                  source={images.unity_splash}
-                  style={styles.unitySplashImage}
-                  resizeMode="cover"
-                />
-              </View>
-            )}
+            <UnitySplashOverlay unityReady={isUnityReady} />
           </>
         )}
       </View>
     </Wrapper>
   );
 };
-
-const styles = StyleSheet.create({
-  unityLoadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 9999,
-  },
-  unitySplashImage: {
-    width: '100%',
-    height: '100%',
-  },
-});
 
 export default AvatarVisualization;
