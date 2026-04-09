@@ -83,6 +83,7 @@ const images = {
   camera: require('./camera.png'),
   male_scan: require('./male_scan.png'),
   female_scan: require('./female_scan.png'),
+  unity_splash: require('./unity_splash.png'),
   recommended_videos: {
     exercise_one: require('./exercise_one.png'),
     exercise_two: require('./exercise_two.png'),

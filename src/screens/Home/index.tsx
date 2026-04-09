@@ -97,6 +97,8 @@ const Home = () => {
                         <View key={item?.id ?? index} style={{ marginRight: widthPixel(10) }}>
                             <VideoCard
                                 title={item.title}
+                                muscle_title={item.muscle_title}
+                                exercise_title={item.exercise_title}
                                 language={item.language}
                                 description={item.description}
                                 created_at={item.created_at}
@@ -205,6 +207,8 @@ const Home = () => {
                         <View key={item?.id ?? index} style={{ marginBottom: heightPixel(10) }}>
                             <VideoCard
                                 title={item.title}
+                                muscle_title={item.muscle_title}
+                                exercise_title={item.exercise_title}
                                 description={item.description}
                                 created_at={item.created_at}
                                 image={getWorkoutPlanImage(index)}
