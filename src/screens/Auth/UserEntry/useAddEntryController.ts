@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useModal } from "../../../contexts/ModalContext";
+import Toast from "react-native-toast-message";
 import usePicker from "../../../hooks/usePicker";
 import useToggle from "../../../hooks/useToggle";
 import { useLoginMutation, useSignupMutation } from "../../../redux/Apis/Auth";
 import { TABS } from "../../../utils/data";
-import { formHandler } from "../../../utils/helper";
+import { formHandler, withDialingCodePlus } from "../../../utils/helper";
+import { navigate } from "../../../utils/navigation";
+import { ROUTES } from "../../../utils/routes";
 import { LOGIN_SCHEMA, SIGNUP_SCHEMA } from "../../../utils/validators";
 
 const initial = {
@@ -29,11 +31,15 @@ const initial = {
 const useAddEntryController = () => {
 
     const formik_ref = useRef(null)
-    const { showOkModal } = useModal()
     const { image: profileImage, openGallery } = usePicker()
 
     const [login, { isLoading: isLoginLoading }] = useLoginMutation()
-    const [signup, { isSuccess: isSignupSuccess, isLoading: isSignupLoading }] = useSignupMutation()
+    const [signup, {
+        isSuccess: isSignupSuccess,
+        isLoading: isSignupLoading,
+        data: signupData,
+        reset: resetSignup,
+    }] = useSignupMutation()
 
     const [selected, setSelected] = useState<string>(TABS[0].value);
     const [toggleRemember, remember] = useToggle();
@@ -45,33 +51,47 @@ const useAddEntryController = () => {
     }, [profileImage]);
 
     useEffect(() => {
-        if (isSignupSuccess) {
-            showOkModal({
-                type: "success",
-                title: "Success",
-                message: "Account created successfully. Let’s get started!"
-            }, () => {
-                formik_ref.current?.resetForm();
-                setSelected(TABS[0].value)
-            }, () => {
-                formik_ref.current?.resetForm();
-                setSelected(TABS[0].value)
-            })
-
+        if (isSignupSuccess && signupData) {
+            const res = signupData as {
+                message?: string;
+                data?: { user?: { email?: string } };
+            };
+            const userEmail = res?.data?.user?.email;
+            const msg =
+                res?.message ??
+                "Registration successful. Please verify the OTP sent to your email.";
+            Toast.show({ text1: "Success!", text2: msg, type: "success" });
+            if (userEmail) {
+                navigate(ROUTES.VERIFY_EMAIL_OTP, { email: userEmail });
+            }
+            (formik_ref.current as any)?.resetForm();
+            setSelected(TABS[0].value);
+            resetSignup();
         }
-    }, [isSignupSuccess])
+    }, [isSignupSuccess, signupData, resetSignup])
 
     const onSubmit = useCallback((data: any) => {
 
-        const payload = formHandler(data)
-
         if (selected === "login") {
             login(data)
+                .unwrap()
+                .catch((err: any) => {
+                    const body = err?.data;
+                    if (body?.can_resend_otp && body?.email) {
+                        navigate(ROUTES.VERIFY_EMAIL_OTP, {
+                            email: body.email,
+                        });
+                    }
+                });
         } else {
+            const payload = formHandler({
+                ...data,
+                dialing_code: withDialingCodePlus(data?.dialing_code),
+            });
             signup(payload)
         }
 
-    }, [selected])
+    }, [selected, login, signup])
 
     return {
         refs: {

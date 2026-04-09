@@ -1,5 +1,18 @@
 import images from '../assets/images';
 
+/** Main backend origin (scheme + host, no path). Change here for staging/production. */
+// export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
+export const API_BASE_URL = 'http://109.1.1.7';
+
+/** User-scoped REST API (`.../api/user/*`). */
+export const API_USER_BASE_URL = `${API_BASE_URL}/yalla-backend/api/user/`;
+
+/** Shared API root (`.../yalla-backend/api/*`) — e.g. OTP is `/verify-otp`, not `/user/verify-otp`. */
+export const API_BASE_API_PREFIX = `${API_BASE_URL}/yalla-backend/api`;
+
+/** Socket.IO realtime server (same host, port 2170). */
+export const SOCKET_SERVER_URL = `https://custom-dev.onlinetestingserver.com:2170`;
+
 export const TABS = [
   {
     label: 'Login',

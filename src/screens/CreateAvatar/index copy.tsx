@@ -18,7 +18,9 @@ import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 
-const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
+import { SOCKET_SERVER_URL } from '../../utils/data';
+
+const SOCKET_URL = `${SOCKET_SERVER_URL}/`;
 const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
 const GAME_OBJECT_MESSAGE_SENT = 'MessageSent';
 const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';

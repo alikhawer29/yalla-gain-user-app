@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { API_USER_BASE_URL } from '../../../utils/data';
 import { RootState } from '../../Store';
 
 export const userApi = createApi({
@@ -17,8 +18,7 @@ export const userApi = createApi({
     'Notifications',
   ],
   baseQuery: fetchBaseQuery({
-    baseUrl:
-      'https://custom-dev.onlinetestingserver.com/yalla-backend/api/user/',
+    baseUrl: API_USER_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
       const token = state?.auth?.token;
@@ -339,6 +339,13 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Chats'],
     }),
+    createAdminChat: builder.mutation({
+      query: () => ({
+        url: 'chat/createAdmin',
+        method: 'POST',
+      }),
+      invalidatesTags: ['Chats'],
+    }),
     blockUser: builder.mutation({
       query: (user_id: number) => ({
         url: `block/${user_id}`,
@@ -634,6 +641,7 @@ export const {
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
   useCreateChatMutation,
+  useCreateAdminChatMutation,
   useBlockUserMutation,
   useGetBlockedUsersQuery,
   useUnblockUserMutation,

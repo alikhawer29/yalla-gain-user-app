@@ -24,6 +24,7 @@ const ROUTES = {
   AUTH_TYPE: 'AuthType',
   FORGOT_PASSWORD: 'ForgotPassword',
   VERIFY_CODE: 'VerifyCode',
+  VERIFY_EMAIL_OTP: 'VerifyEmailOtp',
   SET_PASSWORD: 'SetPassword',
   HOME: 'Home',
   NEWSFEED: 'NewsFeed',

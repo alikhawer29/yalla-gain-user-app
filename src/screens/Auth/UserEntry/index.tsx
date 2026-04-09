@@ -12,7 +12,7 @@ import Text from "../../../components/Text";
 import Upload from "../../../components/Upload";
 import colors from "../../../utils/colors";
 import { TABS } from "../../../utils/data";
-import { heightPixel } from "../../../utils/helper";
+import { heightPixel, withDialingCodePlus } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
 import useAddEntryController from "./useAddEntryController";
@@ -57,7 +57,13 @@ const UserEntry = () => {
                     country={data?.country_code}
                     onChangeCountry={e => {
                         setFieldValue("country_code", e?.cca2)
-                        setFieldValue("dialing_code", e?.callingCode?.[0])
+                        const raw = e?.callingCode?.[0]
+                        setFieldValue(
+                            "dialing_code",
+                            raw != null && raw !== ""
+                                ? withDialingCodePlus(String(raw))
+                                : "",
+                        )
                     }}
                 />
                 <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />

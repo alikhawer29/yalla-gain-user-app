@@ -27,6 +27,7 @@ export type AuthStackParamList = {
     Login: undefined
     ForgotPassword: { type: InputType }
     VerifyCode: { via: string, email: string, dialing_code: string, phone: string }
+    VerifyEmailOtp: { email: string }
     SetPassword: { via: string, email: string, dialing_code: string, phone: string, token: string }
 };
 
@@ -35,7 +36,7 @@ export type RootStackParamList = {
     MyProfile: undefined
     EditProfile: undefined
     ChangePassword: undefined
-    Chat: undefined
+    Chat: { initialTab?: 'user' | 'trainer' | 'doctor' | 'admin' }
     NewsFeed: undefined
     ProgressTracking: undefined
     MusicAuth: undefined
