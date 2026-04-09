@@ -259,6 +259,8 @@ export interface IVideoCard {
     onPress?: () => void
     is_saved?: boolean,
     is_video?: boolean,
+    muscle_title?: string
+    exercise_title?: string
 }
 
 export interface IWorkoutCard extends IProgressBar {

@@ -61,6 +61,8 @@ const Workouts = () => {
                 renderItem={({ item }) => (
                     <VideoCard
                         {...item}
+                        muscle_title={item.muscle_title}
+                        exercise_title={item.exercise_title}
                         image={{ uri: item.image }}
                         onPress={() => onWorkoutPress(item.id)}
                         is_video={false}

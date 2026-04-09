@@ -3,7 +3,7 @@ import { View } from "react-native"
 import images from "../../../assets/images"
 import { IVideoCard } from "../../../interfaces"
 import colors from "../../../utils/colors"
-import { heightPixel } from "../../../utils/helper"
+import { capitalize, heightPixel } from "../../../utils/helper"
 import globalStyles from "../../../utils/styles"
 
 import CardWrapper from "../../CardWrapper"
@@ -25,6 +25,8 @@ const VideoCard: FC<IVideoCard> = ({
     onSave,
     onPress,
     is_video = true,
+    muscle_title = 'Muscle Title',
+    exercise_title = 'Exercise Title'
 }) => {
     const is_secondary = type === "secondary"
 
@@ -73,7 +75,9 @@ const VideoCard: FC<IVideoCard> = ({
             <View
                 style={[
                     styles.content_container,
-                    { padding: heightPixel(is_secondary ? 8 : 16) },
+                    {
+                        padding: heightPixel(is_secondary ? 8 : 16)
+                    },
                 ]}
             >
                 <Text
@@ -81,10 +85,17 @@ const VideoCard: FC<IVideoCard> = ({
                     lines={1}
                     size={is_secondary ? 14 : 20}
                 >
-                    {title}
+                    {capitalize(muscle_title)}
+                </Text>
+                <Text
+                    weight="regular"
+                    lines={1}
+                    size={is_secondary ? 10 : 16}
+                >
+                    {capitalize(exercise_title)}
                 </Text>
 
-                <Row align="center" justify="space-between">
+                {/* <Row align="center" justify="space-between">
                     <Row align="center" gap={is_secondary ? 6 : 8}>
                         <Icon source={images.calendar} size={is_secondary ? 12 : 19} />
                         <Text size={is_secondary ? 12 : 19}>{created_at}</Text>
@@ -98,7 +109,7 @@ const VideoCard: FC<IVideoCard> = ({
                             </Text>
                         </Row>
                     )}
-                </Row>
+                </Row> */}
 
                 <Text
                     weight={is_secondary ? "semibold" : "regular"}
