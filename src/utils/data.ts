@@ -2,7 +2,9 @@ import images from '../assets/images';
 
 /** Main backend origin (scheme + host, no path). Change here for staging/production. */
 // export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
-export const API_BASE_URL = 'http://109.1.1.7';
+export const API_BASE_URL = 'http://109.1.1.3';
+// export const API_BASE_URL = 'http://109.1.1.7';
+
 
 /** User-scoped REST API (`.../api/user/*`). */
 export const API_USER_BASE_URL = `${API_BASE_URL}/yalla-backend/api/user/`;
@@ -41,6 +43,21 @@ export const USER = {
 
 export const capitalizeFirst = (str = '') =>
   str.charAt(0).toUpperCase() + str.slice(1);
+
+/** e.g. `face_yoga` → "Face Yoga"; single words stay title-cased. */
+export const capitalizeWords = (str = '') => {
+  const s = String(str).trim();
+  if (!s) return '';
+  if (/^n\/?a$/i.test(s)) return 'N/A';
+  return s
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map(
+      word =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+    )
+    .join(' ');
+};
 
 export const PROGRESS_TRACKING = [
   {

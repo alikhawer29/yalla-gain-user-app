@@ -3,27 +3,30 @@ import { ScrollView, View } from "react-native"
 import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
-import Image from "../../components/Image"
-import Dropdown from "../../components/Dropdown"
 import InfoCard from "../../components/Cards/InfoCard"
 import ProgressCard from "../../components/Cards/ProgressCard"
 import TrackingCard from "../../components/Cards/TrackingCard"
 import VideoCard from "../../components/Cards/VideoCard"
-import WorkoutCard from "../../components/Cards/WorkoutCard"
+import Dropdown from "../../components/Dropdown"
 import ProfileHeader from "../../components/ProfileHeader"
 import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
-import colors from "../../utils/colors"
-import { PROGRESS_TRACKING, WORKOUT_PLANS, RECOMMENDED_VIDEOS } from "../../utils/data"
 import { useGetWorkoutQuery } from "../../redux/Apis/User"
+import colors from "../../utils/colors"
+import { PROGRESS_TRACKING } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
-import { navigate, navigationRef, navigateToWorkout, navigateToChallenges } from '../../utils/navigation';
-import { ROUTES, NAVIGATORS } from "../../utils/routes"
+import { navigateToChallenges, navigateToWorkout, navigationRef } from '../../utils/navigation'
+import { NAVIGATORS, ROUTES } from "../../utils/routes"
 
 const Home = () => {
-    const { data: workoutData, isLoading: workoutLoading } = useGetWorkoutQuery(undefined);
+    const {
+        data: workoutData,
+        isLoading: workoutLoading,
+        isFetching,
+        refetch,
+    } = useGetWorkoutQuery(undefined);
     const [calorieFilter, setCalorieFilter] = useState('Weekly')
     const calorieOptions = [
         { label: 'Weekly', value: 'Weekly' },
@@ -40,9 +43,6 @@ const Home = () => {
         }
     };
 
-    const getRecommendedImage = (index: number) => RECOMMENDED_VIDEOS[index % RECOMMENDED_VIDEOS.length]?.image;
-    const getWorkoutPlanImage = (index: number) => WORKOUT_PLANS[index % WORKOUT_PLANS.length]?.image;
-
     const data = {
         labels: ["Mon", "Tues", "Wed", "Thu", "Fri", "Sat", "Sun"],
         datasets: [
@@ -55,7 +55,13 @@ const Home = () => {
     };
 
     return (
-        <Wrapper bottom_bar scrollable floating>
+        <Wrapper
+            bottom_bar
+            scrollable
+            floating
+            onRefresh={() => void refetch()}
+            refreshing={isFetching && !workoutLoading}
+        >
             <ProfileHeader />
             <View style={{ marginTop: heightPixel(30) }}>
                 <InfoCard />
@@ -102,7 +108,9 @@ const Home = () => {
                                 language={item.language}
                                 description={item.description}
                                 created_at={item.created_at}
-                                image={getRecommendedImage(index)}
+                                image={item?.image}
+                                video_count={item.video_count}
+                                show_video_count
                                 type="secondary"
                                 is_video={true}
                                 onPress={() => navigateToWorkoutDetails(item.id)}
@@ -211,7 +219,9 @@ const Home = () => {
                                 exercise_title={item.exercise_title}
                                 description={item.description}
                                 created_at={item.created_at}
-                                image={getWorkoutPlanImage(index)}
+                                image={item?.image}
+                                video_count={item.video_count}
+                                show_video_count
                                 type="secondary"
                                 is_video={true}
                                 onPress={() => navigateToWorkoutDetails(item.id)}

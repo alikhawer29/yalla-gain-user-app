@@ -585,6 +585,16 @@ export const userApi = createApi({
         'Challenges',
       ],
     }),
+    claimChallengeReward: builder.mutation({
+      query: (id: number) => ({
+        url: `challenge/${id}/claim-reward`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: 'Challenges', id },
+        'Challenges',
+      ],
+    }),
     getChallengeLogs: builder.query({
       query: (params?: { search?: string; from?: string; to?: string }) => ({
         url: `challenge/logs/my`,
@@ -671,6 +681,7 @@ export const {
   useStartTodayTaskMutation,
   useCompleteTodayTaskMutation,
   useLeaveChallengeMutation,
+  useClaimChallengeRewardMutation,
   useGetChallengeLogsQuery,
   useDeleteAccountMutation,
 } = userApi;

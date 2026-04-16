@@ -5,12 +5,30 @@ const styles = StyleSheet.create({
   content_container: {
     flex: 0.4,
     padding: heightPixel(8),
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: heightPixel(6),
   },
   image_container: {
     flex: 0.6,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+  },
+  video_count_badge: {
+    position: 'absolute',
+    top: heightPixel(8),
+    right: heightPixel(10),
+    zIndex: 2,
+    paddingHorizontal: heightPixel(8),
+    paddingVertical: heightPixel(4),
+    borderRadius: heightPixel(6),
+    backgroundColor: 'rgba(31, 31, 31, 0.82)',
+  },
+  video_count_badge_offset_save: {
+    right: heightPixel(50),
+  },
+  video_count_badge_offset_secondary: {
+    right: heightPixel(42),
   },
   image: {
     height: '100%',

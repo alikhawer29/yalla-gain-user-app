@@ -220,7 +220,7 @@ const ROUTES_OPTIONS = [
     left: 'back',
     right: null,
     logo: false,
-    title: 'Workout Details',
+    title: 'Workout Videos',
   },
   {
     route_name: ROUTES.VIDEO_DETAILS,

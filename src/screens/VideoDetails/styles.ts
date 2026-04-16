@@ -26,6 +26,10 @@ const styles = StyleSheet.create({
     similar_videos_title: {
         marginVertical: heightPixel(14),
     },
+    no_similar_videos: {
+        marginBottom: heightPixel(8),
+        color: colors.gray,
+    },
 })
 
 export default styles

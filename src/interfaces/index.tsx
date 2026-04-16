@@ -255,12 +255,19 @@ export interface IVideoCard {
     created_at: string
     language?: string,
     type?: "primary" | "secondary",
+    /** When true (e.g. similar videos row), title shows `exercise_title` instead of `muscle_title`. */
+    is_similar?: boolean
     onSave?: () => void
     onPress?: () => void
     is_saved?: boolean,
     is_video?: boolean,
     muscle_title?: string
     exercise_title?: string
+    video_count?: number
+    /** When true, shows count badge on thumbnail (Home Recommended / Workout Plans only). */
+    show_video_count?: boolean
+    /** When true, title line uses `muscle_title` (e.g. Workouts list with primary card). */
+    use_muscle_title?: boolean
 }
 
 export interface IWorkoutCard extends IProgressBar {

@@ -36,7 +36,7 @@ const WorkoutDetail = () => {
         }
     } = useWorkoutDetailController()
 
-    // console.log(data[0]?.exercise_key, 'data')
+    console.log(data[0], 'data')
 
 
     return (
@@ -62,6 +62,7 @@ const WorkoutDetail = () => {
                 renderItem={({ item }) => (
                     <VideoCard
                         {...item}
+                        exercise_title={item.exercise?.text}
                         image={{ uri: item.thumbnail }}
                         onSave={() => onSave(item.id)}
                         onPress={() => onPress(item.id)}

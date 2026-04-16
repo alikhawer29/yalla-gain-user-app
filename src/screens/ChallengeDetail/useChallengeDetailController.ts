@@ -6,6 +6,7 @@ import {
   useLeaveChallengeMutation,
   useStartTodayTaskMutation,
   useCompleteTodayTaskMutation,
+  useClaimChallengeRewardMutation,
 } from '../../redux/Apis/User';
 import { goBack } from '../../utils/navigation';
 
@@ -33,6 +34,8 @@ const useChallengeDetailController = () => {
     useStartTodayTaskMutation();
   const [completeTodayTask, { isLoading: isCompletingTask }] =
     useCompleteTodayTaskMutation();
+  const [claimChallengeReward, { isLoading: isClaimingReward }] =
+    useClaimChallengeRewardMutation();
 
   const challenge = data?.data ?? data;
   const userChallenge = challenge?.user_challenge ?? challenge?.userChallenge;
@@ -94,8 +97,19 @@ const useChallengeDetailController = () => {
     } catch (e) {}
   };
 
+  const onClaimReward = async () => {
+    try {
+      await claimChallengeReward(id).unwrap();
+      await refetch();
+    } catch (e) {}
+  };
+
   const isMutationLoading =
-    isStarting || isLeaving || isStartingTask || isCompletingTask;
+    isStarting ||
+    isLeaving ||
+    isStartingTask ||
+    isCompletingTask ||
+    isClaimingReward;
 
   const isBlockingLoad = isChallengeInitialLoad || isMutationLoading;
   const isPullRefreshing =
@@ -107,6 +121,7 @@ const useChallengeDetailController = () => {
       isJoined,
       isBlockingLoad,
       isPullRefreshing,
+      isClaimingReward,
       showLeaveConfirm,
       showLeaveSuccess,
     },
@@ -119,6 +134,7 @@ const useChallengeDetailController = () => {
       setShowLeaveConfirm,
       onStartTodayTask,
       onCompleteTodayTask,
+      onClaimReward,
     },
   };
 };

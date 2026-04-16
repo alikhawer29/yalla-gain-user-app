@@ -12,7 +12,7 @@ import colors from '../../utils/colors';
 import { font, heightPixel, widthPixel } from '../../utils/helper';
 import { goBack } from '../../utils/navigation';
 import useChallengeLogsController from './useChallengeLogsController';
-import { capitalizeFirst } from '../../utils/data';
+import { capitalizeFirst, capitalizeWords } from '../../utils/data';
 
 const ChallengeLogs = () => {
   const {
@@ -67,7 +67,7 @@ const ChallengeLogs = () => {
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text size={14} color={colors.white} weight="semibold">
-              Challenge Type: <Text size={14} color={colors.icon_gray}>{capitalizeFirst(challenge.type) || 'N/A'}</Text>
+              Challenge Type: <Text size={14} color={colors.icon_gray}>{capitalizeWords(challenge.type ?? '') || 'N/A'}</Text>
             </Text>
           </View>
         </Row>
@@ -102,7 +102,7 @@ const ChallengeLogs = () => {
             style={[
               styles.statusBadge,
               {
-                backgroundColor: isCompleted ? colors.success : isFailed ? colors.danger : colors.primary,
+                backgroundColor: isCompleted ? colors.completed : isFailed ? colors.danger : colors.primary,
               },
             ]}
           >

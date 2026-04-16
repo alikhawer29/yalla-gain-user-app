@@ -63,9 +63,13 @@ const Workouts = () => {
                         {...item}
                         muscle_title={item.muscle_title}
                         exercise_title={item.exercise_title}
+                        description={item.description}
                         image={{ uri: item.image }}
                         onPress={() => onWorkoutPress(item.id)}
                         is_video={false}
+                        show_video_count
+                        video_count={item.video_count}
+                        use_muscle_title
                     />
                 )}
                 ItemSeparatorComponent={() => <Seperator size={20} />}
