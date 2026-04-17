@@ -39,7 +39,6 @@ const ChallengeDetail = () => {
       isJoined,
       isBlockingLoad,
       isPullRefreshing,
-      isClaimingReward,
       showLeaveConfirm,
       showLeaveSuccess,
     },
@@ -92,12 +91,21 @@ const ChallengeDetail = () => {
     [challengeTasks],
   );
 
+  const progressStatusLower = String(
+    challenge?.challenge_progress?.status ?? '',
+  ).toLowerCase();
+  const challengeStatusLower = String(
+    challenge?.challenge_status ?? '',
+  ).toLowerCase();
+  const awaitingRewardClaim = challenge?.can_claim_reward === true;
+
+  /** Keep checklist visible through completion until reward is claimed (`can_claim_reward` clears). */
   const showDailyWorkoutChecklist =
     isJoined &&
     sortedChallengeTasks.length > 0 &&
-    (challenge?.challenge_status === 'ongoing' ||
-      String(challenge?.challenge_progress?.status ?? '').toLowerCase() ===
-      'ongoing');
+    (challengeStatusLower === 'ongoing' ||
+      progressStatusLower === 'ongoing' ||
+      awaitingRewardClaim);
 
   const challengeTimeline = useMemo(
     () =>
@@ -136,10 +144,12 @@ const ChallengeDetail = () => {
 
   /** Backend: `show_start_button: false` while today’s task is active (timer / ongoing). */
   const showStartDayButton =
-    !todayTask || todayTask.show_start_button !== false;
+    !awaitingRewardClaim &&
+    (!todayTask || todayTask.show_start_button !== false);
 
   const showTaskTimer =
     isJoined &&
+    !awaitingRewardClaim &&
     todayTask?.show_timer === true &&
     todayTask?.timer_active === true;
 
@@ -219,8 +229,8 @@ const ChallengeDetail = () => {
         ? Math.round(challengeTimeline.percent)
         : tasks?.length
           ? Math.round(
-              (countFullyCompletedTasks(tasks) / tasks.length) * 100,
-            )
+            (countFullyCompletedTasks(tasks) / tasks.length) * 100,
+          )
           : 0;
     if (pct < 1) pct = 1;
     return `Are You Sure You Want To Leave The Challenge? You're Doing Great And Have Already Surpassed ${pct}%! We Can Do This!`;
@@ -342,17 +352,6 @@ const ChallengeDetail = () => {
           <Seperator size={12} />
         </>
       ) : null}
-      {challenge?.can_claim_reward === true ? (
-        <>
-          <Button
-            text="Claim Reward"
-            onPress={onClaimReward}
-            loading={isClaimingReward}
-            disabled={isBlockingLoad}
-          />
-          <Seperator size={12} />
-        </>
-      ) : null}
       {isJoined && challengeTimeline ? (
         <>
           <Seperator size={12} />
@@ -389,6 +388,21 @@ const ChallengeDetail = () => {
           <Seperator size={16} />
         </>
       ) : null}
+      {challenge?.can_claim_reward === true ? (
+        <>
+          <Text
+            size={15}
+            weight="semibold"
+            color={colors.completed}
+            style={styles.challenge_completed_banner}
+          >
+            Challenge has been completed successfully.
+          </Text>
+          <Seperator size={12} />
+          <Button text="Claim Reward" onPress={onClaimReward} />
+          <Seperator size={12} />
+        </>
+      ) : null}
       {showTaskTimer ? (
         <View style={styles.challenge_task_timer}>
           <Text size={24} weight="bold" color={colors.primary}>
@@ -398,9 +412,9 @@ const ChallengeDetail = () => {
       ) : null}
       <Seperator size={24} />
       {
-        !isJoined ? (
+        !isJoined && !awaitingRewardClaim ? (
           <Button text="Start Challenge" onPress={onStart} />
-        ) : (
+        ) : isJoined ? (
           <>
             {showStartDayButton ? (
               <Button
@@ -408,14 +422,6 @@ const ChallengeDetail = () => {
                 onPress={onStartTodayTask}
               />
             ) : null}
-            {/* Complete day — not needed for now; restore when API flow is ready
-            <Button
-              text={`Complete ${challengeType}`}
-              type="outlined"
-              style={styles.button_spacer}
-              onPress={onCompleteTodayTask}
-            />
-            */}
             {showLeaveChallengeButton ? (
               <Button
                 text="Leave Challenge"
@@ -426,7 +432,7 @@ const ChallengeDetail = () => {
               />
             ) : null}
           </>
-        )
+        ) : null
       }
       <Seperator size={40} />
       <ConfirmModal

@@ -18,7 +18,7 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
     const formatDate = (dateString: string) => {
         if (!dateString) return "";
 
-        // Parse MM/DD/YYYY format
+        // Parse YYYY/MM/DD format
         const parts = dateString.split('/');
         if (parts.length !== 3) return "";
 
@@ -72,7 +72,7 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
             {/* Booking ID */}
             <Row style={styles.detail_row}>
                 <Text size={15} weight="semibold" color={colors.white}>Booking Id : </Text>
-                <Text size={15} color={colors.icon_gray}>#{booking.id || booking.booking_id}</Text>
+                <Text size={15} color={colors.icon_gray}>#{booking.id}</Text>
             </Row>
 
             {/* Amount */}

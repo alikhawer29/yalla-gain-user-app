@@ -193,10 +193,36 @@ export const userApi = createApi({
       providesTags: ['SavedContent'],
     }),
     getWorkout: builder.query({
-      query: params => ({
+      query: (params?: {
+        search?: string;
+        from?: string;
+        to?: string;
+        muscle_id?: number;
+      }) => ({
         url: `workout-contents`,
         method: 'GET',
         params,
+      }),
+    }),
+
+    getMuscles: builder.query({
+      query: () => ({
+        url: `muscles`,
+        method: 'GET',
+      }),
+    }),
+
+    getMuscleExerciseTypes: builder.query({
+      query: (muscleId: number) => ({
+        url: `muscles/${muscleId}/exercise-types`,
+        method: 'GET',
+      }),
+    }),
+
+    getDashboard: builder.query({
+      query: () => ({
+        url: `dashboard`,
+        method: 'GET',
       }),
     }),
 
@@ -227,7 +253,15 @@ export const userApi = createApi({
       invalidatesTags: ['Notifications'],
     }),
     getVideosByWorkout: builder.query({
-      query: data => ({
+      query: (data?: {
+        id?: number;
+        params?: {
+          search?: string;
+          from?: string;
+          to?: string;
+          exercise_id?: number;
+        };
+      }) => ({
         url: `workout-content/${data?.id}/videos`,
         method: 'GET',
         params: data?.params,
@@ -283,7 +317,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Bookings'],
+      invalidatesTags: ['Bookings', 'Wallet'],
     }),
     getMyBookings: builder.query({
       query: params => ({
@@ -430,7 +464,7 @@ export const userApi = createApi({
         method: 'POST',
         body: { coins },
       }),
-      invalidatesTags: ['Bookings'],
+      invalidatesTags: ['Bookings', 'Wallet'],
     }),
     //GET Coins
     getWalletCoins: builder.query({
@@ -447,6 +481,7 @@ export const userApi = createApi({
         method: 'POST',
         body: payload,
       }),
+      invalidatesTags: ['Wallet'],
     }),
     buyYallaCoin: builder.mutation({
       query: payload => ({
@@ -513,7 +548,7 @@ export const userApi = createApi({
     }),
     // Challenges
     getChallenges: builder.query({
-      query: (params?: { search?: string; from?: string; to?: string }) => ({
+      query: (params?: { search?: string; type?: string }) => ({
         url: `challenges`,
         method: 'GET',
         params,
@@ -593,6 +628,7 @@ export const userApi = createApi({
       invalidatesTags: (result, error, id) => [
         { type: 'Challenges', id },
         'Challenges',
+        'Wallet',
       ],
     }),
     getChallengeLogs: builder.query({
@@ -634,6 +670,9 @@ export const {
   useGetCommentsQuery,
   useGetReactsQuery,
   useGetWorkoutQuery,
+  useGetMusclesQuery,
+  useGetMuscleExerciseTypesQuery,
+  useGetDashboardQuery,
   useGetSavedContentQuery,
   useGetVideosByWorkoutQuery,
   useGetVideoDetailsQuery,

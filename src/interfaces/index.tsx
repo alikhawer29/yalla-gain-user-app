@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native";
+import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, NativeScrollEvent, NativeSyntheticEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IndicatorName } from "react-native-loader-kit";
 
 export type TMessage = {
@@ -47,7 +47,7 @@ export type RootStackParamList = {
     Chatbot: undefined
     CreateNewsFeed: undefined
     Workout: undefined
-    WorkoutDetails: { id: number }
+    WorkoutDetails: { id: number; muscle_id?: number }
     VideoDetails: { id: number }
     VideoPlayer: { video: string }
     MovementCorrection: undefined
@@ -98,6 +98,7 @@ export type RootStackParamList = {
     // Challenges & Rewards
     Challenges: undefined;
     ChallengeDetail: { id: number };
+    ChallengeReward: { id: number };
     ChallengeLogs: undefined;
     // Watch Connect
     WatchConnect: undefined;
@@ -114,6 +115,8 @@ export interface IWrapper {
     hide_bottom_bar?: boolean
     onRefresh?: () => void | Promise<void>
     refreshing?: boolean
+    /** Passed to ScrollView when scrollable (e.g. Home dashboard refetch on scroll). */
+    onScroll?: (e: NativeSyntheticEvent<NativeScrollEvent>) => void
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -244,6 +247,8 @@ export interface ITrackingCard {
     title: string
     subtext?: string
     progress?: number | string
+    /** 0–100 ring fill for `type="progress"` (e.g. calories vs a daily goal). */
+    ringProgress?: number
     type?: 'graph' | 'progress' | 'workout'
     stats?: ITrackingStats[]
 }

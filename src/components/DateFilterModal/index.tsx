@@ -70,7 +70,7 @@ const DateFilterModal: FC<IDateFilterModal> = ({
                             <Seperator size={8} />
                             <TouchableOpacity style={styles.dateInput} onPress={() => setShowFromPicker(true)}>
                                 <Text size={14} color={fromDate ? colors.white : colors.icon_gray}>
-                                    {fromDate ? dateFormatter(fromDate) : 'Mm/Dd/Yyyy'}
+                                    {fromDate ? dateFormatter(fromDate) : 'YYYY/MM/DD'}
                                 </Text>
                                 <Icon source={images.calendar} size={18} tint_color={colors.icon_gray} />
                             </TouchableOpacity>
@@ -82,7 +82,7 @@ const DateFilterModal: FC<IDateFilterModal> = ({
                             <Seperator size={8} />
                             <TouchableOpacity style={styles.dateInput} onPress={() => setShowToPicker(true)}>
                                 <Text size={14} color={toDate ? colors.white : colors.icon_gray}>
-                                    {toDate ? dateFormatter(toDate) : 'Mm/Dd/Yyyy'}
+                                    {toDate ? dateFormatter(toDate) : 'YYYY/MM/DD'}
                                 </Text>
                                 <Icon source={images.calendar} size={18} tint_color={colors.icon_gray} />
                             </TouchableOpacity>

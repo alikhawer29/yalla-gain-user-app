@@ -72,7 +72,7 @@ const EditProfile = () => {
                                     setFieldValue("dialing_code", code ? (code.startsWith("+") ? code : `+${code}`) : "")
                                 }}
                             />
-                            <Input label="Date of Birth" placeholder="mm/dd/yyyy" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : null} maximumDate={maxDobDate} />
+                            <Input label="Date of Birth" placeholder="YYYY/MM/DD" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : null} maximumDate={maxDobDate} />
                             <Button text="Update" onPress={handleSubmit} loading={isLoading} style={styles.button} />
                         </>
                     )}

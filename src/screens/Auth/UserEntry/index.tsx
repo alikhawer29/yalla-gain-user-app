@@ -44,7 +44,7 @@ const UserEntry = () => {
             <>
                 <Input key={`${selected}-1`} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
                 <Input key={`${selected}-2`} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
-                <Input key={`${selected}-3`} label="Date of Birth" placeholder="mm/dd/yyyy" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : ""} />
+                <Input key={`${selected}-3`} label="Date of Birth" placeholder="YYYY/MM/DD" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : ""} />
                 <Input
                     key={`${selected}-4`}
                     label="Mobile Number"

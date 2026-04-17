@@ -97,6 +97,10 @@ const styles = StyleSheet.create({
     marginTop: heightPixel(8),
     alignSelf: 'flex-end',
   },
+  challenge_completed_banner: {
+    width: '100%',
+    textAlign: 'center',
+  },
   challenge_task_timer: {
     marginTop: heightPixel(16),
     // alignSelf: 'left',

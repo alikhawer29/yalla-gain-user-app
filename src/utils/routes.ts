@@ -77,6 +77,7 @@ const ROUTES = {
   // Challenges & Rewards
   CHALLENGES: 'Challenges',
   CHALLENGE_DETAIL: 'ChallengeDetail',
+  CHALLENGE_REWARD: 'ChallengeReward',
   CHALLENGE_LOGS: 'ChallengeLogs',
   // Watch Connect
   WATCH_CONNECT: 'WatchConnect',
@@ -453,11 +454,20 @@ const ROUTES_OPTIONS = [
     bottom_tab: false,
   },
   {
+    route_name: ROUTES.CHALLENGE_REWARD,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Reward',
+    bottom_tab: false,
+  },
+  {
     route_name: ROUTES.CHALLENGE_LOGS,
     left: 'back',
     right: null,
     logo: false,
     title: 'Challenge Logs',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.GO_GUIDE,

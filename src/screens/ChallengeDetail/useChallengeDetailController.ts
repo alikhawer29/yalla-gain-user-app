@@ -6,9 +6,9 @@ import {
   useLeaveChallengeMutation,
   useStartTodayTaskMutation,
   useCompleteTodayTaskMutation,
-  useClaimChallengeRewardMutation,
 } from '../../redux/Apis/User';
-import { goBack } from '../../utils/navigation';
+import { goBack, navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 
 const useChallengeDetailController = () => {
   const route = useRoute();
@@ -34,8 +34,6 @@ const useChallengeDetailController = () => {
     useStartTodayTaskMutation();
   const [completeTodayTask, { isLoading: isCompletingTask }] =
     useCompleteTodayTaskMutation();
-  const [claimChallengeReward, { isLoading: isClaimingReward }] =
-    useClaimChallengeRewardMutation();
 
   const challenge = data?.data ?? data;
   const userChallenge = challenge?.user_challenge ?? challenge?.userChallenge;
@@ -97,19 +95,12 @@ const useChallengeDetailController = () => {
     } catch (e) {}
   };
 
-  const onClaimReward = async () => {
-    try {
-      await claimChallengeReward(id).unwrap();
-      await refetch();
-    } catch (e) {}
+  const onClaimReward = () => {
+    navigate(ROUTES.CHALLENGE_REWARD, { id });
   };
 
   const isMutationLoading =
-    isStarting ||
-    isLeaving ||
-    isStartingTask ||
-    isCompletingTask ||
-    isClaimingReward;
+    isStarting || isLeaving || isStartingTask || isCompletingTask;
 
   const isBlockingLoad = isChallengeInitialLoad || isMutationLoading;
   const isPullRefreshing =
@@ -121,7 +112,6 @@ const useChallengeDetailController = () => {
       isJoined,
       isBlockingLoad,
       isPullRefreshing,
-      isClaimingReward,
       showLeaveConfirm,
       showLeaveSuccess,
     },

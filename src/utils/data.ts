@@ -1,10 +1,10 @@
+import type { ImageSourcePropType } from 'react-native';
 import images from '../assets/images';
 
 /** Main backend origin (scheme + host, no path). Change here for staging/production. */
 // export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
 export const API_BASE_URL = 'http://109.1.1.3';
 // export const API_BASE_URL = 'http://109.1.1.7';
-
 
 /** User-scoped REST API (`.../api/user/*`). */
 export const API_USER_BASE_URL = `${API_BASE_URL}/yalla-backend/api/user/`;
@@ -52,34 +52,87 @@ export const capitalizeWords = (str = '') => {
   return s
     .split(/[_\s]+/)
     .filter(Boolean)
-    .map(
-      word =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
-    )
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
+/** Static templates: icons + keywords to match API `challenge_name` when no remote image. */
 export const PROGRESS_TRACKING = [
   {
     title: 'Running Progress',
     progress: 80,
     icon: images.run,
+    keywords: ['run', 'running', 'jog', 'cardio', 'sprint'],
   },
   {
     title: 'Fitness Progress',
     progress: 90,
     icon: images.dumbbell,
+    keywords: ['fitness', 'gym', 'strength', 'lift', 'muscle'],
   },
   {
     title: 'Boxing Progress',
     progress: 100,
     icon: images.kabaddi,
+    keywords: ['box', 'boxing', 'fight', 'kabaddi'],
   },
   {
     title: 'Workout Progress',
     progress: 10,
     icon: images.martial_arts,
+    keywords: ['workout', 'martial', 'yoga', 'stretch', 'mobility'],
   },
+] as const;
+
+const DEFAULT_PROGRESS_ICON = images.dumbbell;
+
+/**
+ * Icon for a progress-tracking row: prefer API `image` / `image_url`, else match `challenge_name`
+ * against {@link PROGRESS_TRACKING} keywords, else first word of template title, else default.
+ */
+export function getProgressTrackingIconSource(
+  challengeName: string | undefined,
+  remoteImageUrl?: string | null,
+): ImageSourcePropType {
+  const url = typeof remoteImageUrl === 'string' ? remoteImageUrl.trim() : '';
+  if (url) {
+    return { uri: url };
+  }
+
+  const q = (challengeName ?? '').toLowerCase().trim();
+  if (!q) {
+    return DEFAULT_PROGRESS_ICON;
+  }
+
+  for (const row of PROGRESS_TRACKING) {
+    if (row.keywords.some(k => q.includes(k.toLowerCase()))) {
+      return row.icon;
+    }
+  }
+
+  for (const row of PROGRESS_TRACKING) {
+    const first = row.title.split(/\s+/)[0]?.toLowerCase();
+    if (first && first !== 'progress' && q.includes(first)) {
+      return row.icon;
+    }
+  }
+
+  return DEFAULT_PROGRESS_ICON;
+}
+
+export const bodyPartOptions = [
+  { value: 'run', text: 'Running' },
+  { value: 'cycle', text: 'Cycling' },
+  { value: 'workout', text: 'Workout' },
+  { value: 'strength', text: 'Strength' },
+  { value: 'face_yoga', text: 'Face Yoga' },
+  { value: 'cardio', text: 'Cardio' },
+];
+
+/** Dropdown `items`: All + {@link bodyPartOptions}; API query `type` = selected `value` (e.g. `type=arms`). */
+export const challengeBodyPartOptions = [
+  { label: 'All', value: '' },
+  ...bodyPartOptions.map(o => ({ label: o.text, value: o.value })),
 ];
 
 export const RECOMMENDED_VIDEOS = [

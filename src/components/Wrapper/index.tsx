@@ -19,6 +19,7 @@ const Wrapper: FC<IWrapper> = ({
     hide_bottom_bar = false,
     onRefresh,
     refreshing = false,
+    onScroll,
 }) => {
 
     const headerHeight = useHeaderHeight()
@@ -70,6 +71,8 @@ const Wrapper: FC<IWrapper> = ({
                     contentContainerStyle={[styles.scroll_content, content_container_style]}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    onScroll={onScroll}
+                    scrollEventThrottle={onScroll ? 16 : undefined}
                     refreshControl={
                         onRefresh ? (
                             <RefreshControl

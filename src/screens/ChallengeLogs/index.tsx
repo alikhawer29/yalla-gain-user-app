@@ -8,6 +8,7 @@ import Wrapper from '../../components/Wrapper';
 import Icon from '../../components/Icon';
 import Touchable from '../../components/Touchable';
 import CardWrapper from '../../components/CardWrapper';
+import DateFilterModal from '../../components/DateFilterModal';
 import colors from '../../utils/colors';
 import { font, heightPixel, widthPixel } from '../../utils/helper';
 import { goBack } from '../../utils/navigation';
@@ -16,8 +17,8 @@ import { capitalizeFirst, capitalizeWords } from '../../utils/data';
 
 const ChallengeLogs = () => {
   const {
-    values: { logs, isLoading, search },
-    functions: { onSearch, onReload },
+    values: { logs, isLoading, search, fromDate, toDate, showFilterModal },
+    functions: { onSearch, onReload, onFilterPress, onCloseFilterModal, onApplyFilter },
   } = useChallengeLogsController();
 
   const renderSearch = () => (
@@ -32,16 +33,15 @@ const ChallengeLogs = () => {
           style={styles.searchInput}
         />
       </View>
-      {/* <Icon
-        source={images.filters}
-        size={50}
-        border={colors.border}
-        rounded
-        less_rounded
-        tint_color={colors.white}
-        no_padding
-        onPress={() => { }} // Handle filter
-      /> */}
+      <Touchable onPress={onFilterPress}>
+        <Icon
+          source={images.filters}
+          size={40}
+          rounded
+          less_rounded
+          border={(fromDate || toDate) ? colors.primary : colors.white}
+        />
+      </Touchable>
     </Row>
   );
 
@@ -142,6 +142,13 @@ const ChallengeLogs = () => {
           />
         }
         showsVerticalScrollIndicator={false}
+      />
+      <DateFilterModal
+        visible={showFilterModal}
+        onClose={onCloseFilterModal}
+        onApply={onApplyFilter}
+        initialFromDate={fromDate}
+        initialToDate={toDate}
       />
     </Wrapper>
   );

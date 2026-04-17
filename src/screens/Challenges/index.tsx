@@ -1,8 +1,9 @@
-import { FlatList, RefreshControl, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
 import images from '../../assets/images';
+import ChallengeFilterModal from '../../components/ChallengeFilterModal';
+import Empty from '../../components/Empty';
 import ChallengeCard from '../../components/Cards/ChallengeCard';
 import Button from '../../components/Button';
-import DateFilterModal from '../../components/DateFilterModal';
 import Icon from '../../components/Icon';
 import Input from '../../components/Input';
 import Row from '../../components/Row';
@@ -15,7 +16,13 @@ import useChallengesController from './useChallengesController';
 
 const Challenges = () => {
   const {
-    values: { challenges, isLoading, search, showFilterModal, fromDate, toDate },
+    values: {
+      challenges,
+      isLoading,
+      search,
+      bodyPartType,
+      showFilterModal,
+    },
     functions: {
       onSearch,
       onReload,
@@ -23,7 +30,7 @@ const Challenges = () => {
       onPressChallengeLogs,
       onFilterPress,
       onCloseFilterModal,
-      onApplyFilter,
+      onApplyBodyPartFilter,
     },
   } = useChallengesController();
 
@@ -45,7 +52,7 @@ const Challenges = () => {
             size={40}
             rounded
             less_rounded
-            border={fromDate || toDate ? colors.primary : colors.white}
+            border={bodyPartType ? colors.primary : colors.white}
           />
         </Touchable>
       </Row>
@@ -57,8 +64,11 @@ const Challenges = () => {
       />
       <FlatList
         data={challenges}
+        contentContainerStyle={challenges.length === 0 ? { flexGrow: 1 } : undefined}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        columnWrapperStyle={
+          challenges.length > 0 ? { justifyContent: 'space-between' } : undefined
+        }
         renderItem={({ item }) => (
           <ChallengeCard
             id={item.id}
@@ -87,18 +97,25 @@ const Challenges = () => {
         )}
         keyExtractor={(item) => String(item.id)}
         ItemSeparatorComponent={() => <Seperator size={15} />}
-        ListEmptyComponent={null}
+        ListEmptyComponent={
+          isLoading ? (
+            <View style={{ paddingVertical: heightPixel(40), alignItems: 'center' }}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : (
+            <Empty message="No challenges found" />
+          )
+        }
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={onReload} />
         }
       />
-      <DateFilterModal
+      <ChallengeFilterModal
         visible={showFilterModal}
         onClose={onCloseFilterModal}
-        onApply={onApplyFilter}
-        initialFromDate={fromDate}
-        initialToDate={toDate}
+        onApply={onApplyBodyPartFilter}
+        initialType={bodyPartType}
       />
     </Wrapper>
   );

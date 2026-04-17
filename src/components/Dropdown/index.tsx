@@ -28,6 +28,9 @@ const Dropdown = props => {
     style,
     dropDownContainerStyle,
     arrowIconStyle,
+    listMode = 'SCROLLVIEW',
+    maxHeight,
+    modalProps,
   } = props;
 
   useEffect(() => {
@@ -72,7 +75,9 @@ const Dropdown = props => {
         onSelectItem={onChangeText}
         dropDownContainerStyle={[styles.dropdown, dropDownContainerStyle]}
         textStyle={[styles.text, textStyle]}
-        listMode="SCROLLVIEW"
+        listMode={listMode}
+        {...(maxHeight != null ? { maxHeight } : {})}
+        {...(modalProps ? { modalProps } : {})}
         multiple={multiple}
         mode="BADGE"
         dropDownDirection={direction}
