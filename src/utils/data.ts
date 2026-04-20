@@ -2,8 +2,8 @@ import type { ImageSourcePropType } from 'react-native';
 import images from '../assets/images';
 
 /** Main backend origin (scheme + host, no path). Change here for staging/production. */
-// export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
-export const API_BASE_URL = 'http://109.1.1.3';
+export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
+// export const API_BASE_URL = 'http://109.1.1.3';
 // export const API_BASE_URL = 'http://109.1.1.7';
 
 /** User-scoped REST API (`.../api/user/*`). */
