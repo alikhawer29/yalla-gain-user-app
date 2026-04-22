@@ -2,9 +2,9 @@
  * Watch "Connected" — Figma: file hKEbq9iM9t3wzCuroWuqUK
  * Main metrics row icons: node 192:1874 (children 192:1876 calories, 192:1880 heart, 192:1886 steps)
  */
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   LayoutChangeEvent,
@@ -24,11 +24,10 @@ import Image from '../../../components/Image';
 import colors from '../../../utils/colors';
 import { heightPixel, widthPixel } from '../../../utils/helper';
 import { goBack } from '../../../utils/navigation';
-import { ROUTES } from '../../../utils/routes';
 import images from '../../../assets/images';
 import { useAppSelector } from '../../../hooks';
 import { selectUser } from '../../../redux/Slices/AuthSlice';
-import { getMetrics, setWatchHealthLinked, WatchMetrics } from '../../../services/health/healthProvider';
+import { getMetrics, WatchMetrics } from '../../../services/health/healthProvider';
 
 const FIGMA = {
   teal: '#118076',
@@ -47,7 +46,6 @@ const CARD_PAD_X = widthPixel(18);
 const PAGER_MIN_H = heightPixel(340);
 
 const WatchConnected = () => {
-  const navigation = useNavigation();
   const user = useAppSelector(selectUser);
   const firstName = useMemo(() => {
     const raw = user?.first_name;
@@ -87,17 +85,21 @@ const WatchConnected = () => {
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
+  /** HealthKit/Health Connect have no “push” to the app; data is read when `getMetrics` runs. Refetch on every focus and via Sync so new Watch data on the device shows up without waiting for the 30s poll. */
+  const hasHadFirstFocus = useRef(false);
   useFocusEffect(
     useCallback(() => {
+      if (!hasHadFirstFocus.current) {
+        hasHadFirstFocus.current = true;
+        void refresh();
+      } else {
+        void refreshSilent();
+      }
       const id = setInterval(() => {
         void refreshSilent();
       }, 30000);
       return () => clearInterval(id);
-    }, [refreshSilent]),
+    }, [refresh, refreshSilent]),
   );
 
   const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -159,11 +161,6 @@ const WatchConnected = () => {
     return 'Here’s your synced health data.';
   }, [loading, hasWorkout, metrics.workoutActivityName]);
 
-  const onReconnect = useCallback(async () => {
-    await setWatchHealthLinked(false);
-    navigation.navigate(ROUTES.WATCH_CONNECT as never);
-  }, [navigation]);
-
   return (
     <Wrapper no_padding>
       <LinearGradient
@@ -191,14 +188,15 @@ const WatchConnected = () => {
           </View>
           <View style={styles.headerSideRight}>
             <Pressable
-              onPress={() => void onReconnect()}
+              onPress={() => void refresh()}
               hitSlop={{ top: 12, bottom: 12, left: 8, right: 4 }}
-              style={({ pressed }) => [{ opacity: pressed ? 0.65 : 1 }]}
+              disabled={loading}
+              style={({ pressed }) => [{ opacity: loading ? 0.45 : pressed ? 0.65 : 1 }]}
               accessibilityRole="button"
-              accessibilityLabel="Reconnect health sync"
+              accessibilityLabel="Sync latest health data from Apple Health"
             >
               <Text size={13} weight="semibold" color={FIGMA.teal} position="right">
-                Reconnect
+                Sync
               </Text>
             </Pressable>
           </View>
