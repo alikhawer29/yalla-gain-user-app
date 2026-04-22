@@ -52,20 +52,6 @@ export const auth = createSlice({
       },
     );
     builder.addMatcher(
-      authApi.endpoints.verifyOtp.matchFulfilled,
-      (state, action: PayloadAction<LoginResponse>) => {
-        state.isLoggedIn = true;
-        state.token = action?.payload?.token;
-        state.user = action?.payload?.user;
-
-        if (action?.payload?.user?.id) {
-          writeUserIdToUnityGame(action.payload.user.id).catch(err => {
-            console.error('Error writing user ID to Unity game:', err);
-          });
-        }
-      },
-    );
-    builder.addMatcher(
       userApi.endpoints.updateProfile.matchFulfilled,
       (state, action: PayloadAction<EditProfileResponse>) => {
         state.user = action?.payload?.data;

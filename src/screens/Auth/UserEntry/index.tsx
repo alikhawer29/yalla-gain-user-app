@@ -12,7 +12,7 @@ import Text from "../../../components/Text";
 import Upload from "../../../components/Upload";
 import colors from "../../../utils/colors";
 import { TABS } from "../../../utils/data";
-import { heightPixel, withDialingCodePlus } from "../../../utils/helper";
+import { heightPixel } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
 import useAddEntryController from "./useAddEntryController";
@@ -44,7 +44,7 @@ const UserEntry = () => {
             <>
                 <Input key={`${selected}-1`} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
                 <Input key={`${selected}-2`} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
-                <Input key={`${selected}-3`} label="Date of Birth" placeholder="YYYY/MM/DD" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : ""} />
+                <Input key={`${selected}-3`} label="Date of Birth" placeholder="mm/dd/yyyy" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : ""} />
                 <Input
                     key={`${selected}-4`}
                     label="Mobile Number"
@@ -57,13 +57,7 @@ const UserEntry = () => {
                     country={data?.country_code}
                     onChangeCountry={e => {
                         setFieldValue("country_code", e?.cca2)
-                        const raw = e?.callingCode?.[0]
-                        setFieldValue(
-                            "dialing_code",
-                            raw != null && raw !== ""
-                                ? withDialingCodePlus(String(raw))
-                                : "",
-                        )
+                        setFieldValue("dialing_code", e?.callingCode?.[0])
                     }}
                 />
                 <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />

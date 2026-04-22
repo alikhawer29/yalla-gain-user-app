@@ -66,7 +66,7 @@ const useBookingDetailsController = () => {
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
 
-    // Parse YYYY/MM/DD format
+    // Parse MM/DD/YYYY format
     const parts = dateString.split('/');
     if (parts.length !== 3) return '';
 

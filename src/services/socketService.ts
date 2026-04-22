@@ -1,5 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { SOCKET_SERVER_URL } from '../utils/data';
+
+const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170';
 
 class SocketService {
   private socket: Socket | null = null;
@@ -11,7 +12,7 @@ class SocketService {
       return;
     }
 
-    this.socket = io(SOCKET_SERVER_URL, {
+    this.socket = io(SOCKET_URL, {
       transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,

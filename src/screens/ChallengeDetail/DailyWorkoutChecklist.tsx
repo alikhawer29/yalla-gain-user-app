@@ -3,11 +3,7 @@ import { View } from 'react-native';
 import Text from '../../components/Text';
 import colors from '../../utils/colors';
 import styles from './checklistStyles';
-import { capitalizeWords } from '../../utils/data';
-import {
-  formatSessionDurationLabel,
-  type ChallengeDurationApi,
-} from './challengeDuration';
+import { capitalizeFirst } from '../../utils/data';
 
 export type ChallengeTaskItem = {
   id: number;
@@ -15,65 +11,20 @@ export type ChallengeTaskItem = {
   status?: string;
 };
 
-function getActivityShortName(typeRaw: string): string {
-  const key = typeRaw.toLowerCase().trim().replace(/-/g, '_');
-  const map: Record<string, string> = {
-    run: 'Run',
-    cycle: 'Cycling',
-    workout: 'Workout',
-    strength: 'Strength',
-    face_yoga: 'Face Yoga',
-    cardio: 'Cardio',
-  };
-  return map[key] ?? capitalizeWords(typeRaw);
-}
-
-/** Row prefix: API duration (`time_hour` / `time_minute` / `timer_duration_seconds`) + activity name; else static defaults. */
-function getDailyTaskLabelPrefix(
-  typeRaw: string,
-  durationMeta?: ChallengeDurationApi | null,
-): string {
-  const dur = formatSessionDurationLabel(durationMeta ?? undefined);
-  const activity = getActivityShortName(typeRaw);
-  if (dur) {
-    return `${dur} ${activity}`;
-  }
-  const key = typeRaw.toLowerCase().trim().replace(/-/g, '_');
-  switch (key) {
-    case 'run':
-      return '1 Hour Run';
-    case 'cycle':
-      return '1 Hour Cycling';
-    case 'workout':
-      return '1 Hour Workout';
-    case 'strength':
-      return '1 Hour Strength';
-    case 'face_yoga':
-      return '1 Hour Face Yoga';
-    case 'cardio':
-      return '1 Hour Cardio';
-    default:
-      return `1 ${capitalizeWords(typeRaw)}`;
-  }
-}
-
-/** Checked when API marks that day **completed** (`completed` / `done` / …) — not `ongoing`. */
+/** Checked only from API: `ongoing` (and completed-style) = checked, `pending` = unchecked. */
 function isTaskCheckedFromApi(status?: string) {
   const s = (status ?? '').toLowerCase();
+  if (s === 'pending') return false;
+  if (s === 'ongoing') return true;
   return ['completed', 'complete', 'done', 'success'].includes(s);
 }
 
 type Props = {
   tasks: ChallengeTaskItem[];
   challengeType: string;
-  durationMeta?: ChallengeDurationApi | null;
 };
 
-const DailyWorkoutChecklist = ({
-  tasks,
-  challengeType,
-  durationMeta,
-}: Props) => {
+const DailyWorkoutChecklist = ({ tasks, challengeType }: Props) => {
   const sortedTasks = useMemo(
     () =>
       [...tasks].sort((a, b) =>
@@ -84,15 +35,13 @@ const DailyWorkoutChecklist = ({
     [tasks],
   );
 
-  const labelPrefix = useMemo(
-    () => getDailyTaskLabelPrefix(challengeType, durationMeta),
-    [challengeType, durationMeta],
-  );
+  const labelPrefix =
+    challengeType.toLowerCase() === 'workout' ? '1 Workout' : '1 Hour Run';
 
   return (
     <View style={styles.section}>
       <Text size={16} weight="semibold" color={colors.white}>
-        Daily {capitalizeWords(challengeType)} checklist:
+        Daily {capitalizeFirst(challengeType)} checklist:
       </Text>
       <View style={styles.list}>
         {sortedTasks.map((task, index) => {

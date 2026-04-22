@@ -11,16 +11,7 @@ import CircularProgress from "../../CircularProgress";
 import colors from "../../../utils/colors";
 import { heightPixel } from "../../../utils/helper";
 
-function workoutRingPercent(progress: number | string | undefined): number {
-    if (typeof progress === 'number' && Number.isFinite(progress)) {
-        return Math.min(100, Math.max(0, progress));
-    }
-    const s = String(progress ?? '0').replace(/%/g, '').trim();
-    const n = parseFloat(s);
-    return Math.min(100, Math.max(0, Number.isFinite(n) ? n : 0));
-}
-
-const TrackingCard: FC<ITrackingCard> = ({ icon, title, progress = 0, subtext, ringProgress, type = 'graph', stats }) => {
+const TrackingCard: FC<ITrackingCard> = ({ icon, title, progress = 0, subtext, type = 'graph', stats }) => {
     const isProgress = type === 'progress';
     const isWorkout = type === 'workout';
 
@@ -36,7 +27,7 @@ const TrackingCard: FC<ITrackingCard> = ({ icon, title, progress = 0, subtext, r
                         <CircularProgress
                             size={heightPixel(85)}
                             strokeWidth={10}
-                            progress={Math.min(100, Math.max(0, Number(ringProgress ?? 0)))}
+                            progress={75} // Example progress for Cal
                             color={colors.primary}
                         >
                             <Text position="center" weight="bold" size={16}>{progress}</Text>
@@ -49,7 +40,7 @@ const TrackingCard: FC<ITrackingCard> = ({ icon, title, progress = 0, subtext, r
                             <CircularProgress
                                 size={heightPixel(70)}
                                 strokeWidth={8}
-                                progress={workoutRingPercent(progress)}
+                                progress={typeof progress === 'number' ? progress : parseInt(String(progress)) || 0}
                                 color={colors.primary}
                             >
                                 <Text weight="bold" size={14}>{progress}</Text>
@@ -61,7 +52,7 @@ const TrackingCard: FC<ITrackingCard> = ({ icon, title, progress = 0, subtext, r
                                     <View style={{ width: 16, height: 16, alignItems: 'center', justifyContent: 'center' }}>
                                         <Image source={stat.icon} style={{ width: 14, height: 14 }} resize="contain" />
                                     </View>
-                                    <Text size={10} weight="semibold">{stat.text}</Text>
+                                    <Text size={12} weight="semibold">{stat.text}</Text>
                                 </Row>
                             ))}
                         </View>

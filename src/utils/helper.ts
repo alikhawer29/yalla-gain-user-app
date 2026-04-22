@@ -58,20 +58,6 @@ export const formatTimer = (s: number): string => {
     return `${mins}:${secs}`;
 };
 
-/** Ensures dialing code includes a leading + for API payloads (country pickers often omit it). */
-export const withDialingCodePlus = (
-    code: string | undefined | null,
-): string => {
-    if (code == null || code === '') {
-        return '';
-    }
-    const s = String(code).trim();
-    if (!s) {
-        return '';
-    }
-    return s.startsWith('+') ? s : `+${s}`;
-};
-
 export const formHandler = (data: any) => {
 
     let formdata = new FormData()

@@ -119,51 +119,37 @@ export const ModalProvider = ({ children }) => {
                       />
                     </View>
                   )}
-                  {modalContent.type !== 'info' &&
-                    modalType !== 'input' &&
-                    (modalContent.illustrationSource ? (
-                      <Image
-                        source={modalContent.illustrationSource}
-                        style={{
-                          width: '100%',
-                          height: heightPixel(330),
-                          resizeMode: 'contain',
-                          marginBottom: heightPixel(16),
-                        }}
-                      />
-                    ) : (
-                      <Image
-                        source={
-                          modalContent.type === 'success'
-                            ? images.modal_check
-                            : modalContent.type === 'warning'
-                            ? images.warning
-                            : images.modal_cross
-                        }
-                        style={{
-                          height: heightPixel(78),
-                          resizeMode: 'contain',
-                          marginBottom: heightPixel(20),
-                        }}
-                      />
-                    ))}
-                  {modalContent?.title ? (
-                    <Text
-                      style={[
-                        styles.title,
-                        modalContent.type == 'info' || modalType === 'input'
-                          ? { width: '100%' }
-                          : {},
-                      ]}
-                      color={colors.white}
-                      position={modalType === 'input' ? 'left' : 'center'}
-                      size={modalType === 'input' ? 16 : 23}
-                      weight="bold"
-                      line_height={modalType === 'input' ? 24 : 40}
-                    >
-                      {modalContent?.title}
-                    </Text>
-                  ) : null}
+                  {modalContent.type !== 'info' && modalType !== 'input' && (
+                    <Image
+                      source={
+                        modalContent.type === 'success'
+                          ? images.modal_check
+                          : modalContent.type === 'warning'
+                          ? images.warning
+                          : images.modal_cross
+                      }
+                      style={{
+                        height: heightPixel(78),
+                        resizeMode: 'contain',
+                        marginBottom: heightPixel(20),
+                      }}
+                    />
+                  )}
+                  <Text
+                    style={[
+                      styles.title,
+                      modalContent.type == 'info' || modalType === 'input'
+                        ? { width: '100%' }
+                        : {},
+                    ]}
+                    color={colors.white}
+                    position={modalType === 'input' ? 'left' : 'center'}
+                    size={modalType === 'input' ? 16 : 23}
+                    weight="bold"
+                    line_height={modalType === 'input' ? 24 : 40}
+                  >
+                    {modalContent?.title}
+                  </Text>
                   {modalContent?.message && (
                     <Text
                       style={[
@@ -217,7 +203,7 @@ export const ModalProvider = ({ children }) => {
                       style={styles.buttonContainer}
                     >
                       <Button
-                        text={modalContent.yesText || 'Yes'}
+                        text="Yes"
                         style={{ width: '50%', minWidth: 'auto' }}
                         onPress={() => {
                           setIsVisible(false);
@@ -227,7 +213,7 @@ export const ModalProvider = ({ children }) => {
                         }}
                       />
                       <Button
-                        text={modalContent.noText || 'No'}
+                        text="No"
                         type="outlined"
                         style={{ width: '50%', minWidth: 'auto' }}
                         onPress={() => {

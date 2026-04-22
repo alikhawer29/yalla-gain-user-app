@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { BackHandler, DeviceEventEmitter, NativeModules, Platform, View } from 'react-native';
+import { BackHandler, DeviceEventEmitter, NativeModules, Platform, StyleSheet, View } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import UnityView from '@azesmway/react-native-unity';
 import UnityViewNativeIOS, {
@@ -15,10 +15,8 @@ import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { NAVIGATORS } from '../../utils/routes';
-import { SOCKET_SERVER_URL } from '../../utils/data';
-import UnitySplashOverlay from '../../components/UnitySplashOverlay';
 
-const SOCKET_URL = `${SOCKET_SERVER_URL}/`;
+const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
 const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
 const GAME_OBJECT_MESSAGE_SENT = 'MessageSent';
 const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';
@@ -354,12 +352,27 @@ const CreateAvatar = () => {
               />
             )}
 
-            <UnitySplashOverlay unityReady={isUnityReady} />
+            {!isUnityReady && (
+              <View
+                pointerEvents="none"
+                style={styles.unityLoadingOverlay}
+              />
+            )}
           </>
         )}
       </View>
     </Wrapper>
   );
 };
+
+const styles = StyleSheet.create({
+  // Solid black overlay while Unity reloads its scene.
+  // This hides the previous Unity frame that may show briefly on remount.
+  unityLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
+    zIndex: 9999,
+  },
+});
 
 export default CreateAvatar;

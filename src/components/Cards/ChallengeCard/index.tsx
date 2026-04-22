@@ -7,7 +7,7 @@ import Image from '../../Image';
 import Text from '../../Text';
 import colors from '../../../utils/colors';
 import styles from './styles';
-import { capitalizeFirst, capitalizeWords } from '../../../utils/data';
+import { capitalizeFirst } from '../../../utils/data';
 
 const CARD_BG = '#131313';
 
@@ -82,29 +82,21 @@ const ChallengeCard: FC<IChallengeCard> = ({
             </View>
           ) : null}
         </View>
-        <View style={styles.title_block}>
-          <View style={styles.title_row}>
-            <Text
-              weight="semibold"
-              size={14}
-              lines={2}
-              style={[styles.title, styles.title_flex]}
-            >
+        <View style={styles.title_row}>
+          <View style={styles.title_block}>
+            <Text weight="semibold" size={13} lines={1} style={styles.title}>
               {capitalizeFirst(title)}
             </Text>
-            <View style={styles.icon_wrap} pointerEvents="none">
-              <ArrowRightIcon size={20} />
-            </View>
-          </View>
-          <Text size={10} weight="bold" style={styles.type_label}>
-            Challenge Type:{' '}
-            <Text weight="regular" size={10} color={colors.icon_gray}>
-              {capitalizeWords(type)}
+            <Text size={11} weight="bold" lines={1} style={styles.type_label}>
+              Challenge Type: <Text weight="regular" size={11} color={colors.icon_gray}>{capitalizeFirst(type)}</Text>
             </Text>
-          </Text>
+          </View>
+          <View style={styles.icon_wrap}>
+            <ArrowRightIcon size={24} />
+          </View>
         </View>
       </View>
-    </CardWrapper >
+    </CardWrapper>
   );
 };
 

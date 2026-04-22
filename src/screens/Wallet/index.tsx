@@ -36,11 +36,11 @@ const Wallet = () => {
                         />
 
                         <Text style={styles.coinText}>
-                            My Coins : {data?.my_coins} <Text style={styles.coinTextSmall}> (Yalla Coins) </Text>
+                            My Coins : {data?.my_coins} (Yalla Coins)
                         </Text>
 
                         <Text style={styles.coinValue}>
-                            1 Yalla Coin Is Equal To {data?.coin_amount} AED
+                            1 Yalla Coin Is Equal To {data?.coin_amount}$
                         </Text>
                     </View>
 

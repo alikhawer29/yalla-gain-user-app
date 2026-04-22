@@ -27,31 +27,15 @@ const useChatDetailsController = () => {
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
 
-  const {
-    data,
-    isFetching: isLoading,
-    refetch,
-  } = useGetChatQuery(params.chatId);
+  const { data, isFetching: isLoading, refetch } = useGetChatQuery(params.chatId);
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
-
-  const normalizeMessage = useCallback(
-    (msg: IChatMessage): IChatMessage => {
-      const myId = user?.id;
-      const isMine =
-        myId != null &&
-        msg.user_id != null &&
-        String(msg.user_id) === String(myId);
-      return { ...msg, is_mine: isMine };
-    },
-    [user?.id],
-  );
 
   // Initialize messages from API
   useEffect(() => {
     if (data?.data) {
-      setMessages(data.data.map(normalizeMessage));
+      setMessages(data.data);
     }
-  }, [data, normalizeMessage]);
+  }, [data]);
 
   // Connect to socket and join chat room
   useEffect(() => {
@@ -60,11 +44,11 @@ const useChatDetailsController = () => {
 
     // Listen for new messages in this chat
     const handleNewMessage = (newMessage: IChatMessage) => {
-      const normalized = normalizeMessage(newMessage);
-      setMessages(prev => {
-        const exists = prev.some(m => m.id === normalized.id);
+      // Only add if not already in the list
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === newMessage.id);
         if (exists) return prev;
-        return [...prev, normalized];
+        return [...prev, newMessage];
       });
       scrollToEnd();
     };
@@ -75,7 +59,7 @@ const useChatDetailsController = () => {
       socketService.unsubscribe(`chat_${params.chatId}`, handleNewMessage);
       socketService.leaveChat(params.chatId);
     };
-  }, [params.chatId, normalizeMessage]);
+  }, [params.chatId]);
 
   // Scroll to end when messages change
   useEffect(() => {
@@ -108,7 +92,7 @@ const useChatDetailsController = () => {
   }, []);
 
   const onRemoveFile = useCallback((index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   }, []);
 
   const onSendMessage = useCallback(async () => {
@@ -131,15 +115,12 @@ const useChatDetailsController = () => {
       const response = await sendMessage(formData).unwrap();
 
       if (response?.data) {
-        const sent = normalizeMessage(response.data);
         // Emit through socket
-        socketService.sendMessage(
-          sent as Parameters<typeof socketService.sendMessage>[0],
-        );
-
+        socketService.sendMessage(response.data);
+        
         // Add to local messages
-        setMessages(prev => [...prev, sent]);
-
+        setMessages((prev) => [...prev, response.data]);
+        
         // Clear input
         setMessage('');
         setSelectedFiles([]);
@@ -153,7 +134,7 @@ const useChatDetailsController = () => {
         text2: error?.data?.message || 'Failed to send message',
       });
     }
-  }, [message, selectedFiles, params.chatId, sendMessage, normalizeMessage]);
+  }, [message, selectedFiles, params.chatId, sendMessage]);
 
   return {
     refs: {
@@ -183,3 +164,4 @@ const useChatDetailsController = () => {
 };
 
 export default useChatDetailsController;
+

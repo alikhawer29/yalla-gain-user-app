@@ -92,8 +92,6 @@ const ConsultantProfile = () => {
             {/* Location */}
             <Row gap={14} style={styles.location_row}>
                 <Text size={14}><Text weight="bold">City:</Text> <Text color="#999999">{consultant?.city || '-'}</Text> </Text>
-            </Row>
-            <Row gap={14} style={styles.location_row}>
                 <Text size={14}><Text weight="bold">State:</Text> <Text color="#999999">{consultant?.state || '-'}</Text> </Text>
             </Row>
             <Row gap={14} style={styles.location_row}>

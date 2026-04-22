@@ -24,16 +24,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: heightPixel(50),
   },
-  admin_empty: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: heightPixel(24),
-    paddingHorizontal: heightPixel(20),
-  },
-  admin_empty_button: {
-    marginTop: heightPixel(20),
-    minWidth: '60%',
-  },
 });
 
 export default styles;

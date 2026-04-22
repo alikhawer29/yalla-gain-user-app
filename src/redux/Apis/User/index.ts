@@ -1,5 +1,4 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { API_USER_BASE_URL } from '../../../utils/data';
 import { RootState } from '../../Store';
 
 export const userApi = createApi({
@@ -18,7 +17,8 @@ export const userApi = createApi({
     'Notifications',
   ],
   baseQuery: fetchBaseQuery({
-    baseUrl: API_USER_BASE_URL,
+    baseUrl:
+      'https://custom-dev.onlinetestingserver.com/yalla-backend/api/user/',
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
       const token = state?.auth?.token;
@@ -193,36 +193,10 @@ export const userApi = createApi({
       providesTags: ['SavedContent'],
     }),
     getWorkout: builder.query({
-      query: (params?: {
-        search?: string;
-        from?: string;
-        to?: string;
-        muscle_id?: number;
-      }) => ({
+      query: params => ({
         url: `workout-contents`,
         method: 'GET',
         params,
-      }),
-    }),
-
-    getMuscles: builder.query({
-      query: () => ({
-        url: `muscles`,
-        method: 'GET',
-      }),
-    }),
-
-    getMuscleExerciseTypes: builder.query({
-      query: (muscleId: number) => ({
-        url: `muscles/${muscleId}/exercise-types`,
-        method: 'GET',
-      }),
-    }),
-
-    getDashboard: builder.query({
-      query: () => ({
-        url: `dashboard`,
-        method: 'GET',
       }),
     }),
 
@@ -253,15 +227,7 @@ export const userApi = createApi({
       invalidatesTags: ['Notifications'],
     }),
     getVideosByWorkout: builder.query({
-      query: (data?: {
-        id?: number;
-        params?: {
-          search?: string;
-          from?: string;
-          to?: string;
-          exercise_id?: number;
-        };
-      }) => ({
+      query: data => ({
         url: `workout-content/${data?.id}/videos`,
         method: 'GET',
         params: data?.params,
@@ -317,7 +283,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Bookings', 'Wallet'],
+      invalidatesTags: ['Bookings'],
     }),
     getMyBookings: builder.query({
       query: params => ({
@@ -370,13 +336,6 @@ export const userApi = createApi({
         url: 'chat/create',
         method: 'POST',
         body: { user_id },
-      }),
-      invalidatesTags: ['Chats'],
-    }),
-    createAdminChat: builder.mutation({
-      query: () => ({
-        url: 'chat/createAdmin',
-        method: 'POST',
       }),
       invalidatesTags: ['Chats'],
     }),
@@ -464,7 +423,7 @@ export const userApi = createApi({
         method: 'POST',
         body: { coins },
       }),
-      invalidatesTags: ['Bookings', 'Wallet'],
+      invalidatesTags: ['Bookings'],
     }),
     //GET Coins
     getWalletCoins: builder.query({
@@ -481,7 +440,6 @@ export const userApi = createApi({
         method: 'POST',
         body: payload,
       }),
-      invalidatesTags: ['Wallet'],
     }),
     buyYallaCoin: builder.mutation({
       query: payload => ({
@@ -548,7 +506,7 @@ export const userApi = createApi({
     }),
     // Challenges
     getChallenges: builder.query({
-      query: (params?: { search?: string; type?: string }) => ({
+      query: (params?: { search?: string; from?: string; to?: string }) => ({
         url: `challenges`,
         method: 'GET',
         params,
@@ -620,17 +578,6 @@ export const userApi = createApi({
         'Challenges',
       ],
     }),
-    claimChallengeReward: builder.mutation({
-      query: (id: number) => ({
-        url: `challenge/${id}/claim-reward`,
-        method: 'POST',
-      }),
-      invalidatesTags: (result, error, id) => [
-        { type: 'Challenges', id },
-        'Challenges',
-        'Wallet',
-      ],
-    }),
     getChallengeLogs: builder.query({
       query: (params?: { search?: string; from?: string; to?: string }) => ({
         url: `challenge/logs/my`,
@@ -670,9 +617,6 @@ export const {
   useGetCommentsQuery,
   useGetReactsQuery,
   useGetWorkoutQuery,
-  useGetMusclesQuery,
-  useGetMuscleExerciseTypesQuery,
-  useGetDashboardQuery,
   useGetSavedContentQuery,
   useGetVideosByWorkoutQuery,
   useGetVideoDetailsQuery,
@@ -690,7 +634,6 @@ export const {
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
   useCreateChatMutation,
-  useCreateAdminChatMutation,
   useBlockUserMutation,
   useGetBlockedUsersQuery,
   useUnblockUserMutation,
@@ -720,7 +663,6 @@ export const {
   useStartTodayTaskMutation,
   useCompleteTodayTaskMutation,
   useLeaveChallengeMutation,
-  useClaimChallengeRewardMutation,
   useGetChallengeLogsQuery,
   useDeleteAccountMutation,
 } = userApi;

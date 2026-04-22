@@ -29,13 +29,14 @@ const ServiceCard: FC<IServiceCard> = ({
         <CardWrapper
             width={180}
             height={220}
+            // border
             color={colors.grayish_black}
             border_radius={12}
             onPress={onPress}
         >
             <View style={styles.image_container}>
                 <Image
-                    source={image ? { uri: image } : images?.service_dummy}
+                    source={image ? { uri: image } : images.dummy}
                     style={styles.image}
                     resize="cover"
                 />

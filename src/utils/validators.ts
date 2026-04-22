@@ -250,12 +250,6 @@ export const VERIFY_CODE_SCHEMA = Yup.object().shape({
     .length(4, 'Verification Code must be 4 digit'),
 });
 
-export const VERIFY_EMAIL_OTP_SCHEMA = Yup.object().shape({
-  otp: Yup.string()
-    .required('OTP is required')
-    .matches(/^\d{4,8}$/, 'Enter a valid OTP (4–8 digits)'),
-});
-
 export const SET_PASSWORD_SCHEMA = Yup.object().shape({
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')

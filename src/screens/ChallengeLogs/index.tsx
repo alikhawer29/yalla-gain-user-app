@@ -8,17 +8,16 @@ import Wrapper from '../../components/Wrapper';
 import Icon from '../../components/Icon';
 import Touchable from '../../components/Touchable';
 import CardWrapper from '../../components/CardWrapper';
-import DateFilterModal from '../../components/DateFilterModal';
 import colors from '../../utils/colors';
 import { font, heightPixel, widthPixel } from '../../utils/helper';
 import { goBack } from '../../utils/navigation';
 import useChallengeLogsController from './useChallengeLogsController';
-import { capitalizeFirst, capitalizeWords } from '../../utils/data';
+import { capitalizeFirst } from '../../utils/data';
 
 const ChallengeLogs = () => {
   const {
-    values: { logs, isLoading, search, fromDate, toDate, showFilterModal },
-    functions: { onSearch, onReload, onFilterPress, onCloseFilterModal, onApplyFilter },
+    values: { logs, isLoading, search },
+    functions: { onSearch, onReload },
   } = useChallengeLogsController();
 
   const renderSearch = () => (
@@ -33,15 +32,16 @@ const ChallengeLogs = () => {
           style={styles.searchInput}
         />
       </View>
-      <Touchable onPress={onFilterPress}>
-        <Icon
-          source={images.filters}
-          size={40}
-          rounded
-          less_rounded
-          border={(fromDate || toDate) ? colors.primary : colors.white}
-        />
-      </Touchable>
+      {/* <Icon
+        source={images.filters}
+        size={50}
+        border={colors.border}
+        rounded
+        less_rounded
+        tint_color={colors.white}
+        no_padding
+        onPress={() => { }} // Handle filter
+      /> */}
     </Row>
   );
 
@@ -67,7 +67,7 @@ const ChallengeLogs = () => {
           </View>
           <View style={{ alignItems: 'flex-end' }}>
             <Text size={14} color={colors.white} weight="semibold">
-              Challenge Type: <Text size={14} color={colors.icon_gray}>{capitalizeWords(challenge.type ?? '') || 'N/A'}</Text>
+              Challenge Type: <Text size={14} color={colors.icon_gray}>{capitalizeFirst(challenge.type) || 'N/A'}</Text>
             </Text>
           </View>
         </Row>
@@ -102,7 +102,7 @@ const ChallengeLogs = () => {
             style={[
               styles.statusBadge,
               {
-                backgroundColor: isCompleted ? colors.completed : isFailed ? colors.danger : colors.primary,
+                backgroundColor: isCompleted ? colors.success : isFailed ? colors.danger : colors.primary,
               },
             ]}
           >
@@ -142,13 +142,6 @@ const ChallengeLogs = () => {
           />
         }
         showsVerticalScrollIndicator={false}
-      />
-      <DateFilterModal
-        visible={showFilterModal}
-        onClose={onCloseFilterModal}
-        onApply={onApplyFilter}
-        initialFromDate={fromDate}
-        initialToDate={toDate}
       />
     </Wrapper>
   );

@@ -1,8 +1,7 @@
-import { ActivityIndicator, FlatList, RefreshControl, View } from "react-native"
+import { FlatList, RefreshControl, View } from "react-native"
 import images from "../../assets/images"
 import VideoCard from "../../components/Cards/VideoCard"
-import Empty from "../../components/Empty"
-import WorkoutFilterModal from "../../components/WorkoutFilterModal"
+import DateFilterModal from "../../components/DateFilterModal"
 import Icon from "../../components/Icon"
 import Input from "../../components/Input"
 import Row from "../../components/Row"
@@ -21,9 +20,8 @@ const Workouts = () => {
             data,
             search,
             showFilterModal,
-            muscleId,
-            muscles,
-            musclesLoading,
+            fromDate,
+            toDate,
         },
         functions: {
             onReload,
@@ -31,7 +29,7 @@ const Workouts = () => {
             onSearch,
             onFilterPress,
             onCloseFilterModal,
-            onApplyMuscleFilter,
+            onApplyFilter,
         }
     } = useWorkoutController()
 
@@ -53,26 +51,19 @@ const Workouts = () => {
                         size={40}
                         rounded
                         less_rounded
-                        border={muscleId != null ? colors.primary : colors.white}
+                        border={fromDate || toDate ? colors.primary : colors.white}
                         onPress={onFilterPress}
                     />
                 </View>
             </Row>
             <FlatList
                 data={data}
-                contentContainerStyle={data.length === 0 ? { flexGrow: 1 } : undefined}
                 renderItem={({ item }) => (
                     <VideoCard
                         {...item}
-                        muscle_title={item.muscle_title}
-                        exercise_title={item.exercise_title}
-                        description={item.description}
                         image={{ uri: item.image }}
-                        onPress={() => onWorkoutPress(item)}
+                        onPress={() => onWorkoutPress(item.id)}
                         is_video={false}
-                        show_video_count
-                        video_count={item.video_count}
-                        use_muscle_title
                     />
                 )}
                 ItemSeparatorComponent={() => <Seperator size={20} />}
@@ -84,24 +75,14 @@ const Workouts = () => {
                         onRefresh={onReload}
                     />
                 }
-                ListEmptyComponent={
-                    isLoading ? (
-                        <View style={{ paddingVertical: heightPixel(40), alignItems: "center" }}>
-                            <ActivityIndicator color={colors.primary} />
-                        </View>
-                    ) : (
-                        <Empty message="No workouts found" />
-                    )
-                }
             />
 
-            <WorkoutFilterModal
+            <DateFilterModal
                 visible={showFilterModal}
                 onClose={onCloseFilterModal}
-                onApply={onApplyMuscleFilter}
-                initialMuscleId={muscleId}
-                muscles={muscles}
-                musclesLoading={musclesLoading}
+                onApply={onApplyFilter}
+                initialFromDate={fromDate}
+                initialToDate={toDate}
             />
         </Wrapper>
     )

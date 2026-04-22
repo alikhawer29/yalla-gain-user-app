@@ -21,20 +21,8 @@ import useKeyboard from '../../hooks/useKeyboard';
 import colors from '../../utils/colors';
 import { heightPixel } from '../../utils/helper';
 import ChatMessageCard from '../../components/Cards/ChatMessageCard';
-import { IChatMessage } from '../../interfaces';
 import useChatDetailsController from './useChatDetailsController';
 import styles from './styles';
-
-/** Align bubbles from sender id — socket payloads may send wrong `is_mine`. */
-const isMessageFromCurrentUser = (
-  msg: IChatMessage,
-  currentUserId?: number | null,
-) => {
-  if (currentUserId == null || msg.user_id == null) {
-    return false;
-  }
-  return String(msg.user_id) === String(currentUserId);
-};
 
 const ChatDetails = () => {
   const {
@@ -99,7 +87,7 @@ const ChatDetails = () => {
         )}
         <ChatMessageCard
           message={item}
-          isMine={isMessageFromCurrentUser(item, currentUserId)}
+          isMine={item.is_mine}
           currentUserId={currentUserId}
         />
       </>

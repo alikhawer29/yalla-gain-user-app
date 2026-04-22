@@ -24,7 +24,6 @@ const ROUTES = {
   AUTH_TYPE: 'AuthType',
   FORGOT_PASSWORD: 'ForgotPassword',
   VERIFY_CODE: 'VerifyCode',
-  VERIFY_EMAIL_OTP: 'VerifyEmailOtp',
   SET_PASSWORD: 'SetPassword',
   HOME: 'Home',
   NEWSFEED: 'NewsFeed',
@@ -77,7 +76,6 @@ const ROUTES = {
   // Challenges & Rewards
   CHALLENGES: 'Challenges',
   CHALLENGE_DETAIL: 'ChallengeDetail',
-  CHALLENGE_REWARD: 'ChallengeReward',
   CHALLENGE_LOGS: 'ChallengeLogs',
   // Watch Connect
   WATCH_CONNECT: 'WatchConnect',
@@ -221,7 +219,7 @@ const ROUTES_OPTIONS = [
     left: 'back',
     right: null,
     logo: false,
-    title: 'Workout Videos',
+    title: 'Workout Details',
   },
   {
     route_name: ROUTES.VIDEO_DETAILS,
@@ -454,20 +452,11 @@ const ROUTES_OPTIONS = [
     bottom_tab: false,
   },
   {
-    route_name: ROUTES.CHALLENGE_REWARD,
-    left: 'back',
-    right: null,
-    logo: false,
-    title: 'Reward',
-    bottom_tab: false,
-  },
-  {
     route_name: ROUTES.CHALLENGE_LOGS,
     left: 'back',
     right: null,
     logo: false,
     title: 'Challenge Logs',
-    bottom_tab: false,
   },
   {
     route_name: ROUTES.GO_GUIDE,

@@ -9,12 +9,7 @@ import styles from "./styles"
 
 const AuthWrapper: FC<IAuthWrapper> = ({ title, subtitle, children }) => (
     <Wrapper>
-        <KeyboardAwareScrollView
-            enableOnAndroid
-            showsVerticalScrollIndicator={false}
-            enableResetScrollToCoords={false}
-            keyboardShouldPersistTaps="handled"
-        >
+        <KeyboardAwareScrollView enableOnAndroid showsVerticalScrollIndicator={false}>
             <Image source={images.logo} style={styles.logo} />
             {
                 (title || subtitle) &&

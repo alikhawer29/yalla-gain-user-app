@@ -10,8 +10,8 @@ import {
 } from '../redux/Slices/SpotifySlice';
 
 const config = {
-  clientId: '20c459be34854401918f743de5d1f846',
-  clientSecret: '6f51481a60c94c26a939a3c767b414b1',
+  clientId: '20f932c0b6df4069a7c06014506f54fc',
+  clientSecret: '61f25a0ef9ba45c8a01febc3923e54de',
   redirectUrl: 'myapp://callback',
   scopes: [
     'user-read-private',
@@ -80,51 +80,22 @@ const useSpotify = (playlist_id?: string) => {
     }
   };
 
-  // const fetchWithAuth = async (url: string) => {
-  //   try {
-  //     const res = await fetch(url, {
-  //       headers: {
-  //         Authorization: `Bearer ${access_token}`,
-  //       },
-  //     });
-  //     const data = await res.json();
-
-  //     if (data?.error?.status === 401) {
-  //       await refreshToken();
-  //     } else {
-  //       return data;
-  //     }
-  //   } catch (err) {
-  //     console.error('Spotify API Error:', err);
-  //   }
-  // };
-
-  const fetchWithAuth = async (url: string, token = access_token) => {
+  const fetchWithAuth = async (url: string) => {
     try {
       const res = await fetch(url, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${access_token}`,
         },
       });
-
-      const contentType = res.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        const text = await res.text();
-        console.warn('Non-JSON response:', res.status, text);
-        if (res.status === 401) await refreshToken();
-        return null;
-      }
-
       const data = await res.json();
+
       if (data?.error?.status === 401) {
         await refreshToken();
-        return null;
+      } else {
+        return data;
       }
-
-      return data;
     } catch (err) {
       console.error('Spotify API Error:', err);
-      return null;
     }
   };
 

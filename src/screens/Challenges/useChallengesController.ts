@@ -5,13 +5,15 @@ import useDebounce from '../../hooks/useDebounce';
 
 const useChallengesController = () => {
   const [search, setSearch] = useState('');
-  const [bodyPartType, setBodyPartType] = useState('');
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const debouncedSearch = useDebounce(search, 400);
 
   const { data, isFetching, refetch } = useGetChallengesQuery({
     search: debouncedSearch || undefined,
-    type: bodyPartType || undefined,
+    from: fromDate || undefined,
+    to: toDate || undefined,
   });
 
   const challenges = data?.data ?? [];
@@ -24,11 +26,11 @@ const useChallengesController = () => {
   const onPressChallengeLogs = () => {
     navigate('ChallengeLogs');
   };
-
   const onFilterPress = () => setShowFilterModal(true);
   const onCloseFilterModal = () => setShowFilterModal(false);
-  const onApplyBodyPartFilter = (type: string) => {
-    setBodyPartType(type);
+  const onApplyFilter = (from: string | null, to: string | null) => {
+    setFromDate(from);
+    setToDate(to);
   };
 
   return {
@@ -36,8 +38,9 @@ const useChallengesController = () => {
       challenges,
       isLoading: isFetching,
       search,
-      bodyPartType,
       showFilterModal,
+      fromDate,
+      toDate,
     },
     functions: {
       onSearch,
@@ -46,7 +49,7 @@ const useChallengesController = () => {
       onPressChallengeLogs,
       onFilterPress,
       onCloseFilterModal,
-      onApplyBodyPartFilter,
+      onApplyFilter,
     },
   };
 };

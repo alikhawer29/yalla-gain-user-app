@@ -17,7 +17,7 @@ import colors from './src/utils/colors';
 import { navigationRef } from './src/utils/navigation';
 
 const STRIPE_PUBLISHABLE_KEY =
-  'pk_test_51OHpI2EN9IooQZRaU3MAJ8mKTWdFhvI7vequEoOlA9qlEOP1gdLKSB01ec6GeJkfAjHgQjipR85UligbuLBs5UaI00aoghaww7';
+  'pk_test_51JVZEtHOTfIICq62kKsm6o2pYVhJUXPXViO9m2hrXqw6vKRwC4RzL3GYiWF9LKax8JORdQpZKrxeNx02wwONOMuO00H8CpMfRf';
 
 
 
@@ -51,7 +51,9 @@ function App() {
                 <ModalProvider>
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
                     <AppStackNavigator />
-                    {/* <NetworkLoggerFAB /> */}
+                    <NetworkLoggerFAB />
+                    {/* <NetworkLoggerFAB 
+                    /> */}
                     <Toast />
                   </NavigationContainer>
                 </ModalProvider>

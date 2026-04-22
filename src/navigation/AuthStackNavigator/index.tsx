@@ -5,7 +5,6 @@ import ForgotPassword from '../../screens/Auth/ForgotPassword';
 import SetPassword from '../../screens/Auth/SetPassword';
 import UserEntry from '../../screens/Auth/UserEntry';
 import VerifyCode from '../../screens/Auth/VerifyCode';
-import VerifyEmailOtp from '../../screens/Auth/VerifyEmailOtp';
 import Onboarding from '../../screens/Onboarding';
 import { ROUTES } from '../../utils/routes';
 
@@ -19,7 +18,6 @@ const AuthStackNavigator = () => {
             <Stack.Screen name={ROUTES.AUTH_TYPE} component={AuthType} />
             <Stack.Screen name={ROUTES.FORGOT_PASSWORD} component={ForgotPassword} />
             <Stack.Screen name={ROUTES.VERIFY_CODE} component={VerifyCode} />
-            <Stack.Screen name={ROUTES.VERIFY_EMAIL_OTP} component={VerifyEmailOtp} />
             <Stack.Screen name={ROUTES.SET_PASSWORD} component={SetPassword} />
         </Stack.Navigator>
     );

@@ -93,7 +93,7 @@ const useWalletController = () => {
           try {
             const confirmResponse = await confirmPayment({
               intent_id: response.intent_id,
-              amount: response.amount_aed,
+              amount: response.amount,
               coins: response.coins,
             }).unwrap();
 
@@ -106,7 +106,7 @@ const useWalletController = () => {
               title: 'Payment Successful',
               message:
                 confirmResponse.message ||
-                `Successfully purchased ${response.coins} coins for ${response.amount_aed}`,
+                `Successfully purchased ${response.coins} coins for ${response.amount}`,
             });
           } catch (confirmError: any) {
             console.error('Payment confirmation error:', confirmError);
@@ -116,7 +116,7 @@ const useWalletController = () => {
             showOkModal({
               type: 'success',
               title: 'Payment Successful',
-              message: `Successfully purchased ${response.coins} coins for ${response.amount_aed}. Please note: confirmation may take a moment to reflect.`,
+              message: `Successfully purchased ${response.coins} coins for ${response.amount}. Please note: confirmation may take a moment to reflect.`,
             });
           }
         }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useCallback, useState } from 'react';
-import { BackHandler, DeviceEventEmitter, NativeModules, Platform, View } from 'react-native';
+import { BackHandler, DeviceEventEmitter, NativeModules, Platform, StyleSheet, View } from 'react-native';
 import {
   useFocusEffect,
   useIsFocused,
@@ -14,10 +14,8 @@ import { useSelector } from 'react-redux';
 import Wrapper from '../../components/Wrapper';
 import { useModal } from '../../contexts/ModalContext';
 import { selectUser } from '../../redux/Slices/AuthSlice';
-import { SOCKET_SERVER_URL } from '../../utils/data';
-import UnitySplashOverlay from '../../components/UnitySplashOverlay';
 
-const SOCKET_URL = `${SOCKET_SERVER_URL}/`;
+const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com:2170/';
 const USER_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
 const GAME_OBJECT_MESSAGE_SENT = 'MessageSent';
 const EVENT_SOCKET_CONNECTED_GAME = 'SocketConnectedGame';
@@ -371,12 +369,25 @@ const AvatarVisualization = () => {
               />
             )}
 
-            <UnitySplashOverlay unityReady={isUnityReady} />
+            {!isUnityReady && (
+              <View
+                pointerEvents="none"
+                style={styles.unityLoadingOverlay}
+              />
+            )}
           </>
         )}
       </View>
     </Wrapper>
   );
 };
+
+const styles = StyleSheet.create({
+  unityLoadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000000',
+    zIndex: 9999,
+  },
+});
 
 export default AvatarVisualization;

@@ -1,12 +1,12 @@
-import { ActivityIndicator, FlatList, RefreshControl, View } from "react-native"
+import { FlatList, RefreshControl, View } from "react-native"
 import images from "../../assets/images"
 import VideoCard from "../../components/Cards/VideoCard"
-import Empty from "../../components/Empty"
-import ExerciseTypeFilterModal from "../../components/ExerciseTypeFilterModal"
+import DateFilterModal from "../../components/DateFilterModal"
 import Icon from "../../components/Icon"
 import Input from "../../components/Input"
 import Row from "../../components/Row"
 import Seperator from "../../components/Seperator"
+import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
@@ -22,9 +22,8 @@ const WorkoutDetail = () => {
             isLoading,
             search,
             showFilterModal,
-            exerciseId,
-            exerciseTypes,
-            exerciseTypesLoading,
+            fromDate,
+            toDate,
         },
         functions: {
             onSave,
@@ -33,9 +32,12 @@ const WorkoutDetail = () => {
             onSearch,
             onFilterPress,
             onCloseFilterModal,
-            onApplyExerciseFilter
+            onApplyFilter
         }
     } = useWorkoutDetailController()
+
+    // console.log(data[0]?.exercise_key, 'data')
+
 
     return (
         <Wrapper>
@@ -51,23 +53,15 @@ const WorkoutDetail = () => {
                 </View>
                 <View style={{ width: "15%" }}>
                     <Touchable onPress={onFilterPress}>
-                        <Icon
-                            source={images.filters}
-                            size={40}
-                            rounded
-                            less_rounded
-                            border={exerciseId != null ? colors.primary : colors.white}
-                        />
+                        <Icon source={images.filters} size={40} rounded less_rounded border={(fromDate || toDate) ? colors.primary : colors.white} />
                     </Touchable>
                 </View>
             </Row>
             <FlatList
                 data={data}
-                contentContainerStyle={data.length === 0 ? { flexGrow: 1 } : undefined}
                 renderItem={({ item }) => (
                     <VideoCard
                         {...item}
-                        exercise_title={item.exercise?.text}
                         image={{ uri: item.thumbnail }}
                         onSave={() => onSave(item.id)}
                         onPress={() => onPress(item.id)}
@@ -81,24 +75,15 @@ const WorkoutDetail = () => {
                         refreshing={isLoading}
                         onRefresh={onReload}
                     />}
-                ListEmptyComponent={
-                    isLoading ? (
-                        <View style={{ paddingVertical: heightPixel(40), alignItems: "center" }}>
-                            <ActivityIndicator color={colors.primary} />
-                        </View>
-                    ) : (
-                        <Empty message="No videos found" />
-                    )
-                }
             />
 
-            <ExerciseTypeFilterModal
+            {/* Date Filter Modal */}
+            <DateFilterModal
                 visible={showFilterModal}
                 onClose={onCloseFilterModal}
-                onApply={onApplyExerciseFilter}
-                initialExerciseId={exerciseId}
-                exerciseTypes={exerciseTypes}
-                loading={exerciseTypesLoading}
+                onApply={onApplyFilter}
+                initialFromDate={fromDate}
+                initialToDate={toDate}
             />
         </Wrapper>
     )

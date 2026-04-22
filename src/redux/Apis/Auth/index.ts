@@ -1,10 +1,9 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { API_BASE_API_PREFIX, API_USER_BASE_URL } from '../../../utils/data'
 
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: API_USER_BASE_URL,
+        baseUrl: 'https://custom-dev.onlinetestingserver.com/yalla-backend/api/user/',
         prepareHeaders: (headers, { }) => {
             headers.set('Accept', `application/json`)
             return headers
@@ -56,38 +55,6 @@ export const authApi = createApi({
                 body
             }),
         }),
-        verifyOtp: builder.mutation({
-            query: (body: {
-                email: string
-                otp: string
-                device_type: string
-                device_token: string
-            }) => ({
-                url: `${API_BASE_API_PREFIX}/verify-otp`,
-                method: "POST",
-                body,
-            }),
-            transformResponse: (response: any, meta: any) => {
-                meta.show_success = true
-                meta.message =
-                    response?.message || 'Email verified successfully.'
-                return response
-            },
-        }),
-        resendOtp: builder.mutation({
-            query: (body: { email: string }) => ({
-                url: `${API_BASE_API_PREFIX}/resend-otp`,
-                method: "POST",
-                body,
-            }),
-            transformResponse: (response: any, meta: any) => {
-                meta.show_success = true
-                meta.message =
-                    response?.message ||
-                    'We have sent a new verification code to your email.'
-                return response
-            },
-        }),
 
     }),
 })
@@ -98,6 +65,4 @@ export const {
     useForgotPasswordMutation,
     useVerifyMutation,
     useSetPasswordMutation,
-    useVerifyOtpMutation,
-    useResendOtpMutation,
 } = authApi

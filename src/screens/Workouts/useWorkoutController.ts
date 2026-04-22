@@ -1,43 +1,29 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import useSearch from '../../hooks/useSearch';
-import { useGetMusclesQuery, useGetWorkoutQuery } from '../../redux/Apis/User';
+import { useGetWorkoutQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 
 const useWorkoutController = () => {
   const { search, debouncedSearch, onChange: onSearch } = useSearch();
 
-  const [muscleId, setMuscleId] = useState<number | null>(null);
+  const [fromDate, setFromDate] = useState<string | null>(null);
+  const [toDate, setToDate] = useState<string | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
-
-  const { data: musclesPayload, isFetching: musclesLoading } =
-    useGetMusclesQuery();
-
-  const muscles = useMemo(() => {
-    const raw = musclesPayload as { data?: { id: number; name: string }[] } | undefined;
-    return raw?.data ?? [];
-  }, [musclesPayload]);
 
   const {
     data,
     isFetching: isLoading,
     refetch,
   } = useGetWorkoutQuery({
-    search: debouncedSearch || undefined,
-    muscle_id: muscleId ?? undefined,
+    search: debouncedSearch,
+    from: fromDate || undefined,
+    to: toDate || undefined,
   });
 
-  const onWorkoutPress = useCallback(
-    (item: { id: number; muscle_id?: number }) => {
-      const resolvedMuscle =
-        item.muscle_id != null ? item.muscle_id : muscleId != null ? muscleId : undefined;
-      navigate(ROUTES.WORKOUT_DETAILS, {
-        id: item.id,
-        ...(resolvedMuscle != null ? { muscle_id: resolvedMuscle } : {}),
-      });
-    },
-    [muscleId],
-  );
+  const onWorkoutPress = useCallback((id: number) => {
+    navigate(ROUTES.WORKOUT_DETAILS, { id });
+  }, []);
 
   const onFilterPress = () => {
     setShowFilterModal(true);
@@ -47,8 +33,9 @@ const useWorkoutController = () => {
     setShowFilterModal(false);
   };
 
-  const onApplyMuscleFilter = (id: number | null) => {
-    setMuscleId(id);
+  const onApplyFilter = (from: string | null, to: string | null) => {
+    setFromDate(from);
+    setToDate(to);
   };
 
   return {
@@ -57,9 +44,8 @@ const useWorkoutController = () => {
       isLoading,
       search,
       showFilterModal,
-      muscleId,
-      muscles,
-      musclesLoading,
+      fromDate,
+      toDate,
     },
     functions: {
       onReload: refetch,
@@ -67,7 +53,7 @@ const useWorkoutController = () => {
       onSearch,
       onFilterPress,
       onCloseFilterModal,
-      onApplyMuscleFilter,
+      onApplyFilter,
     },
   };
 };
