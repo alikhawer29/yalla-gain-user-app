@@ -1,5 +1,5 @@
 import { useRoute } from '@react-navigation/native';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
   useGetServiceSlotsQuery,
   useBookAppointmentMutation,
@@ -28,6 +28,7 @@ const useAppointmentBookingController = () => {
 
   const { showOkModal, showYesNoModal } = useModal();
   const user = useAppSelector(state => state.auth.user);
+  const prefillFromUserOnce = useRef(false);
 
   const [formData, setFormData] = useState<FormData>({
     first_name: '',
@@ -37,6 +38,24 @@ const useAppointmentBookingController = () => {
     dialing_code: '+971',
     country_code: 'AE',
   });
+
+  useEffect(() => {
+    if (!user || prefillFromUserOnce.current) return;
+    prefillFromUserOnce.current = true;
+    const dialing = user.dialing_code
+      ? `${user.dialing_code}`.startsWith('+')
+        ? `${user.dialing_code}`
+        : `+${user.dialing_code}`
+      : '+971';
+    setFormData({
+      first_name: user.first_name ?? '',
+      last_name: user.last_name ?? '',
+      email: user.email ?? '',
+      phone: user.phone ?? '',
+      dialing_code: dialing,
+      country_code: user.country_code ?? 'AE',
+    });
+  }, [user]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -294,6 +313,7 @@ const useAppointmentBookingController = () => {
   return {
     values: {
       formData,
+      user,
       dates,
       availableSlots,
       selectedDate,

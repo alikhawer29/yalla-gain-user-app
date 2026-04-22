@@ -12,9 +12,18 @@ import styles from "./styles";
 
 const AppointmentBooking = () => {
     const {
-        values: { formData, dates, availableSlots, selectedDate, selectedSlot, isBooking },
+        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking },
         functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, formatTime },
     } = useAppointmentBookingController();
+
+    const displayName = [user?.first_name, user?.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+    const displayPhone =
+        user?.phone != null && `${user.phone}`.length > 0
+            ? `(${user?.dialing_code ?? ''}) ${user.phone}`
+            : '';
 
     const formatDateHeader = (date: Date) => {
         const day = date.getDate().toString().padStart(2, '0');
@@ -24,6 +33,7 @@ const AppointmentBooking = () => {
 
     return (
         <Wrapper scrollable bottom_bar>
+
             {/* Form Inputs */}
             <Input
                 label="First Name"

@@ -3,6 +3,18 @@ import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
 
 const styles = StyleSheet.create({
+  auth_section: {
+    padding: heightPixel(14),
+    borderRadius: heightPixel(10),
+    backgroundColor: '#282828',
+    marginBottom: heightPixel(12),
+  },
+  auth_row: {
+    marginBottom: heightPixel(10),
+  },
+  auth_row_last: {
+    marginBottom: 0,
+  },
   date_item: {
     width: widthPixel(42),
     height: heightPixel(55),
