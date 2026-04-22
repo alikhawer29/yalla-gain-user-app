@@ -15,6 +15,7 @@ interface IConfirmModal {
     confirmText?: string;
     cancelText?: string;
     icon?: any;
+    messageColor?: string;
 }
 
 const ConfirmModal: FC<IConfirmModal> = ({
@@ -26,6 +27,7 @@ const ConfirmModal: FC<IConfirmModal> = ({
     confirmText = "Yes",
     cancelText = "No",
     icon = images.warning,
+    messageColor = colors.icon_gray,
 }) => {
     return (
         <Modal
@@ -38,7 +40,7 @@ const ConfirmModal: FC<IConfirmModal> = ({
                 <View style={styles.container}>
                     {/* Close Button */}
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                        <Icon source={images.modal_cross} size={15} tint_color={colors.white} />
+                        <Icon source={images.cross} size={15} tint_color={colors.white} />
                     </TouchableOpacity>
 
                     {/* Icon */}
@@ -52,7 +54,7 @@ const ConfirmModal: FC<IConfirmModal> = ({
                     </Text>
 
                     {/* Message */}
-                    <Text size={14} color={colors.icon_gray} position="center" style={styles.message}>
+                    <Text size={14} color={messageColor} position="center" style={styles.message}>
                         {message}
                     </Text>
 

@@ -4,6 +4,7 @@ import { useModal } from '../../contexts/ModalContext';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { useScanAvatarMutation } from '../../redux/Apis/User';
+import images from '../../assets/images';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import * as Yup from 'yup';
@@ -27,7 +28,7 @@ const AVATAR_SCAN_FORM_SCHEMA = Yup.object().shape({
 const useAvatarScanFormController = () => {
   const user = useAppSelector(selectUser);
   const formik_ref = useRef(null);
-  const { showOkModal } = useModal();
+  const { showOkModal, showYesNoModal } = useModal();
   const route = useRoute();
   const { formData: routeFormData } = (route.params as any) || {};
 
@@ -83,27 +84,23 @@ const useAvatarScanFormController = () => {
     [showOkModal],
   );
 
-  // Handle Manual button - submit without photos
-  const onManualSubmit = useCallback(
+  const performManualSubmit = useCallback(
     async (data: any) => {
       didManualSubmitRef.current = true;
       setIsLoadingManual(true);
       try {
         const formData = new FormData();
 
-        // Add user_id
         formData.append('user_id', String(user?.id));
-
-        // Add form fields
         formData.append('age', String(data.age));
         formData.append('gender', data.gender);
         formData.append('height', String(data.height));
         formData.append('weight', String(data.weight));
-        formData.append('scan', 'false'); // Manual mode - scan is false
+        formData.append('scan', 'false');
 
         await submit(formData).unwrap();
-        // Navigation to Unity game will happen via useEffect when isSuccess is true
       } catch (error: any) {
+        didManualSubmitRef.current = false;
         showOkModal({
           type: 'error',
           title: 'Error',
@@ -118,17 +115,50 @@ const useAvatarScanFormController = () => {
     [user, submit, showOkModal],
   );
 
-  // Handle Scan button - navigate to Scan screen with form data
+  /** Manual: show precautions first; API + Unity only after user confirms. */
+  const onManualSubmit = useCallback(
+    (data: any) => {
+      showYesNoModal(
+        {
+          type: 'warning',
+          title: 'Precautions',
+          message:
+            'Before proceeding, please ensure all measurements are correct, as you will not be able to edit the avatar for the next one week after proceeding.',
+          yesText: 'Next',
+          noText: 'Cancel',
+        },
+        () => {
+          performManualSubmit(data);
+        },
+        () => {},
+      );
+    },
+    [showYesNoModal, performManualSubmit],
+  );
+
+  /** Scan: show gender illustration + precautions, then existing navigate to Scan screen. */
   const onScanPress = useCallback(
     (data: any) => {
-      setIsLoadingScan(true);
-      navigate(ROUTES.SCAN, {
-        formData: data,
-      });
-      // Reset loading after navigation
-      setTimeout(() => setIsLoadingScan(false), 100);
+      const illustrationSource =
+        data.gender === 'female' ? images.female_scan : images.male_scan;
+      showOkModal(
+        {
+          type: 'success',
+          title: '',
+          message:
+            'Before scanning, carefully review the precautions to understand how to properly take the pictures.',
+          illustrationSource,
+        },
+        () => {
+          setIsLoadingScan(true);
+          navigate(ROUTES.SCAN, {
+            formData: data,
+          });
+          setTimeout(() => setIsLoadingScan(false), 100);
+        },
+      );
     },
-    [],
+    [showOkModal],
   );
 
   // Manual validation against schema - true only when form is valid

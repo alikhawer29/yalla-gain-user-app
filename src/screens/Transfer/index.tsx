@@ -42,7 +42,7 @@ const Transfer = () => {
                                 style={styles.coinImage}
                             />
                             <Text style={styles.coinTitle}>
-                                My Coins : {data?.my_coins} (Yalla Coins)
+                                My Coins : {data?.my_coins} <Text style={styles.coinTextSmall}> (Yalla Coins) </Text>
                             </Text>
                         </View>
 
@@ -53,6 +53,7 @@ const Transfer = () => {
                                     label="Fund Amount"
                                     required
                                     placeholder="Enter amount"
+                                    value={fundAmount}
                                     onChangeText={setFundAmount}
                                     type="number"
                                 />
@@ -60,9 +61,10 @@ const Transfer = () => {
 
                             <View>
                                 <Input
-                                    label="Unique User ID"
+                                    label="Unique Id Of User *"
                                     required
                                     placeholder="Enter Unique Id"
+                                    value={uniqueId}
                                     onChangeText={setUniqueId}
                                     type="number"
                                 />

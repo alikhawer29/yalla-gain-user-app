@@ -1,6 +1,7 @@
 import { ActivityIndicator, FlatList, View, TextInput } from "react-native"
 import React, { useCallback, useRef, useState } from "react"
 import images from "../../assets/images"
+import Button from "../../components/Button"
 import ChatFilterModal from "../../components/ChatFilterModal"
 import Icon from "../../components/Icon"
 import Row from "../../components/Row"
@@ -17,8 +18,8 @@ import { heightPixel } from "../../utils/helper"
 
 const Chat = () => {
     const {
-        values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading, selectedFilter, showFilterModal },
-        functions: { setSelectedTab, onSearchChange, onChatPress, onFilterPress, onCloseFilterModal, onFilterChange },
+        values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading, selectedFilter, showFilterModal, isOpeningAdminChat },
+        functions: { setSelectedTab, onSearchChange, onChatPress, onFilterPress, onCloseFilterModal, onFilterChange, openOrCreateAdminChat },
     } = useChatController();
 
     const searchInputRef = useRef<TextInput>(null)
@@ -38,6 +39,19 @@ const Chat = () => {
             return (
                 <View style={styles.loading_container}>
                     <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            );
+        }
+        if (selectedTab === "admin") {
+            return (
+                <View style={styles.admin_empty}>
+                    <Empty message="No admin conversation yet" />
+                    <Button
+                        text="Message admin"
+                        onPress={openOrCreateAdminChat}
+                        loading={isOpeningAdminChat}
+                        style={styles.admin_empty_button}
+                    />
                 </View>
             );
         }

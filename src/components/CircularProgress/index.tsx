@@ -1,8 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, ColorValue } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { font } from '../../utils/helper';
-import Text from '../Text';
 import colors from '../../utils/colors';
 
 interface ICircularProgress {
@@ -10,26 +8,31 @@ interface ICircularProgress {
     strokeWidth: number;
     progress: number;
     color?: string;
+    /** Full ring track (always visible at 0% so the bar shows empty, then fills). */
     backgroundColor?: string;
     children?: React.ReactNode;
 }
+
+const DEFAULT_TRACK = 'rgba(153, 153, 153, 0.45)';
 
 const CircularProgress: React.FC<ICircularProgress> = ({
     size,
     strokeWidth,
     progress,
     color = colors.primary,
-    backgroundColor = colors.gray + '33', // 20% opacity
+    backgroundColor = DEFAULT_TRACK,
     children
 }) => {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (Math.min(progress, 100) / 100) * circumference;
+    const clamped = Math.min(100, Math.max(0, Number.isFinite(progress) ? progress : 0));
+    const strokeDashoffset = circumference - (clamped / 100) * circumference;
+    const showFill = clamped > 0;
 
     return (
         <View style={{ width: size, height: size, justifyContent: 'center', alignItems: 'center' }}>
             <Svg width={size} height={size}>
-                {/* Background Circle */}
+                {/* Track: always visible so 0% = empty ring, not missing ring */}
                 <Circle
                     stroke={backgroundColor}
                     fill="none"
@@ -38,19 +41,21 @@ const CircularProgress: React.FC<ICircularProgress> = ({
                     r={radius}
                     strokeWidth={strokeWidth}
                 />
-                {/* Progress Circle */}
-                <Circle
-                    stroke={color}
-                    fill="none"
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    strokeWidth={strokeWidth}
-                    strokeDasharray={`${circumference} ${circumference}`}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
-                />
+                {/* Fill arc only when progress &gt; 0 (avoids round-cap dot at 0%) */}
+                {showFill ? (
+                    <Circle
+                        stroke={color}
+                        fill="none"
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={`${circumference} ${circumference}`}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    />
+                ) : null}
             </Svg>
             {children && (
                 <View style={StyleSheet.absoluteFillObject}>

@@ -29,6 +29,8 @@ const VideoDetails = () => {
         }
     } = useVideoDetailController()
 
+    const similarVideos = data?.similar_videos ?? []
+
     return (
         <Wrapper loading={isLoading} scrollable>
             <Button type="outlined" text="Movement Correction AI" onPress={onPressMovementCorrection} loading={isStartExerciseLoading} />
@@ -50,19 +52,8 @@ const VideoDetails = () => {
                 </View>
             </View>
             <View style={styles.title_wrapper}>
-                <Text size={22}>{data?.title}</Text>
-                <Row justify="space-between" align="center">
-                    <Row gap={8} align="center">
-                        <Icon source={images.calendar} size={19} />
-                        <Text size={18}>{data?.created_at}</Text>
-                    </Row>
-                    <Row gap={8} align="center">
-                        <Icon source={images.globe} size={19} />
-                        <Text size={18} capitalize>
-                            {data?.language}
-                        </Text>
-                    </Row>
-                </Row>
+                <Text size={20} weight="semibold">{data?.exercise?.text}</Text>
+
             </View>
             <View style={styles.section}>
                 <Text size={16} weight="semibold">
@@ -74,7 +65,7 @@ const VideoDetails = () => {
                 <Text size={16} weight="semibold">
                     Rest Time
                 </Text>
-                <Text>{data?.rest_time}</Text>
+                <Text>{data?.rest_time} Seconds</Text>
             </View>
             <View style={styles.section}>
                 <Text size={16} weight="semibold">
@@ -88,24 +79,32 @@ const VideoDetails = () => {
                 style={styles.similar_videos_title}
                 line_height={30}
             >
-                Similar Language Videos
+                Similar Videos
             </Text>
-            <FlatList
-                horizontal
-                data={data?.similar_videos}
-                renderItem={({ item }) => (
-                    <VideoCard
-                        {...item}
-                        image={{ uri: item?.thumbnail }}
-                        type="secondary"
-                        onSave={() => onSave(item.id)}
-                        onPress={() => onPress(item.id)}
-                    />
-                )}
-                showsHorizontalScrollIndicator={false}
-                ItemSeparatorComponent={() => <Seperator horizontal />}
-            />
-        </Wrapper>
+            {similarVideos.length > 0 ? (
+                <FlatList
+                    horizontal
+                    data={similarVideos}
+                    renderItem={({ item }) => (
+                        <VideoCard
+                            {...item}
+                            exercise_title={item.exercise_title}
+                            image={{ uri: item?.thumbnail }}
+                            type="secondary"
+                            is_similar
+                            onSave={() => onSave(item.id)}
+                            onPress={() => onPress(item.id)}
+                        />
+                    )}
+                    showsHorizontalScrollIndicator={false}
+                    ItemSeparatorComponent={() => <Seperator horizontal />}
+                />
+            ) : (
+                <Text style={styles.no_similar_videos} size={15}>
+                    No Similar Videos
+                </Text>
+            )}
+        </Wrapper >
     )
 }
 

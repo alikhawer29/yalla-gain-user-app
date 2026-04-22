@@ -7,7 +7,8 @@ import {
   useStartTodayTaskMutation,
   useCompleteTodayTaskMutation,
 } from '../../redux/Apis/User';
-import { goBack } from '../../utils/navigation';
+import { goBack, navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 
 const useChallengeDetailController = () => {
   const route = useRoute();
@@ -94,6 +95,10 @@ const useChallengeDetailController = () => {
     } catch (e) {}
   };
 
+  const onClaimReward = () => {
+    navigate(ROUTES.CHALLENGE_REWARD, { id });
+  };
+
   const isMutationLoading =
     isStarting || isLeaving || isStartingTask || isCompletingTask;
 
@@ -119,6 +124,7 @@ const useChallengeDetailController = () => {
       setShowLeaveConfirm,
       onStartTodayTask,
       onCompleteTodayTask,
+      onClaimReward,
     },
   };
 };

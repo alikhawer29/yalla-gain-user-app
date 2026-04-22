@@ -28,7 +28,7 @@ const Scan = () => {
     const { formData } = (route.params as any) || {}
     const cameraRef = useRef<Camera>(null)
     const user = useAppSelector(selectUser)
-    const { showOkModal } = useModal()
+    const { showOkModal, showYesNoModal } = useModal()
     const [submitScan, { isLoading: isSubmitting }] = useScanAvatarMutation()
 
     const [granted, setGranted] = useState(false)
@@ -142,14 +142,12 @@ const Scan = () => {
         }
     }, [currentStep, frontPhoto])
 
-    const onProceed = useCallback(async () => {
+    const submitScanAndNavigate = useCallback(async () => {
         if (frontPhoto && rightPhoto && formData) {
             try {
-                // Validate both photos before submission
                 const frontValidation = await validatePhoto(frontPhoto);
                 const rightValidation = await validatePhoto(rightPhoto);
 
-                // Filter out resolution-only errors
                 const frontCriticalErrors = frontValidation.errors.filter(
                     err => !err.includes('resolution') && !err.includes('Resolution'),
                 );
@@ -177,20 +175,17 @@ const Scan = () => {
                     return;
                 }
 
-                // Optimize photos
                 const optimizedFrontPhoto = await optimizePhoto(frontPhoto, 'front');
                 const optimizedRightPhoto = await optimizePhoto(rightPhoto, 'right');
 
-                // Prepare FormData
                 const submitFormData = new FormData();
                 submitFormData.append('user_id', String(user?.id));
                 submitFormData.append('age', String(formData.age));
                 submitFormData.append('gender', formData.gender);
                 submitFormData.append('height', String(formData.height));
                 submitFormData.append('weight', String(formData.weight));
-                submitFormData.append('scan', 'true'); // Scan mode
+                submitFormData.append('scan', 'true');
 
-                // Add photos
                 const frontPhotoPath = optimizedFrontPhoto.savedPath || optimizedFrontPhoto.path;
                 const rightPhotoPath = optimizedRightPhoto.savedPath || optimizedRightPhoto.path;
                 const frontPhotoUri = frontPhotoPath?.startsWith('file://') ? frontPhotoPath : `file://${frontPhotoPath}`;
@@ -207,7 +202,6 @@ const Scan = () => {
                     name: 'right_photo.jpg',
                 } as any);
 
-                // Submit and redirect to Unity game
                 await submitScan(submitFormData).unwrap();
                 navigate(ROUTES.CREATE_AVATAR);
             } catch (error: any) {
@@ -220,7 +214,31 @@ const Scan = () => {
                 });
             }
         }
-    }, [frontPhoto, rightPhoto, formData, user, submitScan, showOkModal])
+    }, [frontPhoto, rightPhoto, formData, user, submitScan, showOkModal]);
+
+    const onProceed = useCallback(() => {
+        if (!frontPhoto || !rightPhoto) {
+            return;
+        }
+        showYesNoModal(
+            {
+                type: 'warning',
+                title: 'Precautions',
+                message:
+                    'Before proceeding, make sure the pictures are captured correctly, as you will not be able to make any changes for the next one week after proceeding.',
+                yesText: 'Next',
+                noText: 'Cancel',
+            },
+            () => {
+                submitScanAndNavigate();
+            },
+            () => {
+                setFrontPhoto(null);
+                setRightPhoto(null);
+                setCurrentStep('front');
+            },
+        );
+    }, [frontPhoto, rightPhoto, showYesNoModal, submitScanAndNavigate]);
 
     if (checking) return null
 

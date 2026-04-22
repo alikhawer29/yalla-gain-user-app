@@ -71,7 +71,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
                         <View style={styles.content}>
                             <Text style={styles.coinValue}>
-                                1 Yalla Coin Is Equal To {coinValue}
+                                1 Yalla Coin Is Equal To {coinValue} AED
                             </Text>
 
                             <View style={styles.inputContainer}>

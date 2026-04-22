@@ -8,8 +8,8 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: widthPixel(20),
-    paddingTop: heightPixel(40),
+    // paddingHorizontal: widthPixel(20),
+    // paddingTop: heightPixel(40),
     paddingBottom: heightPixel(100), // Extra padding for keyboard
   },
   coinContainer: {
@@ -17,10 +17,10 @@ const styles = StyleSheet.create({
     marginBottom: heightPixel(40),
   },
   coinImage: {
-    width: widthPixel(120),
-    height: heightPixel(120),
+    width: widthPixel(150),
+    height: heightPixel(150),
     resizeMode: 'contain',
-    marginBottom: heightPixel(20),
+    // marginBottom: heightPixel(20),
   },
   coinTitle: {
     fontSize: 20,
@@ -51,8 +51,13 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     gap: heightPixel(15),
-    marginTop: heightPixel(20),
+    // marginTop: heightPixel(20),
     paddingBottom: heightPixel(30), // Extra padding for keyboard
+  },
+  coinTextSmall: {
+    fontSize: 15,
+    color: colors.white,
+    fontWeight: '400',
   },
 });
 

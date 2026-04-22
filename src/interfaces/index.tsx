@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native";
+import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, NativeScrollEvent, NativeSyntheticEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IndicatorName } from "react-native-loader-kit";
 
 export type TMessage = {
@@ -27,6 +27,7 @@ export type AuthStackParamList = {
     Login: undefined
     ForgotPassword: { type: InputType }
     VerifyCode: { via: string, email: string, dialing_code: string, phone: string }
+    VerifyEmailOtp: { email: string }
     SetPassword: { via: string, email: string, dialing_code: string, phone: string, token: string }
 };
 
@@ -35,7 +36,7 @@ export type RootStackParamList = {
     MyProfile: undefined
     EditProfile: undefined
     ChangePassword: undefined
-    Chat: undefined
+    Chat: { initialTab?: 'user' | 'trainer' | 'doctor' | 'admin' }
     NewsFeed: undefined
     ProgressTracking: undefined
     MusicAuth: undefined
@@ -46,7 +47,7 @@ export type RootStackParamList = {
     Chatbot: undefined
     CreateNewsFeed: undefined
     Workout: undefined
-    WorkoutDetails: { id: number }
+    WorkoutDetails: { id: number; muscle_id?: number }
     VideoDetails: { id: number }
     VideoPlayer: { video: string }
     MovementCorrection: undefined
@@ -97,6 +98,7 @@ export type RootStackParamList = {
     // Challenges & Rewards
     Challenges: undefined;
     ChallengeDetail: { id: number };
+    ChallengeReward: { id: number };
     ChallengeLogs: undefined;
     // Watch Connect
     WatchConnect: undefined;
@@ -113,6 +115,8 @@ export interface IWrapper {
     hide_bottom_bar?: boolean
     onRefresh?: () => void | Promise<void>
     refreshing?: boolean
+    /** Passed to ScrollView when scrollable (e.g. Home dashboard refetch on scroll). */
+    onScroll?: (e: NativeSyntheticEvent<NativeScrollEvent>) => void
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -243,6 +247,8 @@ export interface ITrackingCard {
     title: string
     subtext?: string
     progress?: number | string
+    /** 0–100 ring fill for `type="progress"` (e.g. calories vs a daily goal). */
+    ringProgress?: number
     type?: 'graph' | 'progress' | 'workout'
     stats?: ITrackingStats[]
 }
@@ -254,10 +260,19 @@ export interface IVideoCard {
     created_at: string
     language?: string,
     type?: "primary" | "secondary",
+    /** When true (e.g. similar videos row), title shows `exercise_title` instead of `muscle_title`. */
+    is_similar?: boolean
     onSave?: () => void
     onPress?: () => void
     is_saved?: boolean,
     is_video?: boolean,
+    muscle_title?: string
+    exercise_title?: string
+    video_count?: number
+    /** When true, shows count badge on thumbnail (Home Recommended / Workout Plans only). */
+    show_video_count?: boolean
+    /** When true, title line uses `muscle_title` (e.g. Workouts list with primary card). */
+    use_muscle_title?: boolean
 }
 
 export interface IWorkoutCard extends IProgressBar {

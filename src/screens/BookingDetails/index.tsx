@@ -63,7 +63,7 @@ const BookingDetails = () => {
             <Row justify="space-between" align="flex-start" style={styles.header_row}>
                 <View>
                     <Text size={14} weight="bold" color={colors.white}>Booking ID:</Text>
-                    <Text size={14} color={colors.icon_gray}>#{booking?.id || booking?.booking_id}</Text>
+                    <Text size={14} color={colors.icon_gray}>#{booking?.id}</Text>
                 </View>
                 <View style={[styles.status_badge, { backgroundColor: getStatusColor(booking?.status) }]}>
                     <Text size={12} color={colors.white}>
@@ -78,11 +78,11 @@ const BookingDetails = () => {
             <Row justify="space-between">
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Booking Date:</Text>
-                    <Text size={14} color={colors.icon_gray}>{booking?.created_at || 'mm/dd/yyyy'}</Text>
+                    <Text size={14} color={colors.icon_gray}>{booking?.created_at || 'YYYY/MM/DD'}</Text>
                 </View>
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Date:</Text>
-                    <Text size={14} color={colors.icon_gray}>{booking?.appointment_date || 'mm/dd/yyyy'}</Text>
+                    <Text size={14} color={colors.icon_gray}>{booking?.appointment_date || 'YYYY/MM/DD'}</Text>
                 </View>
             </Row>
 
@@ -159,7 +159,7 @@ const BookingDetails = () => {
                         <View style={styles.column}>
                             <Text size={14} weight="bold" color={colors.white}>Session Date:</Text>
                             <Text size={14} color={colors.icon_gray}>
-                                {booking?.rescheduled_appointment_date || 'mm/dd/yyyy'}
+                                {booking?.rescheduled_appointment_date || 'YYYY/MM/DD'}
                             </Text>
                         </View>
                         <View style={styles.column}>
