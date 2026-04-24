@@ -251,6 +251,18 @@ const useBookingDetailsController = () => {
       return;
     }
 
+    const adminJoined = (booking as { is_admin_joined?: boolean })
+      ?.is_admin_joined;
+    if (adminJoined === false) {
+      showOkModal({
+        type: 'info',
+        title: 'Join Session',
+        message:
+          "The meeting hasn't started yet. Please wait for the doctor to join.",
+      });
+      return;
+    }
+
     const hasZoomDetails =
       booking?.sdk_key && booking?.signature && booking?.meeting_number;
 
@@ -259,7 +271,7 @@ const useBookingDetailsController = () => {
         type: 'error',
         title: 'Error',
         message:
-          'Meeting details are not available yet. Please try again later.',
+          'Your appointment is in progress, but the meeting hasn’t been started by the doctor yet. Please wait or try again shortly.',
       });
       return;
     }
@@ -375,8 +387,7 @@ const useBookingDetailsController = () => {
       showOkModal({
         type: 'error',
         title: 'Error',
-        message:
-          err?.data?.message || err?.error || 'Failed to send tip.',
+        message: err?.data?.message || err?.error || 'Failed to send tip.',
       });
       throw err;
     }

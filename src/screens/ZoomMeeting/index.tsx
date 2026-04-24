@@ -33,6 +33,20 @@ function ZoomMeetingContent() {
   const isLeavingRef = useRef(false);
   const joinTimeRef = useRef<number>(0);
   const lastBackgroundTimeRef = useRef<number>(0); // Track when we went to background
+  // When the Zoom native UI closes (user taps "Leave", meeting ends, etc.),
+  // our MainActivity comes back to the foreground. We debounce this transition:
+  // if we stay in foreground past the delay, the Zoom UI is truly gone and we
+  // should navigate back. Going to background again (e.g. MeetingEndMessageActivity
+  // showing) cancels the timer so we don't auto-leave while another Zoom dialog
+  // is still active.
+  const foregroundSettleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearForegroundSettleTimer = () => {
+    if (foregroundSettleTimerRef.current) {
+      clearTimeout(foregroundSettleTimerRef.current);
+      foregroundSettleTimerRef.current = null;
+    }
+  };
 
   const params = route.params as {
     signature: string;
@@ -87,6 +101,7 @@ function ZoomMeetingContent() {
       if (meetingStatusListener?.remove) {
         meetingStatusListener.remove();
       }
+      clearForegroundSettleTimer();
       cleanup();
     };
   }, []);
@@ -103,24 +118,37 @@ function ZoomMeetingContent() {
     console.log("Participant - Time in background:", timeSinceBackground, "ms");
     console.log("========================================");
 
-    // When Zoom native UI launches, React Native app goes to background
+    // When Zoom native UI launches (or another Zoom activity opens — e.g. the
+    // MeetingEndMessage activity that appears right after pressing Leave), our
+    // MainActivity goes to background. Cancel any pending "settled in foreground"
+    // navigation so we don't auto-leave while another Zoom dialog is on top.
     if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
       console.log("Participant - App went to background, Zoom native UI is now active");
       lastBackgroundTimeRef.current = Date.now();
+      clearForegroundSettleTimer();
       appStateRef.current = nextAppState;
       return;
     }
 
-    // When app comes back to foreground
+    // When the app comes back to foreground AFTER we joined, the Zoom native
+    // UI is no longer on top. That can mean:
+    //   (a) the user pressed "Leave" → meeting ended
+    //   (b) the host ended the meeting
+    //   (c) Zoom is transitioning to another of its own activities (e.g.
+    //       MeetingEndMessage, waiting room preview) — in which case the app
+    //       will go back to background within a few hundred ms.
+    //
+    // We can't rely on zoom.getMeetingStatus (not exposed by this RN wrapper),
+    // and the SDK's JS event listener also doesn't fire status changes. So we
+    // debounce: if we stay in foreground past the settle delay, the Zoom UI
+    // is really gone and we navigate back. Going to background cancels the
+    // timer (handled above).
     if (
       appStateRef.current.match(/inactive|background/) &&
       nextAppState === 'active'
     ) {
       console.log("Participant - App returned to foreground");
 
-      // Only trust an explicit SDK status check. If getMeetingStatus isn't
-      // available, do NOT auto-leave here — that used to navigate the user
-      // to Home while the Zoom meeting was still active.
       try {
         const getMeetingStatus = (zoom as any).getMeetingStatus;
         if (typeof getMeetingStatus === 'function') {
@@ -136,12 +164,34 @@ function ZoomMeetingContent() {
           ) {
             console.log("Participant - SDK reports meeting ended, navigating back");
             handleMeetingEnd();
+            appStateRef.current = nextAppState;
+            return;
           }
-        } else {
-          console.log("Participant - getMeetingStatus unavailable — staying on Zoom screen (user leaves via back)");
         }
       } catch (err) {
         console.log("Participant - Could not get meeting status:", err);
+      }
+
+      // Fallback path (the common one — getMeetingStatus is usually unavailable):
+      // schedule a settle check. Require a minimum time since join so the rapid
+      // active→background→active churn while Zoom UI is launching doesn't trip
+      // this path.
+      const MIN_JOIN_MS_BEFORE_AUTO_LEAVE = 3000;
+      const FOREGROUND_SETTLE_MS = 1500;
+      if (
+        hasJoinedRef.current &&
+        !isLeavingRef.current &&
+        timeSinceJoin > MIN_JOIN_MS_BEFORE_AUTO_LEAVE
+      ) {
+        clearForegroundSettleTimer();
+        foregroundSettleTimerRef.current = setTimeout(() => {
+          if (isLeavingRef.current || !hasJoinedRef.current) return;
+          if (appStateRef.current !== 'active') return; // went to BG again
+          console.log(
+            "Participant - Stayed in foreground after Zoom UI — treating as meeting end",
+          );
+          handleMeetingEnd();
+        }, FOREGROUND_SETTLE_MS);
       }
     }
 
@@ -156,6 +206,7 @@ function ZoomMeetingContent() {
 
     console.log("Participant - Handling meeting end");
     isLeavingRef.current = true;
+    clearForegroundSettleTimer();
     setStatus('left');
 
     // Try to leave meeting gracefully
