@@ -28,20 +28,20 @@ type DashboardPayload = {
     workout_progress?: { minutes?: number; percentage?: number }
     level?: number,
     progress_tracking?:
-        | Array<{
-              id?: number
-              challenge_name?: string
-              percentage?: number
-              image?: string
-              image_url?: string
-          }>
-        | {
-              id?: number
-              challenge_name?: string
-              percentage?: number
-              image?: string
-              image_url?: string
-          }
+    | Array<{
+        id?: number
+        challenge_name?: string
+        percentage?: number
+        image?: string
+        image_url?: string
+    }>
+    | {
+        id?: number
+        challenge_name?: string
+        percentage?: number
+        image?: string
+        image_url?: string
+    }
 }
 
 const Home = () => {

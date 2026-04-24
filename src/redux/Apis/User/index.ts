@@ -458,9 +458,10 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Bookings'],
     }),
+    /** POST /user/my-booking/:id/tip — body: { coins } */
     giveTip: builder.mutation({
       query: ({ id, coins }: { id: number; coins: number }) => ({
-        url: `booking/${id}/give-tip`,
+        url: `my-booking/${id}/tip`,
         method: 'POST',
         body: { coins },
       }),

@@ -88,8 +88,8 @@ android {
         applicationId "com.blitzapp.yallagain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25  
-        versionName "0.0.25"
+        versionCode 26  
+        versionName "0.0.26"
         // Required by react-native-app-auth for OAuth redirect
         manifestPlaceholders = [appAuthRedirectScheme: 'myapp']
     }
@@ -147,46 +147,82 @@ dependencies {
     implementation("androidx.media3:media3-ui:1.2.1")
     implementation("androidx.media3:media3-common:1.2.1")
 
-    // Zoom Meeting SDK
-    implementation('us.zoom.meetingsdk:zoomsdk:6.6.0') {
-        exclude group: 'com.google.android.exoplayer', module: 'exoplayer'
-        exclude group: 'androidx.media3', module: 'media3-exoplayer'
-        exclude group: 'androidx.media3', module: 'media3-ui'
-    }
-    
-      // Coil image loading library (required by Zoom SDK)
+    // Zoom Meeting SDK — do NOT pin here. The RN wrapper
+    // (@zoom/meetingsdk-react-native) already depends on 6.7.2; let Gradle resolve.
+    // An older manual pin is overridden by the higher transitive version and only
+    // causes confusion about which Compose version Zoom expects.
+
+    // Coil image loading library (required by Zoom SDK)
     implementation "io.coil-kt:coil:2.5.0"
     implementation "io.coil-kt:coil-gif:2.5.0"
-    
-    
-    // Jetpack Compose dependencies - MUST match Zoom SDK 6.6.0's compile version
-    // Using BOM 2024.02.00 which provides Compose UI 1.6.0 and Material3 1.2.0
-      def composeBomVersion = "2024.09.00"
+
+    // Jetpack Compose — MUST match the Zoom SDK 6.7.x compile version.
+    // Zoom's ZmVideoPreviewElementUI calls signatures added in Compose 1.9.x
+    // (e.g. Modifier.toggleable-oSLSa3U$default). Using an older Compose will
+    // crash with NoSuchMethodError right after joinMeeting.
+    // Values mirror:
+    //   node_modules/@zoom/meetingsdk-react-native/android/versions.gradle
+    def composeBomVersion = "2025.10.01"
+    def composeUIVersion = "1.9.4"
+    def composeFoundationVersion = "1.9.4"
+    def composeRuntimeVersion = "1.9.4"
+    def composeMaterial3Version = "1.5.0-alpha07"
+    def composeActivityVersion = "1.11.0"
+    def composeLifecycleVersion = "2.9.4"
+
     implementation platform("androidx.compose:compose-bom:$composeBomVersion")
-   implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-graphics"
-    implementation "androidx.compose.ui:ui-text"
-    implementation "androidx.compose.ui:ui-unit"
-    implementation "androidx.compose.ui:ui-geometry"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.foundation:foundation"
-    implementation "androidx.compose.material3:material3"
-    implementation "androidx.activity:activity-compose:1.9.2"
-    implementation "androidx.compose.runtime:runtime"
-    implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
+    implementation "androidx.compose.ui:ui:$composeUIVersion"
+    implementation "androidx.compose.ui:ui-graphics:$composeUIVersion"
+    implementation "androidx.compose.ui:ui-text:$composeUIVersion"
+    implementation "androidx.compose.ui:ui-unit:$composeUIVersion"
+    implementation "androidx.compose.ui:ui-geometry:$composeUIVersion"
+    implementation "androidx.compose.ui:ui-tooling-preview:$composeUIVersion"
+    implementation "androidx.compose.foundation:foundation:$composeFoundationVersion"
+    implementation "androidx.compose.foundation:foundation-layout:$composeFoundationVersion"
+    implementation "androidx.compose.animation:animation:$composeFoundationVersion"
+    implementation "androidx.compose.animation:animation-core:$composeFoundationVersion"
+    implementation "androidx.compose.material3:material3:$composeMaterial3Version"
+    implementation "androidx.activity:activity-compose:$composeActivityVersion"
+    implementation "androidx.compose.runtime:runtime:$composeRuntimeVersion"
+    implementation "androidx.compose.runtime:runtime-livedata:$composeRuntimeVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$composeLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$composeLifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime-compose:$composeLifecycleVersion"
 }
 
-// Force ExoPlayer version resolution across all dependencies
+// Force version resolution across all dependencies so transitive libs can't
+// downgrade Compose below what the Zoom SDK expects.
 configurations.all {
     resolutionStrategy {
+        // ExoPlayer
         force "androidx.media3:media3-exoplayer:1.2.1"
         force "androidx.media3:media3-exoplayer-dash:1.2.1"
         force "androidx.media3:media3-exoplayer-hls:1.2.1"
         force "androidx.media3:media3-ui:1.2.1"
         force "androidx.media3:media3-common:1.2.1"
         force "com.google.android.exoplayer:exoplayer:2.19.1"
+
+        // Compose — align with Zoom Meeting SDK 6.7.x expectations
+        force "androidx.compose.ui:ui:1.9.4"
+        force "androidx.compose.ui:ui-graphics:1.9.4"
+        force "androidx.compose.ui:ui-text:1.9.4"
+        force "androidx.compose.ui:ui-unit:1.9.4"
+        force "androidx.compose.ui:ui-geometry:1.9.4"
+        force "androidx.compose.ui:ui-tooling-preview:1.9.4"
+        force "androidx.compose.foundation:foundation:1.9.4"
+        force "androidx.compose.foundation:foundation-layout:1.9.4"
+        force "androidx.compose.animation:animation:1.9.4"
+        force "androidx.compose.animation:animation-core:1.9.4"
+        force "androidx.compose.runtime:runtime:1.9.4"
+        force "androidx.compose.runtime:runtime-saveable:1.9.4"
+        force "androidx.compose.runtime:runtime-livedata:1.9.4"
+        force "androidx.compose.material3:material3:1.5.0-alpha07"
+        force "androidx.compose.material3:material3-android:1.5.0-alpha07"
+        force "androidx.compose.material3:material3-window-size-class:1.5.0-alpha07"
+        force "androidx.activity:activity-compose:1.11.0"
+        force "androidx.lifecycle:lifecycle-runtime-ktx:2.9.4"
+        force "androidx.lifecycle:lifecycle-runtime-compose:2.9.4"
+        force "androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4"
     }
 }
 

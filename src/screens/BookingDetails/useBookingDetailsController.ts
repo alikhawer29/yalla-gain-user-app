@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Platform } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
@@ -20,6 +20,7 @@ import { NAVIGATORS, ROUTES } from '../../utils/routes';
 
 const useBookingDetailsController = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { id } = route.params as { id: number };
   const user = useAppSelector(selectUser);
 
@@ -44,7 +45,7 @@ const useBookingDetailsController = () => {
   const [rateBooking, { isLoading: isRating }] = useRateBookingMutation();
   const [reportBooking, { isLoading: isReporting }] =
     useReportBookingMutation();
-  const [_giveTip, { isLoading: isGivingTip }] = useGiveTipMutation();
+  const [giveTip, { isLoading: isGivingTip }] = useGiveTipMutation();
 
   const booking = data?.data;
   const service = booking?.service;
@@ -268,17 +269,14 @@ const useBookingDetailsController = () => {
       [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
       'Participant';
 
-    navigate(
-      ROUTES.ZOOM_MEETING as any,
-      {
-        sdk_key: booking.sdk_key,
-        signature: booking.signature,
-        meeting_number: String(booking.meeting_number),
-        password: booking.password ?? '',
-        join_url: booking.join_url,
-        userName,
-      } as any,
-    );
+    (navigation as any).navigate(ROUTES.ZOOM_MEETING, {
+      sdk_key: booking.sdk_key,
+      signature: booking.signature,
+      meeting_number: String(booking.meeting_number),
+      password: booking.password ?? '',
+      join_url: booking.join_url,
+      userName,
+    });
   };
 
   const onRateBooking = async (rating: number, review: string) => {
@@ -362,25 +360,26 @@ const useBookingDetailsController = () => {
   };
 
   const onSubmitTip = async (coins: number) => {
-    // API is under development, so we don't hit it for now
-    // Just log the tip data
-    console.log('Give tip - Booking ID:', id, 'Coins:', coins);
-    // When API is ready, uncomment this:
-    // try {
-    //   await giveTip({ id, coins }).unwrap();
-    //   setShowTipModal(false);
-    //   showOkModal({
-    //     type: 'success',
-    //     title: 'Successfully',
-    //     message: 'Tip Has Been Sent Successfully',
-    //   }, () => refetch());
-    // } catch (err: any) {
-    //   showOkModal({
-    //     type: 'error',
-    //     title: 'Error',
-    //     message: err?.data?.message || 'Failed to send tip.',
-    //   });
-    // }
+    if (!Number.isFinite(coins) || coins < 1) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Please enter a valid tip amount.',
+      });
+      throw new Error('validation');
+    }
+    try {
+      await giveTip({ id, coins }).unwrap();
+      refetch();
+    } catch (err: any) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message:
+          err?.data?.message || err?.error || 'Failed to send tip.',
+      });
+      throw err;
+    }
   };
 
   const onDownloadPrescription = async () => {

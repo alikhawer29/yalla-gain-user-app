@@ -16,7 +16,10 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 const ConsultationStackNavigator = () => {
     return (
-        <Stack.Navigator screenOptions={Options}>
+        <Stack.Navigator
+            screenOptions={Options}
+            detachInactiveScreens={false}
+        >
             <Stack.Screen name={ROUTES.CONSULTANTS_LIST} component={ConsultantsList} />
             <Stack.Screen name={ROUTES.CONSULTANT_PROFILE} component={ConsultantProfile} />
             <Stack.Screen name={ROUTES.SERVICE_DETAILS} component={ServiceDetails} />

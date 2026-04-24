@@ -15,6 +15,8 @@ import { ZoomSDKProvider, useZoom } from '@zoom/meetingsdk-react-native';
 import Text from '../../components/Text';
 import colors from '../../utils/colors';
 import usePermissions from '../../hooks/usePermissions';
+import { navigationRef } from '../../utils/navigation';
+import { NAVIGATORS, ROUTES } from '../../utils/routes';
 
 function ZoomMeetingContent() {
   const route = useRoute();
@@ -116,43 +118,30 @@ function ZoomMeetingContent() {
     ) {
       console.log("Participant - App returned to foreground");
 
-      // Check if meeting is still in progress
-      let meetingInProgress = false;
+      // Only trust an explicit SDK status check. If getMeetingStatus isn't
+      // available, do NOT auto-leave here — that used to navigate the user
+      // to Home while the Zoom meeting was still active.
       try {
-        // Try to check meeting status - if we get an error or the meeting isn't active, it ended
         const getMeetingStatus = (zoom as any).getMeetingStatus;
         if (typeof getMeetingStatus === 'function') {
           const meetingStatus = await getMeetingStatus();
           console.log("Participant - Meeting status:", meetingStatus);
-          // Status 2 = InMeeting, 1 = Connecting
-          meetingInProgress = meetingStatus === 2 || meetingStatus === 1;
+          const inMeeting = meetingStatus === 2 || meetingStatus === 1;
+          if (
+            !inMeeting &&
+            hasJoinedRef.current &&
+            !isLeavingRef.current &&
+            timeSinceJoin > 5000 &&
+            timeSinceBackground > 3000
+          ) {
+            console.log("Participant - SDK reports meeting ended, navigating back");
+            handleMeetingEnd();
+          }
         } else {
-          console.log("Participant - getMeetingStatus not available, using timing heuristics");
+          console.log("Participant - getMeetingStatus unavailable — staying on Zoom screen (user leaves via back)");
         }
       } catch (err) {
         console.log("Participant - Could not get meeting status:", err);
-        // If we can't check, assume meeting ended when we return to foreground after being in it
-        meetingInProgress = false;
-      }
-
-      // If user was in the meeting and spent time in background (meeting UI), 
-      // and meeting is no longer in progress, they likely left
-      if (
-        hasJoinedRef.current &&
-        !isLeavingRef.current &&
-        timeSinceJoin > 5000 && // At least 5 seconds since join
-        timeSinceBackground > 3000 // At least 3 seconds in background (actually used Zoom UI)
-      ) {
-        if (!meetingInProgress) {
-          console.log("Participant - Meeting ended, navigating back");
-          handleMeetingEnd();
-        } else {
-          console.log("Participant - Meeting still in progress, staying on screen");
-        }
-      } else {
-        console.log("Participant - Ignoring foreground transition - conditions not met");
-        console.log("  - Time since join:", timeSinceJoin, "ms (need > 5000)");
-        console.log("  - Time in background:", timeSinceBackground, "ms (need > 3000)");
       }
     }
 
@@ -348,11 +337,19 @@ function ZoomMeetingContent() {
   const navigateBack = () => {
     setTimeout(() => {
       if (navigation.canGoBack()) {
-        console.log("Participant - Navigating back");
+        console.log("Participant - Navigating back (stack pop)");
         navigation.goBack();
-      } else {
-        console.log("Participant - Navigating to Home");
-        navigation.navigate('Home' as never);
+        return;
+      }
+      // IMPORTANT: do NOT fall back to 'Home' — that resolves to the main
+      // dashboard tab and looks like a random kick out of the meeting.
+      // Send user to My Bookings inside the Consultation stack instead.
+      if (navigationRef.isReady()) {
+        console.log("Participant - No stack to pop, opening My Bookings");
+        (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+          screen: NAVIGATORS.CONSULTATION_STACK,
+          params: { screen: ROUTES.MY_BOOKINGS },
+        });
       }
     }, 100);
   };

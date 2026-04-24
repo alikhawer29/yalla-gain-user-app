@@ -12,7 +12,8 @@ import Text from '../Text';
 interface ITipModal {
     visible: boolean;
     onClose: () => void;
-    onSubmit: (coins: number) => void;
+    /** Resolve when tip succeeds (modal shows built-in success). Reject so user stays on the tip form. */
+    onSubmit: (coins: number) => Promise<void>;
     loading?: boolean;
 }
 
@@ -28,10 +29,13 @@ const TipModal: FC<ITipModal> = ({ visible, onClose, onSubmit, loading }) => {
         onClose();
     };
 
-    const handleSubmit = () => {
-        // Since API is under development, just show success for now
-        onSubmit(coins);
-        setView('success');
+    const handleSubmit = async () => {
+        try {
+            await onSubmit(coins);
+            setView('success');
+        } catch {
+            /* parent shows error modal; stay on select */
+        }
     };
 
     const incrementCoins = () => {

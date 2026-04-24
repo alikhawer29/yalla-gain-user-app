@@ -336,7 +336,7 @@ const ROUTES_OPTIONS = [
     left: 'back',
     right: null,
     logo: false,
-    title: '',
+    title: 'Chat',
     bottom_tab: false,
   },
   {

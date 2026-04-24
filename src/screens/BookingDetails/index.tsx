@@ -298,14 +298,14 @@ const BookingDetails = () => {
                             />
                         ) : null}
 
-                        {consultant?.type == 'trainer' ? null : (
+                        {consultant?.type === 'trainer' && !booking?.tip ? (
                             <Button
                                 text="Give Tip"
                                 type="outlined"
                                 style={styles.half_btn}
                                 onPress={onGiveTip}
                             />
-                        )}
+                        ) : null}
                         {booking?.is_reported == 1 ? null : (
                             <Button
                                 text="Report"

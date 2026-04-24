@@ -87,17 +87,19 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
     return route?.logo ? (
       <Image style={styles.logo} source={images.logo} />
     ) : (
-      <Text
-        lines={2}
-        line_height={28}
-        style={styles.title}
-        color={colors.white}
-        weight="semibold"
-        size={22}
-        position="center"
-      >
-        {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
-      </Text>
+      <View style={styles.titleWrap}>
+        <Text
+          lines={2}
+          line_height={28}
+          style={styles.title}
+          color={colors.white}
+          weight="semibold"
+          size={22}
+          position="center"
+        >
+          {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
+        </Text>
+      </View>
     )
   }
 
@@ -147,10 +149,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  titleWrap: {
+    zIndex: 99,
+    maxWidth: "80%",
+    height: heightPixel(62),
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
     zIndex: 99,
+    width: "100%",
     textAlign: "center",
-    maxWidth: "80%",
+    textAlignVertical: "center",
   },
   logo: {
     width: heightPixel(62),

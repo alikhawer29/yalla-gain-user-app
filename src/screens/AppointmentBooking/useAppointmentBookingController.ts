@@ -42,19 +42,12 @@ const useAppointmentBookingController = () => {
   useEffect(() => {
     if (!user || prefillFromUserOnce.current) return;
     prefillFromUserOnce.current = true;
-    const dialing = user.dialing_code
-      ? `${user.dialing_code}`.startsWith('+')
-        ? `${user.dialing_code}`
-        : `+${user.dialing_code}`
-      : '+971';
-    setFormData({
+    setFormData(prev => ({
+      ...prev,
       first_name: user.first_name ?? '',
       last_name: user.last_name ?? '',
       email: user.email ?? '',
-      phone: user.phone ?? '',
-      dialing_code: dialing,
-      country_code: user.country_code ?? 'AE',
-    });
+    }));
   }, [user]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
