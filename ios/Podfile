@@ -13,6 +13,9 @@ node_require('react-native-permissions/scripts/setup.rb')
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
+# Required by @react-native-firebase/* when linking Firebase as CocoaPods frameworks
+$RNFirebaseAsStaticFramework = true
+
 setup_permissions([
   'Camera',
   'Microphone',

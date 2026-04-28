@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "448227018538",
+    "project_id": "yallagain-edf9b",
+    "storage_bucket": "yallagain-edf9b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:448227018538:android:910e0a61500eb915090053",
+        "android_client_info": {
+          "package_name": "com.blitzapp.yallagain"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzSjfmZJuV_mw5mSI5zwLC3LbT0RkEmFg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,7 +1,10 @@
 package com.blitzapp.yallagain
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -13,6 +16,11 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 
 class MainApplication : Application(), ReactApplication {
+
+  companion object {
+    /** Must match JS `FOREGROUND_FCM_CHANNEL_ID` and FCM default meta-data in AndroidManifest. */
+    const val DEFAULT_FCM_CHANNEL_ID = "yallagain_fcm_default"
+  }
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
@@ -34,8 +42,30 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    createDefaultFcmNotificationChannel()
     loadReactNative(this)
     setupCrashRecovery()
+  }
+
+  /**
+   * Required before Firebase can show notification payloads while the app is backgrounded/closed.
+   * Without this channel (and manifest meta-data), Android 8+ may drop tray notifications.
+   */
+  private fun createDefaultFcmNotificationChannel() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+      return
+    }
+    val channel = NotificationChannel(
+      DEFAULT_FCM_CHANNEL_ID,
+      "General",
+      NotificationManager.IMPORTANCE_HIGH,
+    ).apply {
+      description = "General notifications"
+      enableVibration(true)
+      setShowBadge(true)
+    }
+    val nm = getSystemService(NotificationManager::class.java)
+    nm.createNotificationChannel(channel)
   }
 
   private fun setupCrashRecovery() {

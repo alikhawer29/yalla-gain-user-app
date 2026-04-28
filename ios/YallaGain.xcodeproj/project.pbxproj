@@ -15,6 +15,7 @@
 		416CFE6A1F3949AE96D45083 /* RNUnityViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 234138C2519846778FF07E7F /* RNUnityViewManager.m */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		79CE710DA7A64C495FFC1465 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		F1FCM0022F21100200D56001 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F1FCM0012F21100100D56001 /* GoogleService-Info.plist */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A5E70CE9E1FD4579BF3AC106 /* RNUnityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ACDF1252D8B49BDA5DC3730 /* RNUnityView.swift */; };
 		D1909C956470B49D98304DE0 /* libPods-YallaGain.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 776B65484D3676BBFA7309B5 /* libPods-YallaGain.a */; };
@@ -41,6 +42,7 @@
 		13B07F961A680F5B00A75B9A /* YallaGain.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YallaGain.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = YallaGain/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = YallaGain/Info.plist; sourceTree = "<group>"; };
+		F1FCM0012F21100100D56001 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = GoogleService-Info.plist; path = YallaGain/GoogleService-Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = YallaGain/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13F2B6A82F5B7C2A00A1B2C3 /* YallaGain.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = YallaGain.entitlements; path = YallaGain/YallaGain.entitlements; sourceTree = "<group>"; };
 		145F4F3C2EB27DCA0039225E /* global-metadata.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = "global-metadata.dat"; sourceTree = "<group>"; };
@@ -118,6 +120,7 @@
 				234138C2519846778FF07E7F /* RNUnityViewManager.m */,
 				3D03A81F69A4492D864D24F4 /* YallaGain-Bridging-Header.h */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
+				F1FCM0012F21100100D56001 /* GoogleService-Info.plist */,
 				13F2B6A82F5B7C2A00A1B2C3 /* YallaGain.entitlements */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
@@ -394,6 +397,7 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				79CE710DA7A64C495FFC1465 /* PrivacyInfo.xcprivacy in Resources */,
+				F1FCM0022F21100200D56001 /* GoogleService-Info.plist in Resources */,
 				336FF2CA411140DFA6BE1E3D /* index.ts in Resources */,
 				048E40522E21A86800D56C34 /* SF-Pro-Display-Regular.otf in Resources */,
 				048E40532E21A86800D56C34 /* SF-Pro-Display-Semibold.otf in Resources */,

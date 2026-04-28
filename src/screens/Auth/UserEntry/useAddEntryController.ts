@@ -4,6 +4,7 @@ import usePicker from "../../../hooks/usePicker";
 import useToggle from "../../../hooks/useToggle";
 import { useLoginMutation, useSignupMutation } from "../../../redux/Apis/Auth";
 import { TABS } from "../../../utils/data";
+import { getDevicePushPayload } from "../../../utils/devicePush";
 import { formHandler, withDialingCodePlus } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
@@ -70,10 +71,15 @@ const useAddEntryController = () => {
         }
     }, [isSignupSuccess, signupData, resetSignup])
 
-    const onSubmit = useCallback((data: any) => {
+    const onSubmit = useCallback(async (data: any) => {
 
         if (selected === "login") {
-            login(data)
+            const push = await getDevicePushPayload();
+            login({
+                ...data,
+                device_type: push.device_type,
+                device_token: push.device_token,
+            })
                 .unwrap()
                 .catch((err: any) => {
                     const body = err?.data;

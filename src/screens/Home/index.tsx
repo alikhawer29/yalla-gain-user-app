@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from "react-native"
+import { useDispatch } from "react-redux"
 import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
@@ -14,7 +15,7 @@ import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
-import { useGetDashboardQuery, useGetWorkoutQuery } from "../../redux/Apis/User"
+import { userApi, useGetDashboardQuery, useGetWorkoutQuery } from "../../redux/Apis/User"
 import colors from "../../utils/colors"
 import { getProgressTrackingIconSource } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
@@ -45,6 +46,8 @@ type DashboardPayload = {
 }
 
 const Home = () => {
+    const dispatch = useDispatch()
+
     const {
         data: workoutData,
         isLoading: workoutLoading,
@@ -95,11 +98,14 @@ const Home = () => {
     ]
     const recommendedVideos = workoutData?.data || []
 
-    /** Refetch dashboard when Home tab/screen is opened. */
+    /** Refetch dashboard when Home tab/screen is opened; refresh bell unread state too. */
     useFocusEffect(
         useCallback(() => {
-            void refetchDashboard()
-        }, [refetchDashboard]),
+            void (async () => {
+                await refetchDashboard()
+                dispatch(userApi.util.invalidateTags(["Notifications"]))
+            })()
+        }, [refetchDashboard, dispatch]),
     )
 
     const lastScrollRefetchAt = useRef(0)
@@ -155,8 +161,10 @@ const Home = () => {
             floating
             onScroll={onScrollRefetchDashboard}
             onRefresh={() => {
-                void refetch()
-                void refetchDashboard()
+                void (async () => {
+                    await Promise.allSettled([refetch(), refetchDashboard()])
+                    dispatch(userApi.util.invalidateTags(["Notifications"]))
+                })()
             }}
             refreshing={
                 (isFetching && !workoutLoading) ||

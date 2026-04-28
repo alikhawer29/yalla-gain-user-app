@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useMemo } from "react"
 import { StyleSheet, View } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 import { StackNavigationOptions, StackNavigationProp } from "@react-navigation/stack"
@@ -12,6 +12,10 @@ import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
 import { goBack, navigate } from "../../utils/navigation"
 import { ROUTES, ROUTES_OPTIONS } from "../../utils/routes"
+import { useGetNotificationsQuery } from "../../redux/Apis/User"
+
+/** Header bell outline when there are unread notifications */
+const NOTIFICATION_UNREAD_OUTLINE = "#118076"
 
 interface OptionsProps {
   route?: RouteProp<any, any> | {
@@ -25,10 +29,29 @@ interface OptionsProps {
   }
 }
 
-const Options = (props: OptionsProps): StackNavigationOptions => {
-
+function OptionsHeader(props: OptionsProps) {
   const routeName = (props?.route as any)?.name
   const route = ROUTES_OPTIONS.find(item => item.route_name === routeName)
+  const showNotificationsBell = route?.right === "notifications"
+
+  const { data: unreadListPayload } = useGetNotificationsQuery(
+    { status: "unread", page: 1, per_page: 1 },
+    { skip: !showNotificationsBell },
+  )
+
+
+  const hasUnreadNotifications = useMemo(() => {
+    if (!showNotificationsBell || !unreadListPayload) return false
+    const payload = unreadListPayload as {
+      meta?: { total?: number }
+      data?: unknown[]
+      unread_count?: number
+    }
+    if (typeof payload.unread_count === "number") return payload.unread_count > 0
+    if (typeof payload.meta?.total === "number") return payload.meta.total > 0
+    const rows = payload.data
+    return Array.isArray(rows) && rows.length > 0
+  }, [showNotificationsBell, unreadListPayload])
 
   const handleLeftPress = () => {
     if (route?.left === "back") {
@@ -69,16 +92,27 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
     const icon_source = rightKey && rightKey !== null ? images[rightKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
+    const bellUnread =
+      rightKey === "notifications" && hasUnreadNotifications
+    const bellBorder = bellUnread ? NOTIFICATION_UNREAD_OUTLINE : colors.white
+    const bellTint = bellUnread ? NOTIFICATION_UNREAD_OUTLINE : undefined
+
     return (
       <Touchable onPress={handleRightPress} style={styles.sideSpace}>
-        <Icon
-          source={icon_source}
-          border={colors.white}
-          size={40}
-          rounded
-          less_rounded
-          less_padding
-        />
+        <View style={styles.bellWrap}>
+          <Icon
+            source={icon_source}
+            border={bellBorder}
+            tint_color={bellTint}
+            size={40}
+            rounded
+            less_rounded
+            less_padding
+          />
+          {bellUnread ? (
+            <View style={styles.unreadDot} accessibilityLabel="Unread notifications" />
+          ) : null}
+        </View>
       </Touchable>
     )
   }
@@ -105,24 +139,32 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
 
   const isTransparent = (route && 'transparent' in route ? route.transparent : false) || false
 
+  return (
+    <SafeAreaView
+      edges={["top"]}
+      style={[
+        styles.safeArea,
+        { backgroundColor: isTransparent ? colors.transparent : colors.black }
+      ]}
+    >
+      <View style={styles.container}>
+        {renderLeft()}
+        <View style={styles.center}>{renderTitle()}</View>
+        {renderRight()}
+      </View>
+    </SafeAreaView>
+  )
+}
+
+const Options = (props: OptionsProps): StackNavigationOptions => {
+  const routeName = (props?.route as any)?.name
+  const route = ROUTES_OPTIONS.find(item => item.route_name === routeName)
+  const isTransparent = (route && 'transparent' in route ? route.transparent : false) || false
+
   return {
     headerShown: true,
     headerTransparent: isTransparent,
-    header: () => (
-      <SafeAreaView
-        edges={["top"]}
-        style={[
-          styles.safeArea,
-          { backgroundColor: isTransparent ? colors.transparent : colors.black }
-        ]}
-      >
-        <View style={styles.container}>
-          {renderLeft()}
-          <View style={styles.center}>{renderTitle()}</View>
-          {renderRight()}
-        </View>
-      </SafeAreaView>
-    ),
+    header: () => <OptionsHeader {...props} />,
   }
 }
 
@@ -143,6 +185,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 99,
+  },
+  bellWrap: {
+    position: "relative",
+    width: widthPixel(40),
+    height: widthPixel(40),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  /** High-contrast unread indicator on the bell (works on dark / transparent headers). */
+  unreadDot: {
+    position: "absolute",
+    top: heightPixel(4),
+    right: widthPixel(4),
+    width: heightPixel(10),
+    height: heightPixel(10),
+    borderRadius: heightPixel(5),
+    backgroundColor: NOTIFICATION_UNREAD_OUTLINE,
+    borderWidth: heightPixel(2),
+    borderColor: colors.white,
   },
   center: {
     flex: 1,

@@ -1,14 +1,14 @@
 import React, { FC } from "react"
-import { ActivityIndicator, FlatList, RefreshControl, View, TouchableOpacity } from "react-native"
+import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View } from "react-native"
 import images from "../../assets/images"
 import Icon from "../../components/Icon"
 import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import useNotificationController from "./useNotificationController"
+import { heightPixel } from "../../utils/helper"
 import styles from "./styles"
-import { heightPixel, widthPixel } from "../../utils/helper"
+import useNotificationController from "./useNotificationController"
 
 const Notifications: FC = () => {
     const {

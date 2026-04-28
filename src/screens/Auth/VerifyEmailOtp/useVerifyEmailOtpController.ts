@@ -1,7 +1,7 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
 import { AuthStackParamList } from '../../../interfaces';
+import { getDevicePushPayload } from '../../../utils/devicePush';
 import { useResendOtpMutation, useVerifyOtpMutation } from '../../../redux/Apis/Auth';
 import { navigateAndSimpleReset } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
@@ -33,12 +33,13 @@ const useVerifyEmailOtpController = () => {
   }, []);
 
   const onSubmit = useCallback(
-    (values: { otp: string }) => {
+    async (values: { otp: string }) => {
+      const push = await getDevicePushPayload();
       verifyOtp({
         email,
         otp: values.otp.trim(),
-        device_type: Platform.OS === 'ios' ? 'ios' : 'android',
-        device_token: '',
+        device_type: push.device_type,
+        device_token: push.device_token,
       });
     },
     [email, verifyOtp],
