@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../interfaces';
 import { ROUTES } from '../../utils/routes';
@@ -31,17 +31,20 @@ const useProgressTrackingController = () => {
   const user = useAppSelector(selectUser);
   const userId = user?.id;
 
-  // Fetch scan status (POST /scan/status) when screen mounts or userId changes.
-  useEffect(() => {
-    if (!userId) return;
-    (async () => {
-      try {
-        await scanStatus(userId).unwrap();
-      } catch (e) {
-        console.error('[ProgressTracking] scanStatus failed', e);
-      }
-    })();
-  }, [userId, scanStatus]);
+  // Refetch whenever this screen is focused so avatar state is fresh after Create Avatar / scan flow.
+  // (Tab stacks often keep screens mounted; userId-only effect would miss return navigation.)
+  useFocusEffect(
+    useCallback(() => {
+      if (!userId) return;
+      void (async () => {
+        try {
+          await scanStatus(userId).unwrap();
+        } catch (e) {
+          console.error('[ProgressTracking] scanStatus failed', e);
+        }
+      })();
+    }, [userId, scanStatus]),
+  );
 
   const hasFirstAvatar = scanStatusData?.has_first_avatar === true;
   const canScan = scanStatusData?.can_scan === true;
