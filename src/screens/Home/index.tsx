@@ -15,12 +15,21 @@ import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
-import { userApi, useGetDashboardQuery, useGetWorkoutQuery } from "../../redux/Apis/User"
+import {
+    userApi,
+    useGetCaloriesGraphQuery,
+    useGetDashboardQuery,
+    useGetWorkoutQuery,
+    type CaloriesGraphResponse,
+    type MonthlyCaloriesDataPoint,
+    type WeeklyCaloriesDataPoint,
+} from "../../redux/Apis/User"
 import colors from "../../utils/colors"
 import { getProgressTrackingIconSource } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
 import { navigateToChallenges, navigateToWorkout, navigationRef } from '../../utils/navigation'
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
+import HomeScreen from "../HomeScreen";
 
 type DashboardPayload = {
     steps?: number
@@ -45,6 +54,30 @@ type DashboardPayload = {
     }
 }
 
+function unwrapCaloriesGraphPayload(raw: unknown): CaloriesGraphResponse | null {
+    if (!raw || typeof raw !== "object") {
+        return null
+    }
+    const r = raw as Record<string, unknown>
+    if (
+        (r.filter === "weekly" || r.filter === "monthly") &&
+        Array.isArray(r.data)
+    ) {
+        return r as unknown as CaloriesGraphResponse
+    }
+    const nested = r.data
+    if (nested && typeof nested === "object") {
+        const n = nested as Record<string, unknown>
+        if (
+            (n.filter === "weekly" || n.filter === "monthly") &&
+            Array.isArray(n.data)
+        ) {
+            return n as unknown as CaloriesGraphResponse
+        }
+    }
+    return null
+}
+
 const Home = () => {
     const dispatch = useDispatch()
 
@@ -66,20 +99,12 @@ const Home = () => {
         return root?.data ?? {}
     }, [dashboardRaw])
 
-    const steps = Number(dashboard.steps ?? 0)
-    const calories = Number(dashboard.calories ?? 0)
     const challengesCompleted = Number(dashboard.challenges_completed_count ?? 0)
     const workoutMinutes = Number(dashboard.workout_progress?.minutes ?? 0)
     const workoutPercentage = Math.min(
         100,
         Math.max(0, Number(dashboard.workout_progress?.percentage ?? 0)),
     )
-    /** Ring fill vs a 2500 kcal daily reference (adjust if product defines another goal). */
-    const caloriesRingProgress = useMemo(
-        () => Math.min(100, Math.round((calories / 2500) * 100)),
-        [calories],
-    )
-
     const level = useMemo(() => {
         return dashboard?.level ?? 0
     }, [dashboardRaw])
@@ -92,11 +117,85 @@ const Home = () => {
     }, [dashboard])
 
     const [calorieFilter, setCalorieFilter] = useState('Weekly')
+    const graphApiFilter =
+        calorieFilter === "Monthly" ? "monthly" : "weekly"
+    const {
+        data: caloriesGraphRaw,
+        isFetching: caloriesGraphFetching,
+        refetch: refetchCaloriesGraph,
+    } = useGetCaloriesGraphQuery(graphApiFilter)
     const calorieOptions = [
         { label: 'Weekly', value: 'Weekly' },
         { label: 'Monthly', value: 'Monthly' },
     ]
     const recommendedVideos = workoutData?.data || []
+
+    const caloriesChartData = useMemo(() => {
+        const payload = unwrapCaloriesGraphPayload(caloriesGraphRaw)
+        const pts = payload?.data
+        const emptyWeekly = {
+            labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+            datasets: [
+                {
+                    data: [0, 0, 0, 0, 0, 0, 0],
+                    color: (opacity = 1) => colors.primary,
+                    strokeWidth: 0,
+                },
+            ],
+        }
+        if (!pts?.length) {
+            return graphApiFilter === "weekly"
+                ? emptyWeekly
+                : {
+                      labels: [""],
+                      datasets: [
+                          {
+                              data: [0],
+                              color: (opacity = 1) => colors.primary,
+                              strokeWidth: 0,
+                          },
+                      ],
+                  }
+        }
+        if (graphApiFilter === "weekly") {
+            const w = pts as WeeklyCaloriesDataPoint[]
+            return {
+                labels: w.map(p =>
+                    p.day && p.day.length > 3 ? p.day.slice(0, 3) : (p.day ?? ""),
+                ),
+                datasets: [
+                    {
+                        data: w.map(p => Number(p.calories) || 0),
+                        color: (opacity = 1) => colors.primary,
+                        strokeWidth: 0,
+                    },
+                ],
+            }
+        }
+        const m = pts as MonthlyCaloriesDataPoint[]
+        return {
+            /* Every other x-label (1, 3, 5…) — full `data` kept so the line stays accurate. */
+            labels: m.map((p, i) => {
+                const last = i === m.length - 1
+                if (i % 2 !== 0 && !last) {
+                    return ""
+                }
+                const d = p.date
+                if (!d || d.length < 10) {
+                    return d ?? ""
+                }
+                const dayOfMonth = parseInt(d.slice(8, 10), 10)
+                return Number.isFinite(dayOfMonth) ? String(dayOfMonth) : ""
+            }),
+            datasets: [
+                {
+                    data: m.map(p => Number(p.calories) || 0),
+                    color: (opacity = 1) => colors.primary,
+                    strokeWidth: 0,
+                },
+            ],
+        }
+    }, [caloriesGraphRaw, graphApiFilter])
 
     /** Refetch dashboard when Home tab/screen is opened; refresh bell unread state too. */
     useFocusEffect(
@@ -143,17 +242,6 @@ const Home = () => {
         }
     };
 
-    const data = {
-        labels: ["Mon", "Tues", "Wed", "Thu", "Fri", "Sat", "Sun"],
-        datasets: [
-            {
-                data: [50, 95, 20, 50, 20, 80, 40],
-                color: (opacity = 1) => colors.primary, // optional
-                strokeWidth: 0 // optional
-            }
-        ],
-    };
-
     return (
         <Wrapper
             bottom_bar
@@ -162,13 +250,18 @@ const Home = () => {
             onScroll={onScrollRefetchDashboard}
             onRefresh={() => {
                 void (async () => {
-                    await Promise.allSettled([refetch(), refetchDashboard()])
+                    await Promise.allSettled([
+                        refetch(),
+                        refetchDashboard(),
+                        refetchCaloriesGraph(),
+                    ])
                     dispatch(userApi.util.invalidateTags(["Notifications"]))
                 })()
             }}
             refreshing={
                 (isFetching && !workoutLoading) ||
-                (dashboardFetching && !dashboardLoading)
+                (dashboardFetching && !dashboardLoading) ||
+                caloriesGraphFetching
             }
         >
             <ProfileHeader />
@@ -176,25 +269,7 @@ const Home = () => {
                 <InfoCard />
             </View>
             <View style={{ marginTop: heightPixel(30) }}>
-                <Row justify="space-between">
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard
-                            icon={images.steps_graph}
-                            title="Steps"
-                            progress={steps}
-                            subtext="Steps"
-                        />
-                    </View>
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard
-                            title="Calories"
-                            progress={calories}
-                            subtext="Cal"
-                            type="progress"
-                            ringProgress={caloriesRingProgress}
-                        />
-                    </View>
-                </Row>
+                <HomeScreen />
                 <Row justify="space-between">
                     <Touchable style={{ padding: heightPixel(8), width: "50%" }} onPress={() => navigateToChallenges()}>
                         <TrackingCard
@@ -307,17 +382,24 @@ const Home = () => {
                 </Row>
                 <View style={{ marginLeft: -widthPixel(40), }}>
                     <LineChart
-                        style={
-                            {
-                                marginLeft: 0,
-                                margin: 0,
-                                paddingLeft: 0,
-                                padding: 0
-                            }
-                        }
-                        data={data}
+                        style={{
+                            marginLeft: 0,
+                            margin: 0,
+                            paddingLeft: 0,
+                            padding: 0,
+                            /* Library uses this as left gutter for Y-axis labels (name is misleading). */
+                            paddingRight: widthPixel(65),
+                        }}
+                        data={caloriesChartData}
                         width={vw * 100}
                         height={heightPixel(240)}
+                        segments={4}
+                        formatYLabel={y => {
+                            const n = Number(String(y).replace(/,/g, ""))
+                            return Number.isFinite(n)
+                                ? String(Math.round(n))
+                                : String(y)
+                        }}
                         chartConfig={{
                             color: () => colors.white,
                             strokeWidth: 0,
@@ -345,7 +427,7 @@ const Home = () => {
                             },
 
                             propsForHorizontalLabels: {
-
+                                fontSize: font(11),
                             },
                         }}
                         bezier

@@ -3,3 +3,5 @@ import type { RootState, AppDispatch } from '../redux/Store'
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export { useHealthData } from './useHealthData';
+export type { HealthDataSource, UseHealthDataResult } from './useHealthData';

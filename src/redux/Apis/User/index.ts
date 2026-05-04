@@ -2,6 +2,23 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_USER_BASE_URL } from '../../../utils/data';
 import { RootState } from '../../Store';
 
+export interface WeeklyCaloriesDataPoint {
+  day: string;
+  calories: number;
+}
+
+export interface MonthlyCaloriesDataPoint {
+  date: string;
+  calories: number;
+}
+
+export interface CaloriesGraphResponse {
+  filter: 'weekly' | 'monthly';
+  status: boolean;
+  execution_time: string;
+  data: WeeklyCaloriesDataPoint[] | MonthlyCaloriesDataPoint[];
+}
+
 export const userApi = createApi({
   reducerPath: 'userApi',
   tagTypes: [
@@ -16,6 +33,7 @@ export const userApi = createApi({
     'Wallet',
     'Challenges',
     'Notifications',
+    'HealthCalories',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl: API_USER_BASE_URL,
@@ -224,6 +242,19 @@ export const userApi = createApi({
         url: `dashboard`,
         method: 'GET',
       }),
+    }),
+
+    getCaloriesGraph: builder.query<
+      CaloriesGraphResponse,
+      'weekly' | 'monthly'
+    >({
+      query: filter => ({
+        url: `health/calories-graph`,
+        method: 'GET',
+        params: { filter },
+      }),
+      providesTags: ['HealthCalories'],
+      keepUnusedDataFor: 0,
     }),
 
     getNotifications: builder.query({
@@ -724,4 +755,5 @@ export const {
   useClaimChallengeRewardMutation,
   useGetChallengeLogsQuery,
   useDeleteAccountMutation,
+  useGetCaloriesGraphQuery,
 } = userApi;
