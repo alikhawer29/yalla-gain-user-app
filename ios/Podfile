@@ -32,6 +32,9 @@ pod 'AppAuth', '~> 1.0'
 target 'YallaGain' do
   config = use_native_modules!
 
+  # Firebase (Swift) + static frameworks: GoogleUtilities must expose a module map
+  pod 'GoogleUtilities', :modular_headers => true
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

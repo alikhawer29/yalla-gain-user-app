@@ -11,8 +11,78 @@ PODS:
   - DoubleConversion (1.1.6)
   - fast_float (8.0.0)
   - FBLazyVector (0.82.0)
+  - Firebase/CoreOnly (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+  - Firebase/Messaging (12.10.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 12.10.0)
+  - FirebaseCore (12.10.0):
+    - FirebaseCoreInternal (~> 12.10.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreExtension (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+  - FirebaseCoreInternal (12.10.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (12.10.0):
+    - FirebaseCore (~> 12.10.0)
+    - FirebaseInstallations (~> 12.10.0)
+    - GoogleDataTransport (~> 10.1)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
+    - nanopb (~> 3.30910.0)
   - fmt (11.0.2)
   - glog (0.3.5)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleUtilities (8.1.0):
+    - GoogleUtilities/AppDelegateSwizzler (= 8.1.0)
+    - GoogleUtilities/Environment (= 8.1.0)
+    - GoogleUtilities/Logger (= 8.1.0)
+    - GoogleUtilities/MethodSwizzler (= 8.1.0)
+    - GoogleUtilities/Network (= 8.1.0)
+    - "GoogleUtilities/NSData+zlib (= 8.1.0)"
+    - GoogleUtilities/Privacy (= 8.1.0)
+    - GoogleUtilities/Reachability (= 8.1.0)
+    - GoogleUtilities/SwizzlerTestHelpers (= 8.1.0)
+    - GoogleUtilities/UserDefaults (= 8.1.0)
+  - GoogleUtilities/AppDelegateSwizzler (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.1.0):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.0):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/MethodSwizzler (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.1.0):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.1.0)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.0)
+  - GoogleUtilities/Reachability (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/SwizzlerTestHelpers (8.1.0):
+    - GoogleUtilities/MethodSwizzler
+  - GoogleUtilities/UserDefaults (8.1.0):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
   - hermes-engine (0.82.0):
     - hermes-engine/Pre-built (= 0.82.0)
   - hermes-engine/Pre-built (0.82.0)
@@ -48,7 +118,13 @@ PODS:
   - meetingsdk-react-native (6.7.2):
     - React-Core
     - ZoomMeetingSDK (= 6.7.2)
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
   - NVActivityIndicatorView-ObjC (1.0.1)
+  - PromisesObjC (2.4.0)
   - RCT-Folly (2024.11.18.00):
     - boost
     - DoubleConversion
@@ -1999,7 +2075,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video (6.19.0):
+  - react-native-video (6.19.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2017,7 +2093,7 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-video/Video (= 6.19.0)
+    - react-native-video/Video (= 6.19.1)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2028,7 +2104,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video/Fabric (6.19.0):
+  - react-native-video/Fabric (6.19.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2056,7 +2132,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-video/Video (6.19.0):
+  - react-native-video/Video (6.19.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2710,9 +2786,69 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - RNFBApp (24.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - Firebase/CoreOnly (= 12.10.0)
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
+  - RNFBMessaging (24.0.0):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - Firebase/Messaging (= 12.10.0)
+    - FirebaseCoreExtension
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNFBApp
+    - SocketRocket
+    - Yoga
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.30.0):
+  - RNGestureHandler (2.30.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2740,7 +2876,12 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNInAppBrowser (3.7.0):
+  - RNInAppBrowser (3.7.1):
+    - React-Core
+  - RNNotifee (9.1.8):
+    - React-Core
+    - RNNotifee/NotifeeCore (= 9.1.8)
+  - RNNotifee/NotifeeCore (9.1.8):
     - React-Core
   - RNPermissions (5.5.1):
     - boost
@@ -2770,7 +2911,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNReanimated (4.2.2):
+  - RNReanimated (4.3.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2797,11 +2938,12 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated (= 4.2.2)
+    - RNReanimated/apple (= 4.3.0)
+    - RNReanimated/common (= 4.3.0)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated (4.2.2):
+  - RNReanimated/apple (4.3.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2828,11 +2970,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNReanimated/reanimated/apple (= 4.2.2)
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNReanimated/reanimated/apple (4.2.2):
+  - RNReanimated/common (4.3.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2949,7 +3090,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSVG (15.15.3):
+  - RNSVG (15.15.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -2975,10 +3116,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.3)
+    - RNSVG/common (= 15.15.4)
     - SocketRocket
     - Yoga
-  - RNSVG/common (15.15.3):
+  - RNSVG/common (15.15.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -3006,37 +3147,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNWorklets (0.7.4):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.7.4)
-    - SocketRocket
-    - Yoga
-  - RNWorklets/worklets (0.7.4):
+  - RNWorklets (0.8.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3063,10 +3174,40 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.7.4)
+    - RNWorklets/apple (= 0.8.1)
+    - RNWorklets/common (= 0.8.1)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.7.4):
+  - RNWorklets/apple (0.8.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
+  - RNWorklets/common (0.8.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3211,6 +3352,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - GoogleUtilities
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - LoaderKit (from `../node_modules/react-native-loader-kit`)
   - "meetingsdk-react-native (from `../node_modules/@zoom/meetingsdk-react-native`)"
@@ -3291,9 +3433,12 @@ DEPENDENCIES:
   - RNAppleHealthKit (from `../node_modules/react-native-health`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
+  - "RNFBMessaging (from `../node_modules/@react-native-firebase/messaging`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
+  - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -3308,7 +3453,17 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - AppAuth
+    - Firebase
+    - FirebaseCore
+    - FirebaseCoreExtension
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - GoogleDataTransport
+    - GoogleUtilities
+    - nanopb
     - NVActivityIndicatorView-ObjC
+    - PromisesObjC
     - SocketRocket
     - Stripe
     - StripeApplePay
@@ -3494,12 +3649,18 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNFBApp:
+    :path: "../node_modules/@react-native-firebase/app"
+  RNFBMessaging:
+    :path: "../node_modules/@react-native-firebase/messaging"
   RNFS:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNInAppBrowser:
     :path: "../node_modules/react-native-inappbrowser-reborn"
+  RNNotifee:
+    :path: "../node_modules/@notifee/react-native"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReanimated:
@@ -3526,12 +3687,22 @@ SPEC CHECKSUMS:
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   fast_float: b32c788ed9c6a8c584d114d0047beda9664e7cc6
   FBLazyVector: 41b4dd99afd0aad861444ee141abdedaa6c3d238
+  Firebase: 99f203d3a114c6ba591f3b32263a9626e450af65
+  FirebaseCore: f4428e22415ea3b3eca652c2098413dabf2a23a9
+  FirebaseCoreExtension: 3473a6ec16a91aee29fb75994a86c0220d2cddf3
+  FirebaseCoreInternal: e7bbaeb00ab73011298f35ed223aa7371e212948
+  FirebaseInstallations: 047343aa91fd6a1ebfa3eb374ddecf36a8aaddfd
+  FirebaseMessaging: ed18fb50634e6e85b5d3e77e628c21e2c928cc53
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: f0348704893b1f95d723038184171a5a026041ed
   meetingsdk-react-native: f2c37147cfc7a9b0b4672b28ae539afb507e77fc
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NVActivityIndicatorView-ObjC: a2394f53d84c32f71823743a2030e0378d40332f
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 59ec0ac1f2f39672a0c6e6cecdd39383b764646f
   RCTDeprecation: 22bf66112da540a7d40e536366ddd8557934fca1
   RCTRequired: a0ed4dc41b35f79fbb6d8ba320e06882a8c792cf
@@ -3571,7 +3742,7 @@ SPEC CHECKSUMS:
   react-native-image-resizer: d9fb629a867335bdc13230ac2a58702bb8c8828f
   react-native-safe-area-context: 0f4986a88ec555aff660503b483d6e4bd6980a9a
   react-native-unity: cc9f40a5fc4ba5e04437859c17ef8127fd6424d2
-  react-native-video: c129a091917b98995af609c78a357ed64264e64d
+  react-native-video: f96a08ee6b99f74e2c000d529ac16e98cd785bba
   react-native-webview: 278eeb4df23d6202b559ceb21bd4088dbde30090
   React-NativeModulesApple: 1b4d9722d8df62e881684abadf320e7a8fa1b7f6
   React-oscompat: 80ca388c4831481cd03a6b45ecfc82739ca9a95e
@@ -3608,15 +3779,18 @@ SPEC CHECKSUMS:
   RNAppleHealthKit: 60a6beefdd89a75811e9a8873a5e24f351dee681
   RNBootSplash: 9bcb1ea9b8a8199cf7e397200f38261424daac6f
   RNCAsyncStorage: 302f2fac014fd450046c120567ca364632da682b
+  RNFBApp: bb2b158188e3bd5161cbdcd7e9058c2edfaa8c11
+  RNFBMessaging: 994290a71d043bc0837e89514be19ce02805790c
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 67d0939149fdc7d619ca6bb2de7ecf5b959539ae
-  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
+  RNGestureHandler: 4f0b1db8f3214e548119f071517638c627efdd7b
+  RNInAppBrowser: b53e6f6072c931115bc22ac9dc9510ac2cbea62d
+  RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNPermissions: cf1edf2667b738363ec18bb0f3e6a11c81f936d1
-  RNReanimated: 03b886a575aaba0fd363ace6ea1e5b654e526e99
+  RNReanimated: 160175fd769387d38efec11e7e569793c3ad725b
   RNScreens: 7179cc1ba31b4e18ed29f10abf20c24a7961cf4c
   RNSound: 900f145a7611f93db8bf802a965849a72afd222d
-  RNSVG: 2008bfa99f51efe1edd86dec50de20d5ac16429a
-  RNWorklets: d0114f9d0c47b1678c93ae8ed32e5c4948e5cca7
+  RNSVG: 963192f99dc2014b9aef2aa4f0ae621cb92fbe5e
+  RNWorklets: 129a1d32d6e0ffc76d0d37df90ff73c0f87e8955
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Stripe: fe028a764ff6cc0b4884ffd1e3adfda8263d331b
   stripe-react-native: b6d04e120fd62e66c152e85562dec69ed635d508
@@ -3631,6 +3805,6 @@ SPEC CHECKSUMS:
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
   ZoomMeetingSDK: 5462eae8ef04107226123d2aed4cefe56f206d99
 
-PODFILE CHECKSUM: 2db6b1ab796fc35faa2d772581bea1ebbac050de
+PODFILE CHECKSUM: c76d0dbe96a8a4152c90cbafc04068a3a139ff5b
 
 COCOAPODS: 1.16.2

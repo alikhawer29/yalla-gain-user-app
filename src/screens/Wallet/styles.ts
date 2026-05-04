@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: widthPixel(20),
   },
   coinContainer: {
-    // marginTop: heightPixel(60),
     alignItems: 'center',
+    flexShrink: 0,
   },
   coinImage: {
     width: widthPixel(150),
@@ -67,13 +67,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.white,
     marginTop: heightPixel(8),
+    textAlign: 'center',
   },
   buttonsContainer: {
-    position: 'absolute',
-    bottom: heightPixel(250),
-    left: widthPixel(20),
-    right: widthPixel(20),
+    marginTop: 'auto',
+    width: '100%',
     gap: heightPixel(15),
+    paddingBottom: heightPixel(16),
   },
   actionButton: {
     backgroundColor: colors.primary,
