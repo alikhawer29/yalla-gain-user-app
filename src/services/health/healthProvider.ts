@@ -12,6 +12,7 @@ import {
   readRecords as hcReadRecords,
   getSdkStatus as hcGetSdkStatus,
   openHealthConnectSettings,
+  SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 
 /**
@@ -185,10 +186,9 @@ export async function getHealthPermissionState(): Promise<HealthPermissionState>
   }
 
   if (Platform.OS === 'android') {
-    // 0 = unavailable, 1 = available, 2 = update_required (library-specific); treat non-available as needs install.
     try {
       const sdkStatus = await hcGetSdkStatus();
-      if (sdkStatus === 0) {
+      if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
         return {
           status: 'needs_install',
           reason:
@@ -242,6 +242,7 @@ export async function requestPermissions(): Promise<boolean> {
       { accessType: 'read', recordType: 'Steps' },
       { accessType: 'read', recordType: 'HeartRate' },
       { accessType: 'read', recordType: 'ActiveCaloriesBurned' },
+      { accessType: 'read', recordType: 'TotalCaloriesBurned' },
       { accessType: 'read', recordType: 'ExerciseSession' },
     ]);
 
@@ -513,68 +514,158 @@ async function getTodaySteps_android(
   startTime: string,
   endTime: string,
 ): Promise<number | null> {
-  const res: any = await hcReadRecords('Steps', {
-    timeRangeFilter: { operator: 'between', startTime, endTime },
-  } as any);
-  const items = res?.records || res?.result || [];
-  if (!Array.isArray(items)) {
-    healthLog('Android Steps', { recordCount: 'invalid', resKeys: res ? Object.keys(res) : [] });
+  try {
+    const res: any = await hcReadRecords('Steps', {
+      timeRangeFilter: { operator: 'between', startTime, endTime },
+    } as any);
+    const items = res?.records || res?.result || [];
+    if (!Array.isArray(items)) {
+      healthLog('Android Steps', { recordCount: 'invalid', resKeys: res ? Object.keys(res) : [] });
+      return null;
+    }
+    const sum = items.reduce((acc, r) => acc + (typeof r?.count === 'number' ? r.count : 0), 0);
+    const dataOrigins = Array.from(
+      new Set(
+        items
+          .map((r: any) => r?.metadata?.dataOrigin)
+          .filter((s: any): s is string => typeof s === 'string' && s.length > 0),
+      ),
+    );
+    healthLog('Android Steps', { recordCount: items.length, sum, dataOrigins });
+    return sum > 0 ? sum : null;
+  } catch (e: any) {
+    healthLog('Android Steps error', { error: e?.message || String(e) });
     return null;
   }
-  const sum = items.reduce((acc, r) => acc + (typeof r?.count === 'number' ? r.count : 0), 0);
-  healthLog('Android Steps', { recordCount: items.length, sum });
-  return sum > 0 ? sum : null;
 }
 
+type KcalReadResult =
+  | { ok: true; sum: number; count: number; origins: string[] }
+  | { ok: false; error: string };
+
+/**
+ * Reads kcal records from Health Connect, never throws. A `SecurityException`
+ * here is expected when the caller hasn't granted the matching `READ_*`
+ * permission yet — callers should treat that as "no data" and continue.
+ */
+async function readKcalSumFromHc(
+  recordType: 'ActiveCaloriesBurned' | 'TotalCaloriesBurned',
+  startTime: string,
+  endTime: string,
+): Promise<KcalReadResult> {
+  try {
+    const res: any = await hcReadRecords(recordType, {
+      timeRangeFilter: { operator: 'between', startTime, endTime },
+    } as any);
+    const items = res?.records || res?.result || [];
+    if (!Array.isArray(items)) return { ok: true, sum: 0, count: 0, origins: [] };
+    const sum = items.reduce((acc, r) => {
+      const kcal = r?.energy?.inKilocalories;
+      return acc + (typeof kcal === 'number' ? kcal : 0);
+    }, 0);
+    const origins = Array.from(
+      new Set(
+        items
+          .map((r: any) => r?.metadata?.dataOrigin)
+          .filter((s: any): s is string => typeof s === 'string' && s.length > 0),
+      ),
+    );
+    return { ok: true, sum, count: items.length, origins };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || String(e) };
+  }
+}
+
+/**
+ * Active first, then Total fallback. Samsung Health (and several other consumer
+ * apps) only writes `TotalCaloriesBurned` to Health Connect, so an `Active`-only
+ * read returns 0 for most users even when they have step/calorie data.
+ */
 async function getTodayActiveCalories_android(
   startTime: string,
   endTime: string,
 ): Promise<number | null> {
-  const res: any = await hcReadRecords('ActiveCaloriesBurned', {
-    timeRangeFilter: { operator: 'between', startTime, endTime },
-  } as any);
-  const items = res?.records || res?.result || [];
-  if (!Array.isArray(items)) return null;
-  const sum = items.reduce((acc, r) => {
-    const kcal = r?.energy?.inKilocalories;
-    return acc + (typeof kcal === 'number' ? kcal : 0);
-  }, 0);
-  healthLog('Android ActiveCaloriesBurned', { recordCount: items.length, sumKcal: sum > 0 ? sum : null });
-  return sum > 0 ? sum : null;
+  const active = await readKcalSumFromHc('ActiveCaloriesBurned', startTime, endTime);
+  if (active.ok) {
+    healthLog('Android ActiveCaloriesBurned', {
+      recordCount: active.count,
+      sumKcal: active.sum > 0 ? active.sum : null,
+      dataOrigins: active.origins,
+    });
+    if (active.sum > 0) return active.sum;
+  } else {
+    healthLog('Android ActiveCaloriesBurned (skipped)', { error: active.error });
+  }
+
+  const total = await readKcalSumFromHc('TotalCaloriesBurned', startTime, endTime);
+  if (total.ok) {
+    healthLog('Android TotalCaloriesBurned (fallback)', {
+      recordCount: total.count,
+      sumKcal: total.sum > 0 ? total.sum : null,
+      dataOrigins: total.origins,
+    });
+    return total.sum > 0 ? total.sum : null;
+  }
+  healthLog('Android TotalCaloriesBurned (skipped)', { error: total.error });
+  return null;
 }
 
 async function getLatestHeartRate_android(
   startTime: string,
   endTime: string,
 ): Promise<{ bpm: number; at: string } | null> {
-  const res: any = await hcReadRecords('HeartRate', {
-    timeRangeFilter: { operator: 'between', startTime, endTime },
-    pageSize: 1,
-  } as any);
-  const items = res?.records || res?.result || [];
-  if (!Array.isArray(items) || items.length === 0) return null;
-  const rec = items[0];
-  const samples = Array.isArray(rec?.samples) ? rec.samples : [];
-  const last = samples.length ? samples[samples.length - 1] : null;
-  const bpm = last?.beatsPerMinute;
-  const at = last?.time || rec?.endTime || rec?.startTime || endTime;
-  if (typeof bpm !== 'number') {
-    healthLog('Android HeartRate', { recordCount: items.length, rec: rec ?? null });
+  try {
+    // `ascendingOrder: false` is required: with the library's default `true`, `pageSize: 1` returns the oldest HR record of the day, not the latest.
+    const res: any = await hcReadRecords('HeartRate', {
+      timeRangeFilter: { operator: 'between', startTime, endTime },
+      pageSize: 1,
+      ascendingOrder: false,
+    } as any);
+    const items = res?.records || res?.result || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      healthLog('Android HeartRate', { recordCount: 0 });
+      return null;
+    }
+    const rec = items[0];
+    const samples = Array.isArray(rec?.samples) ? rec.samples : [];
+    // The HR sample with the largest timestamp inside the most recent record is the latest reading.
+    const latest = samples.reduce<any>((best, s) => {
+      const t = s?.time ? Date.parse(s.time) : NaN;
+      if (!Number.isFinite(t)) return best;
+      if (!best) return s;
+      const bt = best?.time ? Date.parse(best.time) : NaN;
+      return Number.isFinite(bt) && bt >= t ? best : s;
+    }, null);
+    const bpm = latest?.beatsPerMinute;
+    const at = latest?.time || rec?.endTime || rec?.startTime || endTime;
+    const dataOrigin = rec?.metadata?.dataOrigin;
+    if (typeof bpm !== 'number') {
+      healthLog('Android HeartRate', { recordCount: items.length, rec: rec ?? null, dataOrigin });
+      return null;
+    }
+    healthLog('Android HeartRate', { bpm, at, dataOrigin });
+    return { bpm, at };
+  } catch (e: any) {
+    healthLog('Android HeartRate error', { error: e?.message || String(e) });
     return null;
   }
-  healthLog('Android HeartRate', { bpm, at });
-  return { bpm, at };
 }
 
 async function getLatestWorkout_android(
   startTime: string,
   endTime: string,
 ): Promise<LatestWorkoutFromHealth | null> {
-  const res: any = await hcReadRecords('ExerciseSession', {
-    timeRangeFilter: { operator: 'between', startTime, endTime },
-    pageSize: 1,
-    ascendingOrder: false,
-  } as any);
+  let res: any;
+  try {
+    res = await hcReadRecords('ExerciseSession', {
+      timeRangeFilter: { operator: 'between', startTime, endTime },
+      pageSize: 1,
+      ascendingOrder: false,
+    } as any);
+  } catch (e: any) {
+    healthLog('Android ExerciseSession error', { error: e?.message || String(e) });
+    return null;
+  }
   const items = res?.records || res?.result || [];
   if (!Array.isArray(items) || items.length === 0) {
     healthLog('workoutSession lookback ExerciseSession', { count: 0, startTime, endTime });

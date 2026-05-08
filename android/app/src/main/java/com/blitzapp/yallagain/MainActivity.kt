@@ -26,8 +26,9 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    HealthConnectPermissionDelegate.setPermissionDelegate(this)
     RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(null)
+    // Must run after super.onCreate so ComponentActivity can register the permission contract (react-native-health-connect README).
+    HealthConnectPermissionDelegate.setPermissionDelegate(this)
   }
 }

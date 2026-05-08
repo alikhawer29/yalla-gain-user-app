@@ -21,6 +21,25 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
+    <!-- Health Connect read permissions; must match record types requested via react-native-health-connect. -->
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
+    <uses-permission android:name="android.permission.health.READ_ACTIVE_CALORIES_BURNED" />
+    <!-- Samsung Health / many consumer apps only write `TotalCaloriesBurned` to Health Connect; we read it as a fallback. -->
+    <uses-permission android:name="android.permission.health.READ_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
+
+    <!-- Required for Android 11+ package visibility so the app can talk to the Health Connect provider. -->
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+            <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+        </intent>
+    </queries>
 
     <application
       android:name=".MainApplication"
@@ -76,5 +95,17 @@
           <data android:scheme="myapp" android:host="callback" />
         </intent-filter>
       </activity>
+
+      <!-- Android 14+: lets Health Connect deep-link “permission usage” for this app during the grant flow. -->
+      <activity-alias
+          android:name="ViewPermissionUsageActivity"
+          android:exported="true"
+          android:targetActivity=".MainActivity"
+          android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+          <intent-filter>
+              <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+              <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+          </intent-filter>
+      </activity-alias>
     </application>
 </manifest>

@@ -7,7 +7,6 @@ import {
   getSdkStatus,
   initialize,
   readRecords,
-  requestPermission,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 import type { Permission } from 'react-native-health-connect';
@@ -48,7 +47,29 @@ export function formatLocalYyyyMmDd(d: Date = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
-const { Permissions } = AppleHealthKit.Constants;
+function getIosPermissions(): {
+  Permissions: { StepCount: string; ActiveEnergyBurned: string } | null;
+  available: boolean;
+} {
+  try {
+    const constants = (AppleHealthKit as unknown as { Constants?: unknown } | null)?.Constants as
+      | { Permissions?: unknown }
+      | undefined;
+    const perms = (constants as { Permissions?: unknown } | undefined)?.Permissions as
+      | { StepCount?: unknown; ActiveEnergyBurned?: unknown }
+      | undefined;
+    const StepCount = perms?.StepCount;
+    const ActiveEnergyBurned = perms?.ActiveEnergyBurned;
+    const ok =
+      typeof StepCount === 'string' && typeof ActiveEnergyBurned === 'string';
+
+    return ok
+      ? { Permissions: { StepCount, ActiveEnergyBurned }, available: true }
+      : { Permissions: null, available: false };
+  } catch (e) {
+    return { Permissions: null, available: false };
+  }
+}
 
 let iosInitPromise: Promise<boolean> | null = null;
 
@@ -57,9 +78,17 @@ function ensureIosHealthKit(): Promise<boolean> {
     return iosInitPromise;
   }
   iosInitPromise = new Promise(resolve => {
+    const permInfo = getIosPermissions();
+    if (!permInfo.available || !permInfo.Permissions) {
+      resolve(false);
+      return;
+    }
     const permissions: HealthKitPermissions = {
       permissions: {
-        read: [Permissions.StepCount, Permissions.ActiveEnergyBurned],
+        read: [
+          permInfo.Permissions.StepCount,
+          permInfo.Permissions.ActiveEnergyBurned,
+        ],
         write: [],
       },
     };
@@ -125,7 +154,14 @@ async function ensureAndroidHealthConnect(): Promise<boolean> {
         return false;
       }
     }
-    await requestPermission(androidReadPermissions);
+    /**
+     * IMPORTANT (Android):
+     * `requestPermission(...)` uses an ActivityResultLauncher and will crash the app if invoked
+     * when the launcher isn't registered (e.g. during background/IO flows or very early startup).
+     *
+     * Permission prompting must be triggered from a UI-owned flow (screen/button) where the
+     * activity is ready; this low-level "ensure" helper should never pop UI.
+     */
     return true;
   } catch {
     return false;
