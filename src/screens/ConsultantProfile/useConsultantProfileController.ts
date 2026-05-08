@@ -15,7 +15,7 @@ const useConsultantProfileController = () => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isFetching: isLoading, refetch } = useViewDoctorQuery(id);
+  const { data, isLoading, isFetching, refetch } = useViewDoctorQuery(id);
 
   const consultant = data?.data;
   const services = consultant?.services || [];
@@ -24,8 +24,11 @@ const useConsultantProfileController = () => {
     service.title?.toLowerCase().includes(debouncedSearch.toLowerCase()),
   );
 
+  /** Pull-to-refresh only; avoid full-screen loader on refetch when data exists. */
+  const isRefreshing = isFetching && !isLoading;
+
   const onReload = () => {
-    refetch();
+    void refetch();
   };
 
   const onSearch = (text: string) => {
@@ -45,6 +48,7 @@ const useConsultantProfileController = () => {
       consultant,
       services: filteredServices,
       isLoading,
+      isRefreshing,
       search,
       type,
     },

@@ -31,6 +31,16 @@ const useProgressTrackingController = () => {
   const user = useAppSelector(selectUser);
   const userId = user?.id;
 
+  const chartYear = useMemo(() => new Date().getFullYear(), []);
+  const {
+    data: monthlyBmiGraph,
+    isLoading: isLoadingMonthlyBmiGraph,
+    refetch: refetchMonthlyBmiGraph,
+  } = userApi.useGetMonthlyBmiGraphQuery(
+    { year: chartYear },
+    { skip: !userId },
+  );
+
   // Refetch whenever this screen is focused so avatar state is fresh after Create Avatar / scan flow.
   // (Tab stacks often keep screens mounted; userId-only effect would miss return navigation.)
   useFocusEffect(
@@ -43,7 +53,8 @@ const useProgressTrackingController = () => {
           console.error('[ProgressTracking] scanStatus failed', e);
         }
       })();
-    }, [userId, scanStatus]),
+      void refetchMonthlyBmiGraph();
+    }, [userId, scanStatus, refetchMonthlyBmiGraph]),
   );
 
   const hasFirstAvatar = scanStatusData?.has_first_avatar === true;
@@ -91,73 +102,39 @@ const useProgressTrackingController = () => {
     ],
   );
 
-  const fallbackProgressHistory = useMemo(() => {
-    const now = new Date();
-    return Array.from({ length: 7 }).map((_, index) => {
-      const dayDate = new Date(now);
-      dayDate.setDate(now.getDate() - (6 - index));
-      const dayLabel = dayDate.toLocaleString('en-US', { weekday: 'short' });
-      const trendBase = 35 + index * 4;
-      const wave = (dayDate.getDay() % 3) * 2;
-      return {
-        label: dayLabel,
-        value: Math.min(100, trendBase + wave),
-      };
-    });
-  }, []);
-
-  const progressHistory = useMemo(() => {
-    const source =
-      user?.progress_history ??
-      user?.progressHistory ??
-      user?.progress?.history ??
-      user?.tracking_history ??
-      [];
-
-    if (!Array.isArray(source) || source.length === 0) {
-      return fallbackProgressHistory;
-    }
-
-    const normalized = source
-      .map((item: any, index: number) => {
-        const numericValue = Number(
-          item?.progress ?? item?.value ?? item?.percentage ?? item,
-        );
-        if (Number.isNaN(numericValue)) return null;
-
-        const rawLabel = item?.label ?? item?.date ?? item?.day ?? null;
-        const parsedDate = rawLabel ? new Date(rawLabel) : null;
-        const label =
-          parsedDate && !Number.isNaN(parsedDate.getTime())
-            ? parsedDate.toLocaleString('en-US', { weekday: 'short' })
-            : item?.day ?? item?.label ?? `D${index + 1}`;
-
-        return {
-          label: String(label),
-          value: Math.max(0, Math.min(100, numericValue)),
-        };
-      })
-      .filter(Boolean) as { label: string; value: number }[];
-
-    const weeklyData = normalized.slice(-7);
-    return weeklyData.length > 0 ? weeklyData : fallbackProgressHistory;
-  }, [fallbackProgressHistory, user]);
-
   const progressChartData = useMemo(() => {
+    const rows = monthlyBmiGraph?.data;
+    if (!rows?.length) {
+      return {
+        labels: [] as string[],
+        datasets: [{ data: [] as number[] }],
+      };
+    }
     return {
-      labels: progressHistory.map(item => item.label),
+      labels: rows.map(r => String(r.label ?? '')),
       datasets: [
         {
-          data: progressHistory.map(item => item.value),
+          data: rows.map(r => {
+            const v = Number(r.bmi);
+            return Number.isNaN(v) ? 0 : v;
+          }),
         },
       ],
     };
-  }, [progressHistory]);
+  }, [monthlyBmiGraph]);
 
-  const currentProgress = useMemo(() => {
-    if (!progressHistory.length) return 0;
-    return Math.round(progressHistory[progressHistory.length - 1].value);
-  }, [progressHistory]);
+  const bmiGraphYear = monthlyBmiGraph?.year ?? chartYear;
+
+  /** Latest non-zero BMI in the selected year (matches typical “current reading”). */
+  const latestBmi = useMemo(() => {
+    const rows = monthlyBmiGraph?.data;
+    if (!rows?.length) return null;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const v = Number(rows[i]?.bmi);
+      if (!Number.isNaN(v) && v > 0) return v;
+    }
+    return null;
+  }, [monthlyBmiGraph]);
 
   // Navigate to Avatar Visualization
   const navigateToVisualization = useCallback(
@@ -348,7 +325,9 @@ const useProgressTrackingController = () => {
       isLoadingFutureView: loadingButton === 'future-view',
       isLoadingFutureEdit: loadingButton === 'future-edit',
       progressChartData,
-      currentProgress,
+      latestBmi,
+      bmiGraphYear,
+      isLoadingMonthlyBmiGraph,
     },
     functions: {
       handleInitialAvatarView,

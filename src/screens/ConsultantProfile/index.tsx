@@ -15,7 +15,7 @@ import ServiceCard from "./ServiceCard";
 
 const ConsultantProfile = () => {
     const {
-        values: { consultant, services, isLoading, search, type },
+        values: { consultant, services, isLoading, isRefreshing, search, type },
         functions: { onSearch, onServicePress, onShowReviews, onReload },
     } = useConsultantProfileController();
 
@@ -32,6 +32,8 @@ const ConsultantProfile = () => {
         <Wrapper
             scrollable
             loading={isLoading}
+            onRefresh={onReload}
+            refreshing={isRefreshing}
         >
             <Row style={{ marginBottom: heightPixel(15) }} align="center" gap={10}>
                 <View style={{ width: "100%" }}>
@@ -43,9 +45,6 @@ const ConsultantProfile = () => {
                         onChangeText={onSearch}
                     />
                 </View>
-                {/* <View style={{ width: "15%" }}>
-                    <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} />
-                </View> */}
             </Row>
 
             {/* Profile Header */}

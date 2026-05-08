@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { useStartExerciseMutation } from '../../redux/Apis/MovementCorrection';
-import { useGetWorkoutQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
-import { ROUTES } from '../../utils/routes';
 import { EXERCISE_SCHEMA } from '../../utils/validators';
 
 type TData = {
@@ -13,16 +11,27 @@ const initial: TData = {
   exercise: '',
 };
 
+/**
+ * Movement Correction expects these exercise keys (sent to start-session).
+ * Kept static — `workout-contents` items use different fields / keys, so filtering API rows returned nothing.
+ */
+const MOVEMENT_DROPDOWN_ITEMS = [
+  { label: 'Barbell biceps curl', value: 'barbell biceps curl' },
+  { label: 'Squat', value: 'squat' },
+  { label: 'Push-up', value: 'push-up' },
+  { label: 'Plank', value: 'plank' },
+  { label: 'Deadlift', value: 'deadlift' },
+];
+
 const useMovementCorrectionController = () => {
-  const { data: workouts, isLoading: isDataLoading } = useGetWorkoutQuery({});
   const [start, { data, isLoading, isSuccess }] = useStartExerciseMutation();
 
   useEffect(() => {
     if (isSuccess) {
       if (data?.status === 'started') {
-        navigate(ROUTES.MOVEMENT_CORRECTION_CAMERA, {
-          session_id: data?.session_id,
-          exercise: data?.exercise,
+        navigate('MovementCorrectionCamera', {
+          session_id: String(data?.session_id ?? ''),
+          exercise: String(data?.exercise ?? ''),
         });
       }
     }
@@ -36,13 +45,8 @@ const useMovementCorrectionController = () => {
     schema: EXERCISE_SCHEMA,
     values: {
       initial,
-      dropdown_data:
-        workouts?.data?.map((item: any) => ({
-          label: item?.muscle_title,
-          value: item?.muscle_key || 'barbell biceps curl',
-        })) || [],
+      dropdown_data: [...MOVEMENT_DROPDOWN_ITEMS],
       isLoading,
-      isDataLoading,
     },
     functions: {
       onSubmit,

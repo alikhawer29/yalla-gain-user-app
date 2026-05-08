@@ -18,7 +18,7 @@ function sourceLabel(
     return 'Cached';
   }
   if (source === 'backend') {
-    return 'Synced (from backend)';
+    return 'Synced';
   }
   return null;
 }

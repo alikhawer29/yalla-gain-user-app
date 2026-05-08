@@ -184,7 +184,8 @@ const styles = StyleSheet.create({
     width: widthPixel(40),
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 99,
+    /** Above centered title so long titles never paint over drawer/back (same row, draw order). */
+    zIndex: 101,
   },
   bellWrap: {
     position: "relative",
@@ -211,14 +212,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   titleWrap: {
-    zIndex: 99,
+    zIndex: 0,
     maxWidth: "80%",
     height: heightPixel(62),
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
-    zIndex: 99,
     width: "100%",
     textAlign: "center",
     textAlignVertical: "center",

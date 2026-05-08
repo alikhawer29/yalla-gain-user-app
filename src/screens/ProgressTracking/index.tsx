@@ -1,4 +1,4 @@
-import { View } from "react-native"
+import { ActivityIndicator, View } from "react-native"
 import { LineChart } from "react-native-chart-kit"
 import images from "../../assets/images"
 import Button from "../../components/Button"
@@ -8,7 +8,7 @@ import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import { heightPixel, vw } from "../../utils/helper"
+import { heightPixel, PAGE_WIDTH, widthPixel } from "../../utils/helper"
 import useProgressTrackingController from "./useProgressTrackingController"
 
 const ProgressTracking = () => {
@@ -18,7 +18,9 @@ const ProgressTracking = () => {
             isLoadingInitialEdit,
             isLoadingFutureView,
             progressChartData,
-            currentProgress,
+            latestBmi,
+            bmiGraphYear,
+            isLoadingMonthlyBmiGraph,
         },
         functions: {
             handleInitialAvatarView,
@@ -26,6 +28,9 @@ const ProgressTracking = () => {
             handleFutureAvatarView,
         },
     } = useProgressTrackingController()
+
+    /** Matches Wrapper horizontal padding so chart aligns with headings; chart-kit uses `paddingRight` as left gutter (default 64). */
+    const chartWidth = PAGE_WIDTH - 2 * widthPixel(20)
 
     return (
         <Wrapper scrollable bottom_bar floating>
@@ -102,7 +107,7 @@ const ProgressTracking = () => {
                         <Row style={{ flex: 0.1 }} justify="center" align="center">
                             <Button
                                 font_size={10}
-                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0,paddingVertical: heightPixel(0) }}
+                                style={{ height: heightPixel(25), width: "47%", minWidth: 0, paddingHorizontal: 0, paddingVertical: heightPixel(0) }}
                                 text="View"
                                 // onPress={handleFutureAvatarView}
                                 // loading={isLoadingFutureView}
@@ -117,39 +122,58 @@ const ProgressTracking = () => {
                 </View>
             </Row>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>{currentProgress}% Progress</Text>
-                <View style={{ marginLeft: -heightPixel(12) }}>
-                    <LineChart
-                        data={progressChartData}
-                        width={vw * 90}
-                        height={heightPixel(276)}
-                        withInnerLines
-                        withOuterLines={false}
-                        withVerticalLines={false}
-                        withHorizontalLabels={false}
-                        withShadow={false}
-                        fromZero
-                        chartConfig={{
-                            color: () => colors.primary,
-                            labelColor: () => colors.white,
-                            decimalPlaces: 0,
-                            propsForDots: {
-                                r: "4",
-                                strokeWidth: "3",
-                                stroke: colors.primary,
-                                fill: colors.white,
-                            },
-                            propsForBackgroundLines: {
-                                strokeDasharray: "8,8",
-                                stroke: colors.gray,
-                                strokeWidth: 1,
-                            },
-                        }}
-                        bezier
-                        style={{
-                            borderRadius: 16,
-                        }}
-                    />
+                <Text weight="semibold" size={20}>
+                    Progress Graph: BMI · {bmiGraphYear}
+                </Text>
+                <View style={{ width: "100%", minHeight: heightPixel(276), justifyContent: "center", alignItems: "flex-start" }}>
+                    {isLoadingMonthlyBmiGraph ? (
+                        <ActivityIndicator size="large" color={colors.primary} />
+                    ) : progressChartData.datasets[0]?.data?.length ? (
+                        <LineChart
+                            data={progressChartData}
+                            width={chartWidth}
+                            height={heightPixel(276)}
+                            withInnerLines
+                            withOuterLines={false}
+                            withVerticalLines={false}
+                            withHorizontalLabels
+                            withShadow={false}
+                            fromZero
+                            segments={4}
+                            chartConfig={{
+                                color: () => colors.primary,
+                                labelColor: () => colors.white,
+                                decimalPlaces: 1,
+                                propsForDots: {
+                                    r: "4",
+                                    strokeWidth: "3",
+                                    stroke: colors.primary,
+                                    fill: colors.white,
+                                },
+                                propsForBackgroundLines: {
+                                    strokeDasharray: "8,8",
+                                    stroke: colors.gray,
+                                    strokeWidth: 1,
+                                },
+                                propsForHorizontalLabels: {
+                                    dx: -4,
+                                },
+                            }}
+                            bezier
+                            style={{
+                                borderRadius: 16,
+                                /** Left gutter for Y-axis labels (0 → max); chart-kit names this `paddingRight`. */
+                                paddingRight: widthPixel(46),
+                                paddingTop: 12,
+                                margin: 0,
+                                marginRight: 0,
+                            }}
+                        />
+                    ) : (
+                        <Text size={14} style={{ textAlign: "center", paddingVertical: heightPixel(40) }}>
+                            No monthly BMI data yet.
+                        </Text>
+                    )}
                 </View>
             </View>
         </Wrapper>

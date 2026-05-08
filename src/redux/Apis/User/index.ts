@@ -19,6 +19,19 @@ export interface CaloriesGraphResponse {
   data: WeeklyCaloriesDataPoint[] | MonthlyCaloriesDataPoint[];
 }
 
+export interface MonthlyBmiGraphPoint {
+  month: number;
+  label: string;
+  bmi: number;
+}
+
+export interface MonthlyBmiGraphResponse {
+  status: boolean;
+  user_id: number;
+  year: number;
+  data: MonthlyBmiGraphPoint[];
+}
+
 export const userApi = createApi({
   reducerPath: 'userApi',
   tagTypes: [
@@ -556,6 +569,17 @@ export const userApi = createApi({
         body: { user_id: userId },
       }),
     }),
+    getMonthlyBmiGraph: builder.query<
+      MonthlyBmiGraphResponse,
+      { year?: number }
+    >({
+      query: ({ year } = {}) => ({
+        url: 'scan/monthly-bmi-graph',
+        method: 'GET',
+        params: year != null ? { year } : undefined,
+      }),
+      keepUnusedDataFor: 0,
+    }),
     getAvatarWithChallenge: builder.query({
       query: (userId: number | string) => ({
         url: 'avatar/with-challenge',
@@ -756,4 +780,5 @@ export const {
   useGetChallengeLogsQuery,
   useDeleteAccountMutation,
   useGetCaloriesGraphQuery,
+  useGetMonthlyBmiGraphQuery,
 } = userApi;

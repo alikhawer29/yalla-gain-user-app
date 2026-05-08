@@ -199,7 +199,7 @@ const ROUTES_OPTIONS = [
     left: 'drawer',
     right: null,
     logo: false,
-    title: 'Movement Correction With Camera',
+    title: 'Movement Correction',
   },
   {
     route_name: ROUTES.MOVEMENT_CORRECTION_CAMERA,
