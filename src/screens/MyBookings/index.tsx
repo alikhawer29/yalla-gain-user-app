@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, RefreshControl, ScrollView, View } from "react-native";
+import { ActivityIndicator, FlatList, Platform, RefreshControl, ScrollView, View } from "react-native";
 import images from "../../assets/images";
 import DateFilterModal from "../../components/DateFilterModal";
 import Icon from "../../components/Icon";
@@ -74,36 +74,62 @@ const MyBookings = () => {
 
             <Seperator size={15} />
 
-            {/* Bookings List */}
-            <FlatList
-                data={bookings}
-                renderItem={({ item }) => (
-                    <BookingCard
-                        booking={item}
-                        onPress={() => onBookingPress(item.id)}
-                        getStatusColor={getStatusColor}
-                    />
-                )}
-                keyExtractor={(item) => item.id.toString()}
-                ItemSeparatorComponent={() => <Seperator size={15} />}
-                showsVerticalScrollIndicator={false}
-                style={{ flex: 1 }}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={isLoading && !isLoadingMore}
-                        onRefresh={onReload}
-                    />
-                }
-                onEndReached={onLoadMore}
-                onEndReachedThreshold={0.3}
-                ListFooterComponent={
-                    isLoadingMore ? (
-                        <View style={{ paddingVertical: heightPixel(15), alignItems: "center" }}>
-                            <ActivityIndicator size="small" color={colors.primary} />
+            {/* Bookings List — wrapper ensures flex height on iOS; overlay keeps spinner visible */}
+            <View style={styles.list_wrap}>
+                <FlatList
+                    data={bookings}
+                    extraData={isLoadingMore}
+                    removeClippedSubviews={false}
+                    renderItem={({ item }) => (
+                        <BookingCard
+                            booking={item}
+                            onPress={() => onBookingPress(item.id)}
+                            getStatusColor={getStatusColor}
+                        />
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                    ItemSeparatorComponent={() => <Seperator size={15} />}
+                    showsVerticalScrollIndicator={false}
+                    style={{ flex: 1 }}
+                    contentContainerStyle={
+                        bookings.length === 0 ? { flexGrow: 1 } : { paddingBottom: heightPixel(8) }
+                    }
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={isLoading && !isLoadingMore}
+                            onRefresh={onReload}
+                        />
+                    }
+                    onEndReached={onLoadMore}
+                    onEndReachedThreshold={Platform.OS === "ios" ? 0.45 : 0.3}
+                    ListFooterComponent={
+                        isLoadingMore ? (
+                            <View
+                                style={{
+                                    minHeight: heightPixel(56),
+                                    paddingVertical: heightPixel(12),
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <ActivityIndicator size="large" color={colors.primary} />
+                            </View>
+                        ) : (
+                            <View style={{ height: heightPixel(4) }} />
+                        )
+                    }
+                />
+                {isLoadingMore ? (
+                    <View style={styles.load_more_overlay} pointerEvents="none">
+                        <View style={styles.load_more_pill}>
+                            <ActivityIndicator size="small" color={colors.white} />
+                            <Text size={13} color={colors.white}>
+                                Loading more…
+                            </Text>
                         </View>
-                    ) : null
-                }
-            />
+                    </View>
+                ) : null}
+            </View>
 
             {/* Date Filter Modal */}
             <DateFilterModal

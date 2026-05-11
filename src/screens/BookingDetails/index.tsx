@@ -22,7 +22,7 @@ const BookingDetails = () => {
             showRateModal, showReportModal, showTipModal
         },
         functions: {
-            formatTime, getStatusColor, onApprove, onReject,
+            formatTime, formatDate, getStatusColor, onApprove, onReject,
             onStartChat, onJoinSession, onRateBooking, onReportBooking, onGiveTip, onSubmitTip,
             setShowRateModal, setShowReportModal, setShowTipModal, onDownloadPrescription,
             onReload,
@@ -78,11 +78,11 @@ const BookingDetails = () => {
             <Row justify="space-between">
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Booking Date:</Text>
-                    <Text size={14} color={colors.icon_gray}>{booking?.created_at || 'YYYY/MM/DD'}</Text>
+                    <Text size={14} color={colors.icon_gray}>{formatDate(booking?.created_at) || '-'}</Text>
                 </View>
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Date:</Text>
-                    <Text size={14} color={colors.icon_gray}>{booking?.appointment_date || 'YYYY/MM/DD'}</Text>
+                    <Text size={14} color={colors.icon_gray}>{formatDate(booking?.appointment_date) || '-'}</Text>
                 </View>
             </Row>
 
@@ -159,7 +159,7 @@ const BookingDetails = () => {
                         <View style={styles.column}>
                             <Text size={14} weight="bold" color={colors.white}>Session Date:</Text>
                             <Text size={14} color={colors.icon_gray}>
-                                {booking?.rescheduled_appointment_date || 'YYYY/MM/DD'}
+                                {formatDate(booking?.rescheduled_appointment_date) || '-'}
                             </Text>
                         </View>
                         <View style={styles.column}>

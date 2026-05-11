@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Platform } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
@@ -17,11 +17,12 @@ import {
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
+import dayjs from 'dayjs';
 
 const useBookingDetailsController = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { id } = route.params as { id: number };
+  const { id } = route.params as { id: number; refreshAfterMeeting?: boolean };
   const user = useAppSelector(selectUser);
 
   const { showOkModal, showYesNoModal, showInputModal } = useModal();
@@ -36,6 +37,16 @@ const useBookingDetailsController = () => {
     isFetching: isLoading,
     refetch,
   } = useGetBookingDetailsQuery(id);
+
+  useFocusEffect(
+    useCallback(() => {
+      const params = route.params as { refreshAfterMeeting?: boolean };
+      if (params.refreshAfterMeeting) {
+        refetch();
+        navigation.setParams({ refreshAfterMeeting: false } as never);
+      }
+    }, [navigation, refetch, route.params]),
+  );
 
   const [approveReschedule, { isLoading: isApproving }] =
     useApproveRescheduleMutation();
@@ -64,41 +75,29 @@ const useBookingDetailsController = () => {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string | null) => {
     if (!dateString) return '';
 
-    // Parse YYYY/MM/DD format
-    const parts = dateString.split('/');
-    if (parts.length !== 3) return '';
+    const trimmed = String(dateString).trim();
 
-    // Convert to numbers (subtract 1 from month because JS months are 0-indexed)
-    const monthIndex = parseInt(parts[0], 10) - 1;
-    const day = parseInt(parts[1], 10);
-    const year = parseInt(parts[2], 10);
+    // MM/DD/YYYY (same as MyBookings BookingCard)
+    const parts = trimmed.split('/');
+    if (parts.length === 3) {
+      const monthIndex = parseInt(parts[0], 10) - 1;
+      const day = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      if (
+        !Number.isNaN(monthIndex) &&
+        !Number.isNaN(day) &&
+        !Number.isNaN(year)
+      ) {
+        const d = dayjs(new Date(year, monthIndex, day));
+        if (d.isValid()) return d.format('MMMM D, YYYY');
+      }
+    }
 
-    // Create date object
-    const date = new Date(year, monthIndex, day);
-
-    // Validate date
-    if (isNaN(date.getTime())) return '';
-
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    const monthName = months[date.getMonth()];
-
-    return `${monthName} ${date.getDate()}, ${date.getFullYear()}`;
+    const d = dayjs(trimmed);
+    return d.isValid() ? d.format('MMMM D, YYYY') : '';
   };
 
   const getStatusColor = (status: string) => {
@@ -288,6 +287,7 @@ const useBookingDetailsController = () => {
       password: booking.password ?? '',
       join_url: booking.join_url,
       userName,
+      booking_id: id,
     });
   };
 

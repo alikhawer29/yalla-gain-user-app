@@ -1,0 +1,44 @@
+diff --git a/node_modules/@zoom/meetingsdk-react-native/ios/RNZoomSDK.m b/node_modules/@zoom/meetingsdk-react-native/ios/RNZoomSDK.m
+index 42faf67..047efce 100644
+--- a/node_modules/@zoom/meetingsdk-react-native/ios/RNZoomSDK.m
++++ b/node_modules/@zoom/meetingsdk-react-native/ios/RNZoomSDK.m
+@@ -171,6 +171,21 @@ - (dispatch_queue_t)methodQueue
+     });
+ }
+ 
++RCT_REMAP_METHOD(getMeetingStatus,
++        getMeetingStatusWithResolver:(RCTPromiseResolveBlock)resolve
++        withRejecter:(RCTPromiseRejectBlock)reject)
++{
++    dispatch_async(dispatch_get_main_queue(), ^{
++        MobileRTCMeetingService *meetService = [[MobileRTC sharedRTC] getMeetingService];
++        if (meetService) {
++            MobileRTCMeetingState state = [meetService getMeetingState];
++            resolve(@(state));
++        } else {
++            resolve(@(0)); // MobileRTCMeetingState_Idle
++        }
++    });
++}
++
+ - (void)onMobileRTCAuthReturn:(MobileRTCAuthError)returnValue {
+     switch (returnValue) {
+         case MobileRTCAuthError_Success:
+@@ -196,6 +211,16 @@ - (void)onJoinMeetingConfirmed {
+     NSLog(@"Join meeting confirmed.");
+ }
+ - (void)onMeetingStateChange:(MobileRTCMeetingState)state {
+-    NSLog(@"Current meeting state: %u", state);
++    NSLog(@"RNZoomSDK onMeetingStateChange: %lu", (unsigned long)state);
++    [self sendEventWithName:@"onMeetingStatusChanged" body:@{ @"status": @(state) }];
++}
++
++- (void)onMeetingEndedReason:(MobileRTCMeetingEndReason)reason {
++    NSLog(@"RNZoomSDK onMeetingEndedReason: %lu", (unsigned long)reason);
++    [self sendEventWithName:@"onMeetingStatusChanged" body:@{
++        @"status": @(MobileRTCMeetingState_Ended),
++        @"reason": @(reason),
++        @"event": @"meetingEnded"
++    }];
+ }
+ @end

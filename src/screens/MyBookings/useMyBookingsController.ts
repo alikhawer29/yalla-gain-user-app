@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGetMyBookingsQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -31,6 +31,12 @@ const useMyBookingsController = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [page, setPage] = useState(1);
   const [accumulatedBookings, setAccumulatedBookings] = useState<any[]>([]);
+  /** Shows footer spinner immediately; RTK `isFetching` often lags a frame (noticeable on iOS). */
+  const [pendingLoadMore, setPendingLoadMore] = useState(false);
+  /** Blocks duplicate `onEndReached` before React commits `pendingLoadMore`. */
+  const loadMoreRequestedRef = useRef(false);
+  /** Clears pending only when a fetch finishes (`true` → `false`), not while idle before the next request starts. */
+  const wasFetchingRef = useRef(false);
   const debouncedSearch = useDebounce(search, 500);
 
   const {
@@ -52,12 +58,15 @@ const useMyBookingsController = () => {
   const lastPage = meta?.last_page ?? 1;
   const total = meta?.total ?? 0;
   const hasMore = currentPage < lastPage;
-  const isLoadingMore = isLoading && page > 1;
+  const isLoadingMore = pendingLoadMore || (isLoading && page > 1);
 
   // Reset to first page when filters change
   useEffect(() => {
     setPage(1);
     setAccumulatedBookings([]);
+    setPendingLoadMore(false);
+    loadMoreRequestedRef.current = false;
+    wasFetchingRef.current = false;
   }, [selectedTab, selectedStatus, debouncedSearch, fromDate, toDate]);
 
   // Accumulate results: replace on page 1, append on next pages (only when response matches current page)
@@ -75,6 +84,9 @@ const useMyBookingsController = () => {
 
   const onReload = useCallback(() => {
     setAccumulatedBookings([]);
+    setPendingLoadMore(false);
+    loadMoreRequestedRef.current = false;
+    wasFetchingRef.current = false;
     if (page === 1) {
       refetch();
     } else {
@@ -82,11 +94,22 @@ const useMyBookingsController = () => {
     }
   }, [page, refetch]);
 
-  const onLoadMore = useCallback(() => {
-    if (hasMore && !isLoadingMore) {
-      setPage(p => p + 1);
+  useEffect(() => {
+    if (wasFetchingRef.current && !isLoading) {
+      loadMoreRequestedRef.current = false;
+      setPendingLoadMore(false);
     }
-  }, [hasMore, isLoadingMore]);
+    wasFetchingRef.current = isLoading;
+  }, [isLoading]);
+
+  const onLoadMore = useCallback(() => {
+    if (!hasMore || pendingLoadMore || loadMoreRequestedRef.current) return;
+    if (page === 1 && isLoading) return;
+    if (isLoading && page > 1) return;
+    loadMoreRequestedRef.current = true;
+    setPendingLoadMore(true);
+    setPage(p => p + 1);
+  }, [hasMore, pendingLoadMore, isLoading, page]);
 
   const onSearch = (text: string) => {
     setSearch(text);
