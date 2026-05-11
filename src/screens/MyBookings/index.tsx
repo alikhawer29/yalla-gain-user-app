@@ -98,6 +98,8 @@ const MyBookings = () => {
                         <RefreshControl
                             refreshing={isLoading && !isLoadingMore}
                             onRefresh={onReload}
+                            tintColor={colors.transparent_primary}
+                            colors={[colors.transparent_primary]}
                         />
                     }
                     onEndReached={onLoadMore}
@@ -112,7 +114,7 @@ const MyBookings = () => {
                                     justifyContent: "center",
                                 }}
                             >
-                                <ActivityIndicator size="large" color={colors.primary} />
+                                <ActivityIndicator size="large" color={colors.transparent_primary} />
                             </View>
                         ) : (
                             <View style={{ height: heightPixel(4) }} />
@@ -122,7 +124,7 @@ const MyBookings = () => {
                 {isLoadingMore ? (
                     <View style={styles.load_more_overlay} pointerEvents="none">
                         <View style={styles.load_more_pill}>
-                            <ActivityIndicator size="small" color={colors.white} />
+                            <ActivityIndicator size="small" color={colors.transparent_primary} />
                             <Text size={13} color={colors.white}>
                                 Loading more…
                             </Text>
