@@ -95,6 +95,10 @@ const Input: FC<IInput> = props => {
                             multiline={type === "textarea"}
                             textAlignVertical={type == "textarea" ? "top" : "center"}
                             editable={(type !== "date" && type !== "time") && !disabled}
+                            // iOS: non-editable TextInput still captures hits; parent Touchables never fire.
+                            pointerEvents={
+                                (type !== "date" && type !== "time") && !disabled ? "auto" : "none"
+                            }
                             {...keyboardProps}
                         />
                         {

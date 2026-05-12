@@ -9,21 +9,17 @@ import Icon from "../../Icon";
 import Row from "../../Row";
 import Text from "../../Text";
 import styles from "./styles";
+import { formatChatListTimeLabel } from "../../../utils/chatDateTime";
 
 const ChatListCard: FC<IChatListCard> = ({ chat, onPress }) => {
     const { name, image, user_role, last_message, unread } = chat;
 
-    // Format the time for display
     const formatTime = () => {
         if (!last_message?.date) return '';
-        const date = new Date(last_message.date);
-        const now = new Date();
-        const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) return last_message.time || 'Today';
-        if (diffDays === 1) return 'Yesterday';
-        if (diffDays < 7) return `${diffDays} days ago`;
-        return `${Math.floor(diffDays / 7)} weeks ago`;
+        return formatChatListTimeLabel({
+            dateStr: last_message.date,
+            timeStr: last_message.time,
+        });
     };
 
     const formatRole = (role: string) => {

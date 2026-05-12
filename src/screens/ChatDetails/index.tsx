@@ -24,6 +24,10 @@ import ChatMessageCard from '../../components/Cards/ChatMessageCard';
 import { IChatMessage } from '../../interfaces';
 import useChatDetailsController from './useChatDetailsController';
 import styles from './styles';
+import {
+  formatChatDetailSeparatorLabel,
+  localCalendarKey,
+} from '../../utils/chatDateTime';
 
 /** Align bubbles from sender id — socket payloads may send wrong `is_mine`. */
 const isMessageFromCurrentUser = (
@@ -86,14 +90,19 @@ const ChatDetails = () => {
   );
 
   const renderMessage = ({ item, index }: { item: any; index: number }) => {
-    const showDate = index === 0 || messages[index - 1]?.date !== item.date;
+    const prevMsg = index > 0 ? messages[index - 1] : undefined;
+    const showDate =
+      index === 0 ||
+      (prevMsg &&
+        localCalendarKey(prevMsg.date, prevMsg.time) !==
+          localCalendarKey(item.date, item.time));
 
     return (
       <>
         {showDate && (
           <View style={styles.date_separator}>
             <Text size={12} color={colors.icon_gray}>
-              {formatDate(item.date)}
+              {formatChatDetailSeparatorLabel(item.date, item.time)}
             </Text>
           </View>
         )}
@@ -104,24 +113,6 @@ const ChatDetails = () => {
         />
       </>
     );
-  };
-
-  const formatDate = (dateString: string) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) return 'Today';
-    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
-
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   const renderSelectedFiles = () => {

@@ -8,6 +8,7 @@ import Icon from '../../Icon';
 import Row from '../../Row';
 import Text from '../../Text';
 import styles from './styles';
+import { formatChatTime12h } from '../../../utils/chatDateTime';
 
 interface IChatMessageCardProps {
   message: IChatMessage;
@@ -48,16 +49,6 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
         <Path d={right ? dRight : dLeft} fill={fill} />
       </Svg>
     );
-  };
-
-  const formatTime = (time: string) => {
-    if (!time) return '';
-    // Assuming time is in format "HH:MM" or "HH:MM:SS"
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
   };
 
   const renderFiles = () => {
@@ -119,7 +110,7 @@ const ChatMessageCard: FC<IChatMessageCardProps> = ({ message, isMine }) => {
         <Row align="center" justify="flex-end" gap={5}>
           <Icon source={images.clock} tint_color={colors.icon_gray} size={10} />
           <Text size={10} color={colors.icon_gray}>
-            {formatTime(message.time)}
+            {formatChatTime12h(message.date, message.time)}
           </Text>
         </Row>
       </View>

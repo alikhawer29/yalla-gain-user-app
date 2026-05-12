@@ -59,7 +59,7 @@ const Chat = () => {
     };
 
     return (
-        <Wrapper scrollable={false} floating hide_bottom_bar>
+        <Wrapper scrollable={false} hide_bottom_bar>
             <View style={styles.header_container}>
                 <Row align="center" justify="space-between">
                     <View style={styles.search_container}>
