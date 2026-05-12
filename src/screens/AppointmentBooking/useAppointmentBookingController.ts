@@ -150,7 +150,7 @@ const useAppointmentBookingController = () => {
         {
           type: 'success',
           title: 'Successful',
-          message: `Appointment Has Been Booked Successfully!\n\nYour Booking ID Is #${bookingId}.\n\n${chargesAmount} Yalla Coins Have Been Deducted. You Now Have ${remainingCoins} Yalla Coins Left.`,
+          message: `Appointment Has Been Booked Successfully!\n\nYour Booking ID Is #${bookingId}.\n\n${chargesAmount} Yalla Coins Have Been Deducted.`,
         },
         () => {
           // Navigate to My Bookings
