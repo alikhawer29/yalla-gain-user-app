@@ -33,10 +33,12 @@ const AvatarVisualization = () => {
   const socketRef = useRef<Socket | null>(null);
   const hasSentUserIdRef = useRef(false);
   const isSharingBodyMeasurementsRef = useRef(false);
+  const isLeavingRef = useRef(false);
   const isFocused = useIsFocused();
   const user = useSelector(selectUser);
   const userId = user?.id;
   const [postBodyMeasurements] = usePostBodyMeasurementsMutation();
+  const [unityVisible, setUnityVisible] = useState(true);
   // Prevent showing previous Unity frame until Unity signals SocketConnectedGame.
   const [isUnityReady, setIsUnityReady] = useState(false);
 
@@ -99,6 +101,9 @@ const AvatarVisualization = () => {
 
   // ─── Leave / Unload Unity ──────────────────────────────────────────────────
   const leaveAndUnloadUnity = useCallback(() => {
+    if (isLeavingRef.current) return;
+    isLeavingRef.current = true;
+
     const socket = socketRef.current;
     if (socket) {
       socket.removeAllListeners();
@@ -110,6 +115,17 @@ const AvatarVisualization = () => {
     }
     // Just navigate away — Unity unloads naturally when the view unmounts.
     // Calling unloadUnity() while Unity is still rendering causes a SIGSEGV crash.
+    if (Platform.OS === 'ios') {
+      setUnityVisible(false);
+      setIsUnityReady(false);
+      requestAnimationFrame(() => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        }
+      });
+      return;
+    }
+
     if (navigation.canGoBack()) {
       navigation.goBack();
     }
@@ -244,6 +260,9 @@ const AvatarVisualization = () => {
   // ─── Clean up socket on focus loss ────────────────────────────────────────
   useFocusEffect(
     React.useCallback(() => {
+      hasSentUserIdRef.current = false;
+      isLeavingRef.current = false;
+      setUnityVisible(true);
       setIsUnityReady(false);
       return () => {
         const socket = socketRef.current;
@@ -306,7 +325,7 @@ const AvatarVisualization = () => {
   return (
     <Wrapper>
       <View style={{ flex: 1 }}>
-        {isFocused && (
+        {isFocused && unityVisible && (
           <>
             {Platform.OS === 'ios' ? (
               <UnityViewNativeIOS
