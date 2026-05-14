@@ -75,15 +75,15 @@ export default function HomeScreen() {
           <Row justify="space-between">
             <View style={{ padding: heightPixel(8), width: '50%' }}>
               <TrackingCard
-                icon={images.steps_graph}
-                title="Steps today"
+                icon={images.steps}
+                title="Steps"
                 progress={stepsDisplay}
                 subtext="Steps"
               />
             </View>
             <View style={{ padding: heightPixel(8), width: '50%' }}>
               <TrackingCard
-                title="Active calories"
+                title="Calories"
                 progress={caloriesDisplay}
                 subtext="kcal"
                 type="progress"
