@@ -114,6 +114,13 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Posts'],
     }),
+    postBodyMeasurements: builder.mutation<any, void>({
+      query: () => ({
+        url: `post/body-measurements`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Posts'],
+    }),
     updateFeed: builder.mutation({
       query: ({ id, body }) => ({
         url: `post/${id}/update`,
@@ -712,6 +719,7 @@ export const {
   useSubscribeMutation,
   useCancelSubscriptionMutation,
   useCreateFeedMutation,
+  usePostBodyMeasurementsMutation,
   useUpdateFeedMutation,
   useDeleteFeedMutation,
   useReactFeedMutation,

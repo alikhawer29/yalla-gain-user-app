@@ -56,6 +56,10 @@ class UnityLogcatModule(private val reactContext: ReactApplicationContext) :
                             emitToJS("SocketConnectedGame")
                             // ✅ Do NOT stop here — keep listening for GoBack / SaveGame
                         }
+                        trimmed.contains("RNReceiver:ShareAvatar") -> {
+                            Log.d("UnityLogcat", "ShareAvatar → emitting to JS")
+                            emitToJS("ShareAvatar")
+                        }
                         trimmed.contains("RNReceiver:GoBack") -> {
                             Log.d("UnityLogcat", "GoBack → emitting to JS then stopping")
                             emitToJS("GoBack")

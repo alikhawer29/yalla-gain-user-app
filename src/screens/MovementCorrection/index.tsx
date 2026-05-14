@@ -41,7 +41,11 @@ const MovementCorrection = () => {
                         </View>
 
                         <Text style={styles.description}>
-                            {LOREM} {LOREM}
+                            Movement Correction focuses on identifying and improving improper body movements, posture, and muscular imbalances that may lead to discomfort, reduced performance, or injury during daily activities and workouts.
+                        </Text>
+
+                        <Text style={styles.description}>
+                            Through guided exercises, posture awareness, and corrective training techniques, users can improve mobility, stability, flexibility, and overall body alignment to support safer and more effective movement patterns.
                         </Text>
 
                         <View style={styles.dropdown_wrapper}>

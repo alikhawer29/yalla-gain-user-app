@@ -127,7 +127,9 @@ const ProgressTracking = () => {
                 </Text>
                 <View style={{ width: "100%", minHeight: heightPixel(276), justifyContent: "center", alignItems: "flex-start" }}>
                     {isLoadingMonthlyBmiGraph ? (
-                        <ActivityIndicator size="large" color={colors.primary} />
+                        <View style={{ width: "100%", minHeight: heightPixel(276), justifyContent: "center", alignItems: "center" }}>
+                            <ActivityIndicator size="large" color={colors.primary} />
+                        </View>
                     ) : progressChartData.datasets[0]?.data?.length ? (
                         <LineChart
                             data={progressChartData}

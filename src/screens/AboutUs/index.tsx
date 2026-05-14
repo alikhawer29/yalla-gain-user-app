@@ -12,15 +12,18 @@ const AboutUs: FC = () => {
         <Wrapper scrollable>
             <View style={styles.container}>
                 <Text color={colors.white} style={styles.text}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam fermentum, nulla luctus pharetra vulputate, felis tellus mollis orci, sed rhoncus pronin sapien nunc accuan eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.
+                    Yalla Gain is an innovative fitness and wellness platform focused on helping users transform their lifestyle through smart technology, body tracking, and personalized fitness experiences.
                 </Text>
 
                 <Text color={colors.white} style={styles.text}>
-                    Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam fermentum, nulla luctus pharetra vulputate, felis tellus mollis orci, sed rhoncus pronin sapien nunc accuan eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor.
+                    Our platform combines advanced body scanning, progress tracking, fitness challenges, workout plans, and trainer connectivity to create a complete health and transformation ecosystem. We aim to make fitness more interactive, motivating, and measurable for every user.
                 </Text>
 
                 <Text color={colors.white} style={styles.text}>
-                    nulla luctus pharetra vulputate, felis tellus mollis orci, sed rhoncus pronin sapien nunc accuan eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor
+                    At Yalla Gain, we believe consistency and accurate progress tracking are the keys to achieving long-term fitness goals. Our mission is to empower users with the tools, insights, and support they need to build healthier habits and confidently track their transformation journey.
+                </Text>
+                <Text color={colors.white} style={styles.text}>
+                    Yalla Gain is designed for individuals at every stage of their fitness journey, whether they are beginners looking to build healthier routines or experienced athletes aiming to optimize performance and monitor body changes more accurately.
                 </Text>
 
                 <View style={styles.footerContainer}>
