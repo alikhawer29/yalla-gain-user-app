@@ -189,7 +189,7 @@ export const ModalProvider = ({ children }) => {
                   )}
                   {modalType === 'ok' ? (
                     <Button
-                      text="OK"
+                      text={modalContent.okText || 'OK'}
                       onPress={() => {
                         setIsVisible(false);
                         setTimeout(() => {

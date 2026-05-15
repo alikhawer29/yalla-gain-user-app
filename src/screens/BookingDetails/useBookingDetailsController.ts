@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Platform } from 'react-native';
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
@@ -253,12 +257,17 @@ const useBookingDetailsController = () => {
     const adminJoined = (booking as { is_admin_joined?: boolean })
       ?.is_admin_joined;
     if (adminJoined === false) {
-      showOkModal({
-        type: 'info',
-        title: 'Join Session',
-        message:
-          "The meeting hasn't started yet. Please wait for the doctor to join.",
-      });
+      showOkModal(
+        {
+          type: 'info',
+          title: 'Join Session',
+          message: 'Waiting for the doctor to join the session.',
+          okText: 'Retry',
+        },
+        () => {
+          void refetch();
+        },
+      );
       return;
     }
 
