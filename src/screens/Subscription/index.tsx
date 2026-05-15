@@ -30,7 +30,8 @@ const Subscription = () => {
         <Wrapper>
             <Button text="Subscription Logs" type="outlined" onPress={onSubscriptionLogs} />
             <View style={{ marginVertical: heightPixel(25) }}>
-                <Text>{LOREM}</Text>
+                <Text>Subscribe monthly or annually to access exclusive features, premium content, enhanced experience, priority access to new updates, and uninterrupted access to all premium services.
+                </Text>
             </View>
             {
                 isLoading ? <Loader /> :
