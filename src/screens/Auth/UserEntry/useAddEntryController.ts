@@ -18,7 +18,7 @@ const initial = {
     register: {
         first_name: "",
         last_name: "",
-        dob: "",
+        gender: "",
         email: "",
         password: "",
         password_confirmation: "",

@@ -36,6 +36,17 @@ const ProfileHeader: FC = () => {
         const userId = user?.id
         if (!userId) return
 
+        const hasProfileGender =
+            user?.gender === "male" || user?.gender === "female"
+        if (!hasProfileGender) {
+            showOkModal({
+                type: "info",
+                title: "Complete Your Profile",
+                message: "Complete your profile first to create avatar.",
+            })
+            return
+        }
+
         try {
             setAvatarLoading(true)
             const res = await scanStatus(userId).unwrap()
@@ -65,7 +76,7 @@ const ProfileHeader: FC = () => {
         } finally {
             setAvatarLoading(false)
         }
-    }, [scanStatus, showOkModal, user?.id])
+    }, [scanStatus, showOkModal, user?.id, user?.gender])
 
     return (
         <Row align="center" style={styles.container}>

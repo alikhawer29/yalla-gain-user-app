@@ -10,8 +10,9 @@ import Row from "../../../components/Row";
 import Tabs from "../../../components/Tabs";
 import Text from "../../../components/Text";
 import Upload from "../../../components/Upload";
+import Dropdown from "../../../components/Dropdown";
 import colors from "../../../utils/colors";
-import { TABS } from "../../../utils/data";
+import { GENDER_OPTIONS, TABS } from "../../../utils/data";
 import { heightPixel, withDialingCodePlus } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
@@ -44,7 +45,15 @@ const UserEntry = () => {
             <>
                 <Input key={`${selected}-1`} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
                 <Input key={`${selected}-2`} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
-                <Input key={`${selected}-3`} label="Date of Birth" placeholder="YYYY/MM/DD" type="date" required value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : ""} />
+                <Dropdown
+                    key={`${selected}-3`}
+                    label="Gender"
+                    placeholder="Select Gender"
+                    options={GENDER_OPTIONS}
+                    value={data?.gender}
+                    onChangeText={(e: { value?: string }) => setFieldValue("gender", e?.value ?? "")}
+                    error={touched?.gender ? errors?.gender : ""}
+                />
                 <Input
                     key={`${selected}-4`}
                     label="Mobile Number"

@@ -105,6 +105,8 @@ export type RootStackParamList = {
     // Watch Connect
     WatchConnect: undefined;
     WatchConnected: undefined;
+    // VR Connect
+    VrConnect: undefined;
 };
 
 export interface IWrapper {

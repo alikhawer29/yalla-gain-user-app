@@ -111,45 +111,11 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
         return !/^(.)\1+$/.test(digits);
       },
     ),
-  dob: Yup.string()
-    .required('Date of Birth is required')
-    .test('valid-date', 'Please enter a valid Date of Birth', value => {
-      if (!value) return false;
-      const d = new Date(value);
-      return !Number.isNaN(d.getTime());
-    })
-    .test(
-      'not-future',
-      'Please enter a valid Date of Birth. Future dates are not allowed, and you must be at least 18 years old to proceed.',
-      value => {
-        if (!value) return false;
-        const dob = new Date(value);
-        if (Number.isNaN(dob.getTime())) return false;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        dob.setHours(0, 0, 0, 0);
-        return dob < today;
-      },
-    )
-    .test(
-      'min-age-18',
-      'Please enter a valid Date of Birth. Future dates are not allowed, and you must be at least 18 years old to proceed.',
-      value => {
-        if (!value) return false;
-        const dob = new Date(value);
-        if (Number.isNaN(dob.getTime())) return false;
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        const dayDiff = today.getDate() - dob.getDate();
-        if (age > 18) return true;
-        if (age === 18) {
-          if (monthDiff > 0) return true;
-          if (monthDiff === 0 && dayDiff >= 0) return true;
-        }
-        return false;
-      },
-    ),
+  gender: Yup.string().test(
+    'valid-gender',
+    'Please select a valid gender',
+    value => !value || value === 'male' || value === 'female',
+  ),
   photo: Yup.mixed().required('Profile Image is required'),
 });
 
@@ -181,44 +147,11 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
       const digits = (value || '').replace(/\D/g, '');
       return digits.length >= 6 && digits.length <= 15;
     }),
-  dob: Yup.string()
-    .test('valid-date', 'Please enter a valid Date of Birth', value => {
-      if (!value) return true;
-      const d = new Date(value);
-      return !Number.isNaN(d.getTime());
-    })
-    .test(
-      'not-future',
-      'Please enter a valid Date of Birth. Future dates are not allowed, and you must be at least 18 years old to proceed.',
-      value => {
-        if (!value) return true;
-        const dob = new Date(value);
-        if (Number.isNaN(dob.getTime())) return false;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        dob.setHours(0, 0, 0, 0);
-        return dob < today;
-      },
-    )
-    .test(
-      'min-age-18',
-      'Please enter a valid Date of Birth. Future dates are not allowed, and you must be at least 18 years old to proceed.',
-      value => {
-        if (!value) return true;
-        const dob = new Date(value);
-        if (Number.isNaN(dob.getTime())) return false;
-        const today = new Date();
-        const age = today.getFullYear() - dob.getFullYear();
-        const monthDiff = today.getMonth() - dob.getMonth();
-        const dayDiff = today.getDate() - dob.getDate();
-        if (age > 18) return true;
-        if (age === 18) {
-          if (monthDiff > 0) return true;
-          if (monthDiff === 0 && dayDiff >= 0) return true;
-        }
-        return false;
-      },
-    ),
+  gender: Yup.string().test(
+    'valid-gender',
+    'Please select a valid gender',
+    value => !value || value === 'male' || value === 'female',
+  ),
 });
 
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({

@@ -32,6 +32,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: widthPixel(2),
   },
+  radio_option_locked: {
+    opacity: 0.85,
+  },
   radio_circle: {
     width: widthPixel(20),
     height: widthPixel(20),

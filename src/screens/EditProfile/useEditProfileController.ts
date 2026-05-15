@@ -24,7 +24,7 @@ const useEditProfileController = () => {
       : `+${user?.dialing_code}`,
     country_code: user?.country_code || 'AE',
     phone: user?.phone || '',
-    dob: user?.dob || '',
+    gender: user?.gender || '',
   };
 
   useEffect(() => {

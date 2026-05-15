@@ -25,7 +25,8 @@ const AvatarScanForm = () => {
             isLoading,
             isLoadingManual,
             isLoadingScan,
-            showActionButtons
+            showActionButtons,
+            isGenderLocked,
         },
         functions: {
             onSubmit,
@@ -70,7 +71,11 @@ const AvatarScanForm = () => {
                                 </Text>
                                 <Row style={styles.radio_container}>
                                     <Touchable
-                                        style={styles.radio_option}
+                                        style={[
+                                            styles.radio_option,
+                                            isGenderLocked && styles.radio_option_locked,
+                                        ]}
+                                        disabled={isGenderLocked}
                                         onPress={() => setFieldValue("gender", "male")}
                                     >
                                         <View style={[
@@ -82,7 +87,11 @@ const AvatarScanForm = () => {
                                         <Text size={16} style={styles.radio_label}>Male</Text>
                                     </Touchable>
                                     <Touchable
-                                        style={styles.radio_option}
+                                        style={[
+                                            styles.radio_option,
+                                            isGenderLocked && styles.radio_option_locked,
+                                        ]}
+                                        disabled={isGenderLocked}
                                         onPress={() => setFieldValue("gender", "female")}
                                     >
                                         <View style={[

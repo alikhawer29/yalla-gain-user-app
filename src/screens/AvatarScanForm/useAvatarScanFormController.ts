@@ -39,6 +39,9 @@ const useAvatarScanFormController = () => {
   // (Scan flow navigates from Scan screen.) Stale isSuccess from a previous visit must not trigger navigation.
   const didManualSubmitRef = useRef(false);
 
+  const profileGender =
+    user?.gender === 'male' || user?.gender === 'female' ? user.gender : '';
+
   // On every focus: clear mutation state and "just submitted" flag so opening the form again
   // (or returning from Unity) never auto-navigates to Unity. Empty deps = stable callback, run only on focus.
   useFocusEffect(
@@ -50,13 +53,25 @@ const useAvatarScanFormController = () => {
     }, []),
   );
 
-  const initial = routeFormData || {
-    age: '',
-    gender: '',
-    body_type: '',
-    weight: '',
-    height: '',
-  };
+  useEffect(() => {
+    if (!profileGender || !formik_ref.current) return;
+    (formik_ref.current as any).setFieldValue('gender', profileGender);
+  }, [profileGender]);
+
+  const initial = routeFormData
+    ? {
+        ...routeFormData,
+        gender: routeFormData.gender || profileGender,
+      }
+    : {
+        age: '',
+        gender: profileGender,
+        body_type: '',
+        weight: '',
+        height: '',
+      };
+
+  const isGenderLocked = Boolean(profileGender);
 
   // Check if we should show action buttons (Manual/Scan) or Next button
   // Show action buttons if no route form data (meaning we're starting fresh)
@@ -93,7 +108,7 @@ const useAvatarScanFormController = () => {
 
         formData.append('user_id', String(user?.id));
         formData.append('age', String(data.age));
-        formData.append('gender', data.gender);
+        formData.append('gender', data.gender || profileGender);
         formData.append('height', String(data.height));
         formData.append('weight', String(data.weight));
         formData.append('scan', 'false');
@@ -112,7 +127,7 @@ const useAvatarScanFormController = () => {
         setIsLoadingManual(false);
       }
     },
-    [user, submit, showOkModal],
+    [user, submit, showOkModal, profileGender],
   );
 
   /** Manual: show precautions first; API + Unity only after user confirms. */
@@ -139,8 +154,9 @@ const useAvatarScanFormController = () => {
   /** Scan: show gender illustration + precautions, then existing navigate to Scan screen. */
   const onScanPress = useCallback(
     (data: any) => {
+      const gender = data.gender || profileGender;
       const illustrationSource =
-        data.gender === 'female' ? images.female_scan : images.male_scan;
+        gender === 'female' ? images.female_scan : images.male_scan;
       showOkModal(
         {
           type: 'success',
@@ -152,13 +168,13 @@ const useAvatarScanFormController = () => {
         () => {
           setIsLoadingScan(true);
           navigate(ROUTES.SCAN, {
-            formData: data,
+            formData: { ...data, gender },
           });
           setTimeout(() => setIsLoadingScan(false), 100);
         },
       );
     },
-    [showOkModal],
+    [showOkModal, profileGender],
   );
 
   // Manual validation against schema - true only when form is valid
@@ -182,6 +198,7 @@ const useAvatarScanFormController = () => {
       isLoadingManual,
       isLoadingScan,
       showActionButtons,
+      isGenderLocked,
     },
     functions: {
       onSubmit,

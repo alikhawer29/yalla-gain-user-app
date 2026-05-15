@@ -1,7 +1,7 @@
 import { Formik } from "formik"
-import { useMemo } from "react"
 import { View } from "react-native"
 import Button from "../../components/Button"
+import Dropdown from "../../components/Dropdown"
 import Icon from "../../components/Icon"
 import Input from "../../components/Input"
 import Wrapper from "../../components/Wrapper"
@@ -10,14 +10,9 @@ import useEditProfileController from "./useEditProfileController"
 import colors from "../../utils/colors"
 import images from "../../assets/images"
 import KeyboardAvoidingWrapper from "../../components/KeyboardAvoidingWrapper"
+import { GENDER_OPTIONS } from "../../utils/data"
 
 const EditProfile = () => {
-    const maxDobDate = useMemo(() => {
-        const d = new Date()
-        d.setDate(d.getDate() - 1)
-        return d
-    }, [])
-
     const {
         schema,
         refs: {
@@ -72,7 +67,14 @@ const EditProfile = () => {
                                     setFieldValue("dialing_code", code ? (code.startsWith("+") ? code : `+${code}`) : "")
                                 }}
                             />
-                            <Input label="Date of Birth" placeholder="YYYY/MM/DD" type="date" value={data?.dob} onChangeText={handleChange("dob")} error={touched?.dob ? errors?.dob : null} maximumDate={maxDobDate} />
+                            <Dropdown
+                                label="Gender"
+                                placeholder="Select Gender"
+                                options={GENDER_OPTIONS}
+                                value={data?.gender}
+                                onChangeText={(e: { value?: string }) => setFieldValue("gender", e?.value ?? "")}
+                                error={touched?.gender ? errors?.gender : null}
+                            />
                             <Button text="Update" onPress={handleSubmit} loading={isLoading} style={styles.button} />
                         </>
                     )}

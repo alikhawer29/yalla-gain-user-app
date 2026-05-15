@@ -23,7 +23,7 @@ const useNewsFeedController = () => {
         dialing_code: user?.dialing_code || "+971",
         country_code: user?.country_code || "AE",
         phone: user?.phone || "",
-        dob: user?.dob || "",
+        gender: user?.gender || "",
     }
 
     useEffect(() => {

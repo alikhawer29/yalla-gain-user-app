@@ -2,6 +2,8 @@ import { useFocusEffect } from "@react-navigation/native"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { NativeScrollEvent, NativeSyntheticEvent, ScrollView, View } from "react-native"
 import { useDispatch } from "react-redux"
+import { useAppSelector } from "../../hooks"
+import { selectUser } from "../../redux/Slices/AuthSlice"
 import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
@@ -80,6 +82,8 @@ function unwrapCaloriesGraphPayload(raw: unknown): CaloriesGraphResponse | null 
 
 const Home = () => {
     const dispatch = useDispatch()
+    const user = useAppSelector(selectUser)
+    const showCompleteProfileCard = user?.gender == null || user?.gender === ""
 
     const {
         data: workoutData,
@@ -147,15 +151,15 @@ const Home = () => {
             return graphApiFilter === "weekly"
                 ? emptyWeekly
                 : {
-                      labels: [""],
-                      datasets: [
-                          {
-                              data: [0],
-                              color: (opacity = 1) => colors.primary,
-                              strokeWidth: 0,
-                          },
-                      ],
-                  }
+                    labels: [""],
+                    datasets: [
+                        {
+                            data: [0],
+                            color: (opacity = 1) => colors.primary,
+                            strokeWidth: 0,
+                        },
+                    ],
+                }
         }
         if (graphApiFilter === "weekly") {
             const w = pts as WeeklyCaloriesDataPoint[]
@@ -265,9 +269,11 @@ const Home = () => {
             }
         >
             <ProfileHeader />
-            <View style={{ marginTop: heightPixel(30) }}>
-                <InfoCard />
-            </View>
+            {showCompleteProfileCard ? (
+                <View style={{ marginTop: heightPixel(30) }}>
+                    <InfoCard />
+                </View>
+            ) : null}
             <View style={{ marginTop: heightPixel(30) }}>
                 <HomeScreen />
                 <Row justify="space-between">

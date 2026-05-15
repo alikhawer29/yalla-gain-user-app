@@ -12,6 +12,7 @@ import ConsultationStackNavigator from '../ConsultationStackNavigator';
 import WalletStackNavigator from '../WalletStackNavigator';
 import SubscriptionStackNavigator from '../SubscriptionStackNavigator';
 import WatchStackNavigator from '../WatchStackNavigator';
+import VrStackNavigator from '../VrStackNavigator';
 import ChallengesStackNavigator from '../ChallengesStackNavigator';
 
 const Drawer = createDrawerNavigator();
@@ -28,6 +29,7 @@ const DrawerNavigator = () => {
             <Drawer.Screen name={NAVIGATORS.WALLET_STACK} component={WalletStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.SUBSCRIPTION_STACK} component={SubscriptionStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.WATCH_STACK} component={WatchStackNavigator} />
+            <Drawer.Screen name={NAVIGATORS.VR_STACK} component={VrStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.CHALLENGES_STACK} component={ChallengesStackNavigator} />
         </Drawer.Navigator>
     );

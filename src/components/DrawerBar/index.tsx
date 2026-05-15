@@ -101,8 +101,7 @@ const DRAWER_ROUTES = [
             {
                 title: "VR Connect",
                 icon: images.drawer_icons.vr,
-                route: NAVIGATORS.BOTTOM,
-                child: NAVIGATORS.HOME_STACK,
+                route: NAVIGATORS.VR_STACK,
             },
             {
                 title: "Music Panel",
@@ -139,15 +138,6 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
     }
 
     const handleNavigation = (childItem: any) => {
-        if (childItem?.title === "VR Connect") {
-            showOkModal({
-                type: "info",
-                title: "VR Instructions",
-                message: "In order to use the VR Environment download the (Yalla Gain) and required VR device.",
-            })
-            return
-        }
-
         if (navigationRef.isReady()) {
             // From Challenges (or any deep HomeStack screen), "Home" must target the Home
             // screen inside HomeStack — not only the Bottom tab — or the stack stays on Challenges.

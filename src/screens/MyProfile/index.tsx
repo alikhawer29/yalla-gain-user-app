@@ -8,6 +8,7 @@ import Wrapper from '../../components/Wrapper';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import colors from '../../utils/colors';
+import { capitalizeFirst } from '../../utils/data';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import styles from './styles';
@@ -45,12 +46,14 @@ const MyProfile = () => {
             ({user?.dialing_code}) {user?.phone}
           </Text>
         </View>
-        {user?.dob && (
+        {user?.gender ? (
           <View style={[styles.item, styles.item_width]}>
-            <Text color={colors.icon_gray}>DOB</Text>
-            <Text weight="bold">{user?.dob}</Text>
+            <Text color={colors.icon_gray}>Gender</Text>
+            <Text weight="bold" capitalize>
+              {capitalizeFirst(user.gender)}
+            </Text>
           </View>
-        )}
+        ) : null}
         <View style={[styles.item, styles.item_width]}>
           <Text color={colors.icon_gray}>Language</Text>
           <Text weight="bold" capitalize>

@@ -2,8 +2,8 @@ import type { ImageSourcePropType } from 'react-native';
 import images from '../assets/images';
 
 /** Main backend origin (scheme + host, no path). Change here for staging/production. */
-export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
-// export const API_BASE_URL = 'http://109.1.1.5';
+// export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
+export const API_BASE_URL = 'http://109.1.1.8';
 
 /** User-scoped REST API (`.../api/user/*`). */
 export const API_USER_BASE_URL = `${API_BASE_URL}/yalla-backend/api/user/`;
@@ -25,6 +25,11 @@ export const TABS = [
   },
 ];
 
+export const GENDER_OPTIONS = [
+  { label: 'Male', value: 'male' },
+  { label: 'Female', value: 'female' },
+];
+
 export const LOREM =
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.';
 
@@ -33,7 +38,7 @@ export const USER = {
   last_name: 'Elbert',
   email: 'john.elbert@gmail.com',
   phone: '(646) 000-0000',
-  dob: '10/07/2025',
+  gender: 'male',
   language: 'English',
   unique_code: 'AB#092178',
   image: images.dummy,
