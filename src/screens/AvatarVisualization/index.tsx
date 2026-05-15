@@ -41,6 +41,8 @@ const AvatarVisualization = () => {
   const [unityVisible, setUnityVisible] = useState(true);
   // Prevent showing previous Unity frame until Unity signals SocketConnectedGame.
   const [isUnityReady, setIsUnityReady] = useState(false);
+  // iOS: force splash visible until first Unity message arrives (prevents old frame flash on re-open).
+  const [iosSplashForced, setIosSplashForced] = useState(Platform.OS === 'ios');
 
   // ─── Socket Setup ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -264,6 +266,8 @@ const AvatarVisualization = () => {
       isLeavingRef.current = false;
       setUnityVisible(true);
       setIsUnityReady(false);
+      // iOS: force splash on every re-focus so old Unity frame never flashes.
+      if (Platform.OS === 'ios') setIosSplashForced(true);
       return () => {
         const socket = socketRef.current;
         if (socket) {
@@ -285,7 +289,6 @@ const AvatarVisualization = () => {
       return undefined;
     }, []),
   );
-
 
   // Send userId to Unity via postMessage (SetUserId) at 5s, 10s, 15s
   useEffect(() => {
@@ -335,6 +338,9 @@ const AvatarVisualization = () => {
                 onUnityMessage={(result: {
                   nativeEvent: { message: string; gameObject?: string };
                 }) => {
+                  // iOS: lift the forced splash the moment Unity sends ANY message,
+                  // so the old frame is never visible before SocketConnectedGame arrives.
+                  if (Platform.OS === 'ios') setIosSplashForced(false);
                   handleUnityMessage(result.nativeEvent);
                 }}
               />
@@ -351,7 +357,8 @@ const AvatarVisualization = () => {
               />
             )}
 
-            <UnitySplashOverlay unityReady={isUnityReady} />
+            {/* iOS: splash stays until BOTH iosSplashForced is false AND isUnityReady is true */}
+            <UnitySplashOverlay unityReady={isUnityReady && !iosSplashForced} />
           </>
         )}
       </View>
