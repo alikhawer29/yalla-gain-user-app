@@ -1,6 +1,7 @@
 import { FlatList, View, ActivityIndicator, RefreshControl } from "react-native"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import React, { useState } from "react"
+import { useSubscriptionScreenGuard } from "../../hooks/useSubscriptionScreenGuard"
 import CreatePostCard from "../../components/Cards/CreatePostCard"
 import NewsFeedCard from "../../components/Cards/NewsFeedCard"
 import Wrapper from "../../components/Wrapper"
@@ -11,6 +12,7 @@ import Text from "../../components/Text"
 
 const NewsFeed = () => {
     const navigation = useNavigation()
+    useSubscriptionScreenGuard('messaging')
     const [page, setPage] = useState(1)
     const [isRefreshing, setIsRefreshing] = useState(false)
 

@@ -1,6 +1,7 @@
 import { CommonActions, getFocusedRouteNameFromRoute } from "@react-navigation/native"
 import { Pressable, View } from "react-native"
 import images from "../../assets/images"
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
 import { NAVIGATORS, ROUTES, ROUTES_OPTIONS } from "../../utils/routes"
@@ -36,6 +37,8 @@ const shouldHideBottomBar = (state: any): boolean => {
 };
 
 const BottomBar = ({ state, descriptors, navigation }) => {
+    const { requireAccess } = useSubscriptionAccess();
+
     // Check if we should hide the bottom bar for the current route
     if (shouldHideBottomBar(state)) {
         return null;
@@ -59,6 +62,12 @@ const BottomBar = ({ state, descriptors, navigation }) => {
                             target: route.key,
                             canPreventDefault: true,
                         });
+
+                        if (route.name === NAVIGATORS.NEWSFEED_STACK || route.name === NAVIGATORS.CHAT_STACK) {
+                            if (!requireAccess('messaging')) {
+                                return;
+                            }
+                        }
 
                         // Pop HomeStack to Home (Challenges / detail / etc.) without
                         // resetting the whole tab navigator — full tab reset remounted

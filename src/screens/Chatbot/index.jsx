@@ -14,11 +14,13 @@ import Icon from "../../components/Icon";
 import Seperator from "../../components/Seperator";
 import Wrapper from "../../components/Wrapper";
 import useKeyboard from "../../hooks/useKeyboard";
+import { useSubscriptionScreenGuard } from "../../hooks/useSubscriptionScreenGuard";
 import colors from "../../utils/colors";
 import { heightPixel } from "../../utils/helper";
 import useChatbotController from "./useChatbotController";
 
 const Chatbot = () => {
+    useSubscriptionScreenGuard('nutrition_chatbot');
 
     const {
         refs: {

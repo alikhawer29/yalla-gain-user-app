@@ -1,4 +1,5 @@
 import { useRoute } from "@react-navigation/native";
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess";
 import { useGetServiceDetailsQuery } from "../../redux/Apis/User";
 import { navigate } from "../../utils/navigation";
 import { ROUTES } from "../../utils/routes";
@@ -6,6 +7,7 @@ import { ROUTES } from "../../utils/routes";
 const useServiceDetailsController = () => {
     const route = useRoute();
     const { id, type } = route.params as { id: number; type: "doctor" | "trainer" };
+    const { guardAccess } = useSubscriptionAccess();
 
     const { data, isFetching: isLoading, refetch } = useGetServiceDetailsQuery(id);
 
@@ -18,10 +20,13 @@ const useServiceDetailsController = () => {
     };
 
     const onBookAppointment = () => {
-        navigate(ROUTES.APPOINTMENT_BOOKING, { 
-            serviceId: id, 
-            type,
-            charges: service?.charges,
+        const feature = type === 'doctor' ? 'doctor_appointments' : 'trainer_appointments';
+        guardAccess(feature, () => {
+            navigate(ROUTES.APPOINTMENT_BOOKING, {
+                serviceId: id,
+                type,
+                charges: service?.charges,
+            });
         });
     };
 

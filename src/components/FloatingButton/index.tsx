@@ -1,6 +1,7 @@
 import { FC, useCallback } from "react"
 import { View } from "react-native"
 import images from "../../assets/images"
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import { IFloatingButton } from "../../interfaces"
 import colors from "../../utils/colors"
 import { navigate } from "../../utils/navigation"
@@ -9,10 +10,11 @@ import Icon from "../Icon"
 import styles from "./styles"
 
 const FloatingButton: FC<IFloatingButton> = ({ style }) => {
+    const { guardAccess } = useSubscriptionAccess();
 
     const onPress = useCallback(() => {
-        navigate(ROUTES.CHATBOT)
-    }, [])
+        guardAccess('nutrition_chatbot', () => navigate(ROUTES.CHATBOT));
+    }, [guardAccess])
 
     return (
         <View style={[styles.container, style]}>

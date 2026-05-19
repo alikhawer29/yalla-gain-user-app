@@ -9,6 +9,7 @@ import Seperator from "../../../components/Seperator"
 import Text from "../../../components/Text"
 import Wrapper from "../../../components/Wrapper"
 import useSpotify from "../../../hooks/useSpotify"
+import { useSubscriptionScreenGuard } from "../../../hooks/useSubscriptionScreenGuard"
 import { navigate } from "../../../utils/navigation"
 import { ROUTES } from "../../../utils/routes"
 import styles from "./styles"
@@ -16,6 +17,7 @@ import Loader from "../../../components/Loader"
 import colors from "../../../utils/colors"
 
 const MusicAuth = () => {
+    useSubscriptionScreenGuard('spotify');
 
     const { login, logout, spotify_authenticated, playlists, isLoading } = useSpotify()
 

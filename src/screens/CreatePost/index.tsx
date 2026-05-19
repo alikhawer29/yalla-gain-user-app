@@ -12,11 +12,13 @@ import Wrapper from "../../components/Wrapper";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../../interfaces";
 import Image from "../../components/Image";
+import { useSubscriptionScreenGuard } from "../../hooks/useSubscriptionScreenGuard";
 
 // We need to access route params
 type CreatePostScreenRouteProp = RouteProp<RootStackParamList, 'CreatePost'>;
 
 const CreatePost = () => {
+    useSubscriptionScreenGuard('messaging');
     const route = useRoute<CreatePostScreenRouteProp>();
     const navigation = useNavigation();
     const { initialTab } = route.params || {};

@@ -1,4 +1,6 @@
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess';
 import { useGetMyBookingsQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -23,6 +25,17 @@ const TAB_OPTIONS = [
 ];
 
 const useMyBookingsController = () => {
+  const navigation = useNavigation();
+  const { requireAccess } = useSubscriptionAccess();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!requireAccess('any_appointments')) {
+        navigation.goBack();
+      }
+    }, [navigation, requireAccess]),
+  );
+
   const [selectedTab, setSelectedTab] = useState<string>('doctor');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [search, setSearch] = useState('');

@@ -19,6 +19,7 @@ import ReportSuccessModal from "../../ReportSuccessModal";
 import MediaViewerModal from "../../MediaViewerModal";
 import { useReactFeedMutation, useReportFeedMutation, useVotePollMutation, useDeleteFeedMutation } from "../../../redux/Apis/User";
 import { useAppSelector } from "../../../hooks";
+import { useSubscriptionAccess } from "../../../hooks/useSubscriptionAccess";
 import { selectUser } from "../../../redux/Slices/AuthSlice";
 import { useModal } from "../../../contexts/ModalContext";
 import { navigate } from "../../../utils/navigation";
@@ -52,6 +53,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     const [reportFeed] = useReportFeedMutation();
     const [votePoll] = useVotePollMutation();
     const [deleteFeed] = useDeleteFeedMutation();
+    const { guardAccess } = useSubscriptionAccess();
 
     const [showReactionsModal, setShowReactionsModal] = useState(false);
     const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -226,8 +228,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
 
     const handleUserProfileClick = () => {
         if (isMyPost || isOwnPost) {
-            // Navigate to My Posts
-            navigate(ROUTES.MY_POSTS);
+            guardAccess('messaging', () => navigate(ROUTES.MY_POSTS));
         } else if (user?.id) {
             // Navigate to User Profile
             navigate(ROUTES.USER_PROFILE, { userId: user.id });

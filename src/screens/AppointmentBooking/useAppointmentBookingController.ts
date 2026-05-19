@@ -1,5 +1,6 @@
-import { useRoute } from '@react-navigation/native';
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { useCallback, useState, useMemo, useEffect, useRef } from 'react';
+import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess';
 import {
   useGetServiceSlotsQuery,
   useBookAppointmentMutation,
@@ -20,11 +21,23 @@ interface FormData {
 
 const useAppointmentBookingController = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { serviceId, type, charges } = route.params as {
     serviceId: number;
     type: 'doctor' | 'trainer';
     charges: string;
   };
+  const { requireAccess } = useSubscriptionAccess();
+  const appointmentFeature =
+    type === 'doctor' ? 'doctor_appointments' : 'trainer_appointments';
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!requireAccess(appointmentFeature)) {
+        navigation.goBack();
+      }
+    }, [appointmentFeature, navigation, requireAccess]),
+  );
 
   const { showOkModal, showYesNoModal } = useModal();
   const user = useAppSelector(state => state.auth.user);

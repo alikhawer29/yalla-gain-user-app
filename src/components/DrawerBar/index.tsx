@@ -5,6 +5,7 @@ import { View } from "react-native"
 import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import { useGetWalletCoinsQuery } from "../../redux/Apis/User"
 import { setWatchHealthLinked } from "../../services/health/healthProvider"
@@ -116,7 +117,8 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
 
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
-    const { showYesNoModal, showOkModal } = useModal()
+    const { showYesNoModal } = useModal()
+    const { guardAccess } = useSubscriptionAccess()
     const { data: walletData } = useGetWalletCoinsQuery({}, { refetchOnMountOrArgChange: true })
 
     const onPressLogout = () => {
@@ -137,7 +139,31 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
         })
     }
 
+    const getDrawerFeatureGate = (childItem: { title?: string }) => {
+        switch (childItem?.title) {
+            case 'Music Panel':
+                return 'spotify' as const;
+            case 'Consult a Doctor':
+                return 'doctor_appointments' as const;
+            case 'Consult a Trainer':
+                return 'trainer_appointments' as const;
+            case 'My Bookings':
+                return 'any_appointments' as const;
+            default:
+                return null;
+        }
+    };
+
     const handleNavigation = (childItem: any) => {
+        const featureGate = getDrawerFeatureGate(childItem);
+        if (featureGate) {
+            guardAccess(featureGate, () => performNavigation(childItem));
+            return;
+        }
+        performNavigation(childItem);
+    };
+
+    const performNavigation = (childItem: any) => {
         if (navigationRef.isReady()) {
             // From Challenges (or any deep HomeStack screen), "Home" must target the Home
             // screen inside HomeStack — not only the Bottom tab — or the stack stays on Challenges.

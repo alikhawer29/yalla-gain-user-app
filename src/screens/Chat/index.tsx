@@ -13,10 +13,12 @@ import colors from "../../utils/colors"
 import ChatListCard from "../../components/Cards/ChatListCard"
 import Empty from "../../components/Empty"
 import useChatController from "./useChatController"
+import { useSubscriptionScreenGuard } from "../../hooks/useSubscriptionScreenGuard"
 import styles from "./style"
 import { heightPixel } from "../../utils/helper"
 
 const Chat = () => {
+    useSubscriptionScreenGuard('messaging')
     const {
         values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading, selectedFilter, showFilterModal, isOpeningAdminChat },
         functions: { setSelectedTab, onSearchChange, onChatPress, onFilterPress, onCloseFilterModal, onFilterChange, openOrCreateAdminChat },

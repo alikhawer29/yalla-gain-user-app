@@ -7,6 +7,7 @@ import Seperator from "../../components/Seperator"
 import Wrapper from "../../components/Wrapper"
 import AlertModal from "../../components/AlertModal"
 import colors from "../../utils/colors"
+import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import { navigate } from "../../utils/navigation"
 import { ROUTES, NAVIGATORS } from "../../utils/routes"
 import { useDeleteAccountMutation } from "../../redux/Apis/User"
@@ -14,6 +15,7 @@ import { logout } from "../../redux/Slices/AuthSlice"
 import { setWatchHealthLinked } from "../../services/health/healthProvider"
 
 const HelpDesk = () => {
+    const { guardAccess } = useSubscriptionAccess()
     const dispatch = useDispatch()
     const [deleteAccount, { isLoading }] = useDeleteAccountMutation()
     const [showConfirmModal, setShowConfirmModal] = useState(false)
@@ -39,12 +41,12 @@ const HelpDesk = () => {
 
     const HELPDESK = [
         { icon: images.helpdesk.faq, title: "FAQ's", onPress: () => navigate(ROUTES.FAQS) },
-        { icon: images.helpdesk.complaint, title: "Yalla Chatbot", onPress: () => navigate(ROUTES.CHATBOT) },
+        { icon: images.helpdesk.complaint, title: "Yalla Chatbot", onPress: () => guardAccess('nutrition_chatbot', () => navigate(ROUTES.CHATBOT)) },
         { icon: images.helpdesk.wallet, title: "Wallet", onPress: () => navigate(NAVIGATORS.WALLET_STACK) },
         { icon: images.helpdesk.basic_details, title: "Basic Details", onPress: () => navigate(ROUTES.BASIC_DETAILS) },
         { icon: images.helpdesk.languages, title: "Choose Language", onPress: () => navigate(ROUTES.CHOOSE_LANGUAGE) },
         { icon: images.helpdesk.rate, title: "Rate App", onPress: () => setShowRateModal(true) },
-        { icon: images.helpdesk.myposts, title: "My Posts", onPress: () => navigate(ROUTES.MY_POSTS) },
+        { icon: images.helpdesk.myposts, title: "My Posts", onPress: () => guardAccess('messaging', () => navigate(ROUTES.MY_POSTS)) },
         { icon: images.helpdesk.blocked_user, title: "Blocked User", onPress: () => navigate(ROUTES.BLOCKED_USERS) },
         { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
         { icon: images.helpdesk.aboutus, title: "About Us", onPress: () => navigate(ROUTES.ABOUT_US) },

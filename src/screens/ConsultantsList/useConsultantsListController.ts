@@ -1,5 +1,6 @@
-import { useRoute } from '@react-navigation/native';
-import { useState, useMemo, useEffect } from 'react';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { useCallback, useState, useMemo, useEffect } from 'react';
+import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess';
 import {
   useGetAllDoctorsQuery,
   useGetAllTrainersQuery,
@@ -12,7 +13,19 @@ const PER_PAGE = 15;
 
 const useConsultantsListController = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { type } = route.params as { type: 'doctor' | 'trainer' };
+  const { requireAccess } = useSubscriptionAccess();
+  const appointmentFeature =
+    type === 'doctor' ? 'doctor_appointments' : 'trainer_appointments';
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!requireAccess(appointmentFeature)) {
+        navigation.goBack();
+      }
+    }, [appointmentFeature, navigation, requireAccess]),
+  );
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
