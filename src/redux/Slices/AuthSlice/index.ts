@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { authApi } from '../../Apis/Auth';
 import { userApi } from '../../Apis/User';
 import { RootState } from '../../Store';
+import { clearChatbotSession } from '../../../services/chatbot/chatbotSessionCache';
 import { writeUserIdToUnityGame } from '../../../utils/unityGameData';
 
 interface AuthState {
@@ -30,6 +31,7 @@ export const auth = createSlice({
   initialState,
   reducers: {
     logout: state => {
+      clearChatbotSession();
       state.isLoggedIn = false;
       state.user = null;
       state.token = null;
