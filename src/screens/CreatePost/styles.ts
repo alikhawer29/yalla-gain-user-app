@@ -48,6 +48,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dark_gray,
     marginTop: heightPixel(10),
   },
+  mediaPreviewTouchable: {
+    width: '100%',
+    height: '100%',
+  },
   mediaImage: {
     width: '100%',
     height: '100%',
@@ -116,6 +120,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: heightPixel(10),
     gap: 10,
+  },
+  postProgressContainer: {
+    marginBottom: heightPixel(20),
+    padding: widthPixel(16),
+    backgroundColor: colors.blackish_gray,
+    borderRadius: heightPixel(10),
+  },
+  postProgressLabel: {
+    color: colors.white,
+    fontSize: font(14),
+    fontWeight: '600',
+    marginBottom: heightPixel(10),
+  },
+  postProgressTrack: {
+    height: heightPixel(6),
+    backgroundColor: colors.gray,
+    borderRadius: heightPixel(3),
+    overflow: 'hidden',
+  },
+  postProgressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: heightPixel(3),
+  },
+  postButtonDisabled: {
+    opacity: 0.45,
   },
 });
 

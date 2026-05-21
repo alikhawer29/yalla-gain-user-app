@@ -449,7 +449,7 @@ export interface IChatMessage {
     user_id: number;
     user_name: string;
     image: string;
-    message: string;
+    message: string | null;
     read_at: string | null;
     date: string;
     time: string;

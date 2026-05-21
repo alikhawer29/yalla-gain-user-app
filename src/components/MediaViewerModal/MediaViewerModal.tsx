@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, TouchableOpacity, StyleSheet, Dimensions, StatusBar } from 'react-native';
+import Video from 'react-native-video';
 import Image from '../Image';
 import Icon from '../Icon';
 import images from '../../assets/images';
@@ -45,24 +46,21 @@ export const MediaViewerModal: React.FC<IMediaViewerModal> = ({
                 </TouchableOpacity>
 
                 {/* Media Content */}
-                <View style={styles.mediaContainer}>
-                    <Image
-                        source={{ uri: mediaUrl }}
-                        resize="contain"
-                        style={styles.media}
-                    />
-
-                    {/* Video Play Icon Overlay */}
-                    {isVideo && (
-                        <View style={styles.playIconContainer}>
-                            <View style={styles.playIconBackground}>
-                                <Icon
-                                    source={images.play}
-                                    size={60}
-                                    color={colors.white}
-                                />
-                            </View>
-                        </View>
+                <View style={styles.mediaContainer} pointerEvents="box-none">
+                    {isVideo ? (
+                        <Video
+                            source={{ uri: mediaUrl }}
+                            style={styles.media}
+                            resizeMode="contain"
+                            controls
+                            paused={false}
+                        />
+                    ) : (
+                        <Image
+                            source={{ uri: mediaUrl }}
+                            resize="contain"
+                            style={styles.media}
+                        />
                     )}
                 </View>
 

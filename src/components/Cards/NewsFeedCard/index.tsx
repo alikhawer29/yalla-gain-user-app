@@ -1,31 +1,45 @@
-import { FC, memo, useState, useRef, useEffect } from "react";
-import { View, TouchableOpacity, ImageBackground } from "react-native";
+import { FC, memo, useEffect, useRef, useState } from "react";
+import { Image as RNImage, TouchableOpacity, View } from "react-native";
+import Video from 'react-native-video';
 import images from "../../../assets/images";
+import { useModal } from "../../../contexts/ModalContext";
+import { useAppSelector } from "../../../hooks";
+import { useSubscriptionAccess } from "../../../hooks/useSubscriptionAccess";
 import { INewsFeedCard } from "../../../interfaces";
+import { useDeleteFeedMutation, useReactFeedMutation, useReportFeedMutation, useVotePollMutation } from "../../../redux/Apis/User";
+import { selectUser } from "../../../redux/Slices/AuthSlice";
 import colors from "../../../utils/colors";
-import { heightPixel, widthPixel, font } from "../../../utils/helper";
+import { heightPixel, widthPixel } from "../../../utils/helper";
+import { navigate } from "../../../utils/navigation";
+import { ROUTES } from "../../../utils/routes";
 import CardWrapper from "../../CardWrapper";
 import Icon from "../../Icon";
 import Image from "../../Image";
+import MediaViewerModal from "../../MediaViewerModal";
 import Menu from "../../Menu";
-import Row from "../../Row";
-import Text from "../../Text";
-import PostReactionsModal from "../../PostReactionsModal";
 import PostCommentsModal from "../../PostCommentsModal";
+import PostReactionsModal from "../../PostReactionsModal";
 import ReactionPicker from "../../ReactionPicker";
 import ReportConfirmModal from "../../ReportConfirmModal";
 import ReportReasonModal from "../../ReportReasonModal";
 import ReportSuccessModal from "../../ReportSuccessModal";
-import MediaViewerModal from "../../MediaViewerModal";
-import { useReactFeedMutation, useReportFeedMutation, useVotePollMutation, useDeleteFeedMutation } from "../../../redux/Apis/User";
-import { useAppSelector } from "../../../hooks";
-import { useSubscriptionAccess } from "../../../hooks/useSubscriptionAccess";
-import { selectUser } from "../../../redux/Slices/AuthSlice";
-import { useModal } from "../../../contexts/ModalContext";
-import { navigate } from "../../../utils/navigation";
-import { ROUTES } from "../../../utils/routes";
-import Video from 'react-native-video';
+import Row from "../../Row";
+import Text from "../../Text";
 
+/** Feed post media: skip custom Image wrapper so failed/missing URIs do not show dummy.png */
+const isValidPostMediaUri = (uri?: string): uri is string =>
+    !!uri?.trim() && uri !== 'undefined';
+
+const PostMediaImage = ({ uri }: { uri?: string }) => {
+    if (!isValidPostMediaUri(uri)) return null;
+    return (
+        <RNImage
+            source={{ uri }}
+            resizeMode="cover"
+            style={{ width: '100%', height: '100%' }}
+        />
+    );
+};
 
 const NewsFeedCard: FC<INewsFeedCard> = ({
     id,
@@ -273,7 +287,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                     onPress={() => handleMediaPress(sourceUri || '', isVideo)}
                     style={{ height: heightPixel(250), borderRadius: heightPixel(10), overflow: "hidden", marginTop: heightPixel(10) }}
                 >
-                    <Image source={{ uri: sourceUri }} resize="cover" style={{ width: '100%', height: '100%' }} />
+                    <PostMediaImage uri={sourceUri} />
                     {isVideo && (
                         <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
                             <Video
@@ -319,7 +333,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                 overflow: 'hidden'
                             }}
                         >
-                            <Image source={{ uri: sourceUri }} resize="cover" style={{ width: '100%', height: '100%' }} />
+                            <PostMediaImage uri={sourceUri} />
                             {isVideo && (
                                 <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
                                     <Video

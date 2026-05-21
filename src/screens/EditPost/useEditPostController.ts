@@ -6,6 +6,10 @@ import { useModal } from '../../contexts/ModalContext';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { useUpdateFeedMutation } from '../../redux/Apis/User';
+import {
+  filterValidFeedMediaAssets,
+  validateFeedMediaItemsForUpload,
+} from '../../utils/feedMediaValidation';
 
 const useEditPostController = (postData: any) => {
   const navigation = useNavigation();
@@ -47,14 +51,28 @@ const useEditPostController = (postData: any) => {
     const result = await launchImageLibrary(options);
 
     if (result.assets) {
-      const newMedia = result.assets.map(asset => ({
-        type: type,
-        source: { uri: asset.uri },
-        original: asset,
-      }));
-      setMedia(prev => [...prev, ...newMedia]);
+      const { accepted, rejectedMessages } = await filterValidFeedMediaAssets(
+        result.assets,
+      );
+
+      if (rejectedMessages.length > 0) {
+        showOkModal({
+          type: 'error',
+          title: 'File too large',
+          message: rejectedMessages.join('\n'),
+        });
+      }
+
+      if (accepted.length > 0) {
+        const newMedia = accepted.map(asset => ({
+          type: type,
+          source: { uri: asset.uri },
+          original: asset,
+        }));
+        setMedia(prev => [...prev, ...newMedia]);
+      }
     }
-  }, []);
+  }, [showOkModal]);
 
   const removeMedia = useCallback((index: number) => {
     setMedia(prev => prev.filter((_, i) => i !== index));
@@ -114,6 +132,18 @@ const useEditPostController = (postData: any) => {
           message: 'Please add some content or media',
         });
         return;
+      }
+
+      if (media.length > 0) {
+        const sizeCheck = await validateFeedMediaItemsForUpload(media);
+        if (!sizeCheck.isValid) {
+          showOkModal({
+            type: 'error',
+            title: 'File too large',
+            message: sizeCheck.message,
+          });
+          return;
+        }
       }
 
       // Create FormData

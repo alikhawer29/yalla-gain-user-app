@@ -29,7 +29,11 @@ import {
   localCalendarKey,
 } from '../../utils/chatDateTime';
 
-/** Align bubbles from sender id — socket payloads may send wrong `is_mine`. */
+const formatRole = (role: string) => {
+  if (!role) return '';
+  return role.charAt(0).toUpperCase() + role.slice(1);
+};
+
 const isMessageFromCurrentUser = (
   msg: IChatMessage,
   currentUserId?: number | null,
@@ -61,12 +65,6 @@ const ChatDetails = () => {
   const headerHeight = useHeaderHeight();
   const keyboardHeight = useKeyboard();
   const isKeyboardOpen = keyboardHeight > 0;
-  const [inputBarHeight, setInputBarHeight] = React.useState(0);
-
-  const formatRole = (role: string) => {
-    if (!role) return '';
-    return role.charAt(0).toUpperCase() + role.slice(1);
-  };
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -79,17 +77,17 @@ const ChatDetails = () => {
       <Text size={16} weight="semibold" style={styles.header_name}>
         {chatName}
       </Text>
-      {userRole && (
+      {userRole ? (
         <View style={styles.role_badge}>
           <Text size={10} color={colors.white}>
             {formatRole(userRole)}
           </Text>
         </View>
-      )}
+      ) : null}
     </View>
   );
 
-  const renderMessage = ({ item, index }: { item: any; index: number }) => {
+  const renderMessage = ({ item, index }: { item: IChatMessage; index: number }) => {
     const prevMsg = index > 0 ? messages[index - 1] : undefined;
     const showDate =
       index === 0 ||
@@ -99,13 +97,13 @@ const ChatDetails = () => {
 
     return (
       <>
-        {showDate && (
+        {showDate ? (
           <View style={styles.date_separator}>
             <Text size={12} color={colors.icon_gray}>
               {formatChatDetailSeparatorLabel(item.date, item.time)}
             </Text>
           </View>
-        )}
+        ) : null}
         <ChatMessageCard
           message={item}
           isMine={isMessageFromCurrentUser(item, currentUserId)}
@@ -115,30 +113,18 @@ const ChatDetails = () => {
     );
   };
 
-  const renderSelectedFiles = () => {
-    if (selectedFiles.length === 0) return null;
-
-    return (
-      <View style={styles.selected_files_container}>
-        {selectedFiles.map((file, index) => (
-          <View key={index} style={styles.selected_file}>
-            <Image
-              source={{ uri: file.uri }}
-              style={styles.selected_file_image}
-            />
-            <TouchableOpacity
-              style={styles.remove_file_btn}
-              onPress={() => onRemoveFile(index)}
-            >
-              <Text size={10} color={colors.white}>
-                ✕
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-    );
-  };
+  const renderAttachmentPreview = (file: (typeof selectedFiles)[number], index: number) => (
+    <View key={`${file.uri}-${index}`} style={styles.input_attachment_chip}>
+      <Image source={{ uri: file.uri }} style={styles.input_attachment_image} />
+      <TouchableOpacity
+        style={styles.input_attachment_remove}
+        onPress={() => onRemoveFile(index)}
+        hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+      >
+        <Icon source={images.cross} size={10} tint_color={colors.white} no_padding />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -161,47 +147,54 @@ const ChatDetails = () => {
             ItemSeparatorComponent={() => <Seperator size={10} />}
             showsVerticalScrollIndicator={false}
             style={styles.messages_container}
-            contentContainerStyle={[
-              styles.messages_content,
-            ]}
+            contentContainerStyle={styles.messages_content}
             onContentSizeChange={() => flatlistRef.current?.scrollToEnd()}
             keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+            keyboardDismissMode={
+              Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+            }
           />
         )}
-
-        {renderSelectedFiles()}
 
         <View
           style={[
             styles.input_container,
             {
-              paddingVertical: heightPixel(10),
               paddingBottom:
                 Platform.OS === 'ios'
-                  ? null
-                  : (isKeyboardOpen ? heightPixel(80) : heightPixel(30)) + insets.bottom,
+                  ? insets.bottom
+                  : (isKeyboardOpen ? heightPixel(80) : heightPixel(30)) +
+                    insets.bottom,
             },
           ]}
-          onLayout={e => setInputBarHeight(e.nativeEvent.layout.height)}
         >
           <View style={styles.input_wrapper}>
-            <TextInput
-              style={styles.input}
-              placeholder="Type a message..."
-              value={message}
-              onChangeText={onChangeMessage}
-              placeholderTextColor={colors.icon_gray}
-              multiline
-            />
-            <Row gap={10}>
-              <Icon
-                source={images.gallery}
-                size={20}
-                tint_color={colors.icon_gray}
-                onPress={onPickFiles}
+            {selectedFiles.length > 0 ? (
+              <View style={styles.input_attachments_row}>
+                {selectedFiles.map(renderAttachmentPreview)}
+              </View>
+            ) : null}
+            <View style={styles.input_row}>
+              <TextInput
+                style={[
+                  styles.input,
+                  selectedFiles.length > 0 && styles.input_with_attachments,
+                ]}
+                placeholder="Type a message..."
+                value={message}
+                onChangeText={onChangeMessage}
+                placeholderTextColor={colors.icon_gray}
+                multiline
               />
-            </Row>
+              <Row gap={10}>
+                <Icon
+                  source={images.gallery}
+                  size={20}
+                  tint_color={colors.icon_gray}
+                  onPress={onPickFiles}
+                />
+              </Row>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.send_button}

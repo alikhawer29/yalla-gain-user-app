@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { goBack } from '../../utils/navigation';
@@ -6,6 +6,10 @@ import { useModal } from '../../contexts/ModalContext';
 import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { useCreateFeedMutation } from '../../redux/Apis/User';
+import {
+  filterValidFeedMediaAssets,
+  validateFeedMediaItemsForUpload,
+} from '../../utils/feedMediaValidation';
 
 const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
   const navigation = useNavigation();
@@ -23,6 +27,19 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
   const [activeTab, setActiveTab] = useState<
     'text' | 'photo' | 'video' | 'poll'
   >(initialTab || 'text');
+  const [postingPhase, setPostingPhase] = useState<
+    'uploading' | 'finishing' | null
+  >(null);
+  const [postProgress, setPostProgress] = useState(0);
+
+  const canPost = useMemo(() => {
+    const hasTitle = !!content.trim();
+    const hasMedia = media.length > 0;
+    const pollAnswers = pollOptions.filter(opt => opt.text.trim()).length;
+    const hasPoll =
+      activeTab === 'poll' && !!content.trim() && pollAnswers >= 2;
+    return hasTitle || hasMedia || hasPoll;
+  }, [content, media, pollOptions, activeTab]);
 
   const handlePickMedia = useCallback(async (type: 'photo' | 'video') => {
     const options: any = {
@@ -33,14 +50,28 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
     const result = await launchImageLibrary(options);
 
     if (result.assets) {
-      const newMedia = result.assets.map(asset => ({
-        type: type,
-        source: { uri: asset.uri },
-        original: asset,
-      }));
-      setMedia(prev => [...prev, ...newMedia]);
+      const { accepted, rejectedMessages } = await filterValidFeedMediaAssets(
+        result.assets,
+      );
+
+      if (rejectedMessages.length > 0) {
+        showOkModal({
+          type: 'error',
+          title: 'File too large',
+          message: rejectedMessages.join('\n'),
+        });
+      }
+
+      if (accepted.length > 0) {
+        const newMedia = accepted.map(asset => ({
+          type: type,
+          source: { uri: asset.uri },
+          original: asset,
+        }));
+        setMedia(prev => [...prev, ...newMedia]);
+      }
     }
-  }, []);
+  }, [showOkModal]);
 
   const removeMedia = useCallback((index: number) => {
     setMedia(prev => prev.filter((_, i) => i !== index));
@@ -66,34 +97,60 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
   }, []);
 
   const handlePost = useCallback(async () => {
-    try {
-      // Validate input
-      if (activeTab === 'poll') {
-        if (!content.trim()) {
-          showOkModal({
-            type: 'error',
-            title: 'Error',
-            message: 'Please enter a poll question',
-          });
-          return;
-        }
-        const validOptions = pollOptions.filter(opt => opt.text.trim());
-        if (validOptions.length < 2) {
-          showOkModal({
-            type: 'error',
-            title: 'Error',
-            message: 'Please provide at least 2 poll options',
-          });
-          return;
-        }
-      } else if (!content.trim() && media.length === 0) {
+    if (!canPost || postingPhase) return;
+
+    // Validate input before upload UI / API
+    if (activeTab === 'poll') {
+      if (!content.trim()) {
         showOkModal({
           type: 'error',
           title: 'Error',
-          message: 'Please add some content or media',
+          message: 'Please enter a poll question',
         });
         return;
       }
+      const validOptions = pollOptions.filter(opt => opt.text.trim());
+      if (validOptions.length < 2) {
+        showOkModal({
+          type: 'error',
+          title: 'Error',
+          message: 'Please provide at least 2 poll options',
+        });
+        return;
+      }
+    } else if (!content.trim() && media.length === 0) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'Please add some content or media',
+      });
+      return;
+    }
+
+    if (media.length > 0) {
+      const sizeCheck = await validateFeedMediaItemsForUpload(media);
+      if (!sizeCheck.isValid) {
+        showOkModal({
+          type: 'error',
+          title: 'File too large',
+          message: sizeCheck.message,
+        });
+        return;
+      }
+    }
+
+    let progressTimer: ReturnType<typeof setInterval> | null = null;
+
+    try {
+      setPostingPhase('uploading');
+      setPostProgress(8);
+
+      progressTimer = setInterval(() => {
+        setPostProgress(prev => {
+          if (prev >= 88) return prev;
+          return prev + (prev < 50 ? 4 : 2);
+        });
+      }, 280);
 
       // Create FormData
       const formData = new FormData();
@@ -128,8 +185,16 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
         });
       }
 
-      // Call API
-      const response = await createFeed(formData).unwrap();
+      await createFeed(formData).unwrap();
+
+      if (progressTimer) clearInterval(progressTimer);
+      progressTimer = null;
+
+      setPostingPhase('finishing');
+      setPostProgress(92);
+      await new Promise<void>(resolve => setTimeout(resolve, 450));
+      setPostProgress(100);
+      await new Promise<void>(resolve => setTimeout(resolve, 300));
 
       // Show success message
       showOkModal(
@@ -150,8 +215,21 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
         message:
           error?.data?.message || 'Failed to create post. Please try again.',
       });
+    } finally {
+      if (progressTimer) clearInterval(progressTimer);
+      setPostingPhase(null);
+      setPostProgress(0);
     }
-  }, [content, media, pollOptions, activeTab, createFeed, showOkModal]);
+  }, [
+    canPost,
+    content,
+    media,
+    pollOptions,
+    activeTab,
+    createFeed,
+    showOkModal,
+    postingPhase,
+  ]);
 
   // Auto trigger picker if initialTab is photo or video (Optional, but user might expect UI to open)
   // For now we just set the tab.
@@ -165,6 +243,9 @@ const useCreatePostController = (initialTab?: 'photo' | 'video' | 'poll') => {
       pollOptions,
       activeTab,
       isLoading,
+      canPost,
+      postingPhase,
+      postProgress,
     },
     functions: {
       setContent,

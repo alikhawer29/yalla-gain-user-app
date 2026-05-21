@@ -17,29 +17,41 @@ const SubscriptionLogs = () => {
             isCancelSubscriptionLoading
         },
         functions: {
-            onCancel,
-            isActiveSubscription
+            hasCurrentSubscription,
+            isSubscriptionCancelled,
+            getCurrentSubscriptionLabel,
+            getCancelledAccessNote,
         }
     } = useSubscriptionLogsController()
+
+    const current = data?.current
+    const cancelledNote = current ? getCancelledAccessNote(current) : null
 
     return (
         <Wrapper>
             <Text weight="semibold" size={20} style={styles.heading}>Current Subscription</Text>
             {
                 isLoading ? <Loader /> :
-                    data?.current && isActiveSubscription(data?.current) ?
-                        <SubscriptionLogCard
-                            subscription_type={data?.current?.subscription_plan?.title}
-                            subscribed_on={data?.current?.subscribed_on}
-                            expired_on={data?.current?.expired_on}
-                            amount={data?.current?.price_paid}
-                            label={{
-                                text: isCancelSubscriptionLoading ? "Hold On" : "Cancel",
-                                color: isCancelSubscriptionLoading ? colors.gray : colors.primary,
-                                onPress: isCancelSubscriptionLoading ? undefined : () => onCancel(data?.current?.id),
-                                underline: true
-                            }}
-                        /> : <Empty message={data?.current ? "Subscription has expired" : "No Current Subscription Found"} />
+                    current && hasCurrentSubscription(current) ?
+                        <>
+                            {cancelledNote ? (
+                                <Text
+                                    size={12}
+                                    color={colors.icon_gray}
+                                    style={styles.cancelled_note}
+                                >
+                                    {cancelledNote}
+                                </Text>
+                            ) : null}
+                            <SubscriptionLogCard
+                                subscription_type={current?.subscription_plan?.title}
+                                subscribed_on={current?.subscribed_on}
+                                expired_on={current?.expired_on}
+                                amount={current?.price_paid}
+                                label={getCurrentSubscriptionLabel(current)}
+                            />
+                        </>
+                        : <Empty message={current ? "Subscription has expired" : "No Current Subscription Found"} />
             }
             <Text weight="semibold" size={20} style={styles.heading}>Past Subscription</Text>
             {

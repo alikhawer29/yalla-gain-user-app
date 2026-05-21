@@ -31,7 +31,7 @@ const Text: FC<IText> = ({
     return (
         <RNText
             allowFontScaling={false}
-            style={[style, styles[weight], default_style]}
+            style={[style, styles[weight] ?? styles.regular, default_style]}
             onPress={onPress}
             numberOfLines={lines}
         >

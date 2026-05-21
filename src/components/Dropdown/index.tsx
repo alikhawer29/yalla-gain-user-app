@@ -24,10 +24,10 @@ const Dropdown = props => {
     height = 54,
     required = false,
     isLoading = false,
-    textStyle,
-    style,
-    dropDownContainerStyle,
-    arrowIconStyle,
+    textStyle = undefined,
+    style = undefined,
+    dropDownContainerStyle = undefined,
+    arrowIconStyle = undefined,
     listMode = 'SCROLLVIEW',
     maxHeight,
     modalProps,
@@ -74,7 +74,7 @@ const Dropdown = props => {
         placeholderStyle={styles.placeholder}
         onSelectItem={onChangeText}
         dropDownContainerStyle={[styles.dropdown, dropDownContainerStyle]}
-        textStyle={[styles.text, textStyle]}
+        textStyle={[styles.text, textStyle].filter(Boolean)}
         listMode={listMode}
         {...(maxHeight != null ? { maxHeight } : {})}
         {...(modalProps ? { modalProps } : {})}
@@ -86,7 +86,7 @@ const Dropdown = props => {
         zIndexInverse={zIndexInverse}
         labelProps={{ allowFontScaling: false }}
         itemProps={{ allowFontScaling: false }}
-        arrowIconStyle={[{ tintColor: colors.white }, arrowIconStyle]}
+        arrowIconStyle={[{ tintColor: colors.white }, arrowIconStyle].filter(Boolean)}
         loading={isLoading}
       />
       {error && (

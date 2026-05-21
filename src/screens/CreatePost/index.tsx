@@ -1,5 +1,5 @@
-import React, { FC } from "react";
-import { View, TextInput, ScrollView, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useState } from "react";
+import { View, TextInput, TouchableOpacity } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import useCreatePostController from "./useCreatePostController";
@@ -12,6 +12,7 @@ import Wrapper from "../../components/Wrapper";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../../interfaces";
 import Image from "../../components/Image";
+import MediaViewerModal from "../../components/MediaViewerModal";
 import { useSubscriptionScreenGuard } from "../../hooks/useSubscriptionScreenGuard";
 
 // We need to access route params
@@ -24,8 +25,55 @@ const CreatePost = () => {
     const { initialTab } = route.params || {};
 
     const { values, functions } = useCreatePostController(initialTab);
-    const { content, media, pollOptions, activeTab, user_image, isLoading } = values;
+    const { content, media, pollOptions, activeTab, user_image, isLoading, canPost, postingPhase, postProgress } = values;
     const { setContent, handlePickMedia, removeMedia, addPollOption, removePollOption, updatePollOption, handlePost, goBack, setActiveTab } = functions;
+
+    const isPosting = !!postingPhase;
+    const postProgressLabel =
+        postingPhase === 'finishing' ? 'Finishing up…' : 'Uploading post…';
+
+    const [previewMedia, setPreviewMedia] = useState<{
+        url: string;
+        isVideo: boolean;
+    } | null>(null);
+
+    const openMediaPreview = (item: (typeof media)[number]) => {
+        const uri = item.original?.uri ?? item.source?.uri;
+        if (!uri) return;
+        setPreviewMedia({ url: uri, isVideo: item.type === 'video' });
+    };
+
+    const renderMediaTile = (
+        item: (typeof media)[number],
+        index: number,
+        variant: 'large' | 'grid',
+    ) => (
+        <View
+            key={`${item.original?.uri ?? index}-${index}`}
+            style={variant === 'large' ? styles.largeMediaItem : styles.mediaItem}
+        >
+            <TouchableOpacity
+                style={styles.mediaPreviewTouchable}
+                onPress={() => openMediaPreview(item)}
+                activeOpacity={0.9}
+            >
+                <Icon source={item.source} size="100%" resize="cover" />
+                {item.type === 'video' && (
+                    <View style={styles.videoPlayButton} pointerEvents="none">
+                        <View style={styles.videoPlayIcon}>
+                            <Icon source={images.video_play} size={24} />
+                        </View>
+                    </View>
+                )}
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.removeButton}
+                onPress={() => removeMedia(index)}
+            >
+                <Icon source={images.modal_cross} size={14} />
+            </TouchableOpacity>
+        </View>
+    );
 
     useFocusEffect(() => {
         // Hide bottom tab bar when screen is focused
@@ -58,53 +106,15 @@ const CreatePost = () => {
                     </View>
 
                     {/* Media Display - Large single or Grid for multiple */}
-                    {media.length === 1 ? (
-                        // Single Large Media
-                        <View style={styles.largeMediaItem}>
-                            <View style={{ width: '100%', height: '100%' }}>
-                                <Icon source={media[0].source} size="100%" resize="cover" />
+                    {media.length === 1
+                        ? renderMediaTile(media[0], 0, 'large')
+                        : media.length > 1 ? (
+                            <View style={styles.mediaGrid}>
+                                {media.map((item, index) =>
+                                    renderMediaTile(item, index, 'grid'),
+                                )}
                             </View>
-
-                            {/* Remove Button with Cross Icon */}
-                            <TouchableOpacity style={styles.removeButton} onPress={() => removeMedia(0)}>
-                                <Icon source={images.modal_cross} size={14} />
-                            </TouchableOpacity>
-
-                            {/* Video Play Icon */}
-                            {media[0].type === 'video' && (
-                                <View style={styles.videoPlayButton}>
-                                    <View style={styles.videoPlayIcon}>
-                                        <Icon source={images.video_play} size={24} />
-                                    </View>
-                                </View>
-                            )}
-                        </View>
-                    ) : media.length > 1 ? (
-                        // Media Grid for multiple items
-                        <View style={styles.mediaGrid}>
-                            {media.map((item, index) => (
-                                <View key={index} style={styles.mediaItem}>
-                                    <View style={{ width: '100%', height: '100%' }}>
-                                        <Icon source={item.source} size="100%" resize="cover" />
-                                    </View>
-
-                                    {/* Remove Button with Cross Icon */}
-                                    <TouchableOpacity style={styles.removeButton} onPress={() => removeMedia(index)}>
-                                        <Icon source={images.modal_cross} size={14} />
-                                    </TouchableOpacity>
-
-                                    {/* Video Play Icon */}
-                                    {item.type === 'video' && (
-                                        <View style={styles.videoPlayButton}>
-                                            <View style={styles.videoPlayIcon}>
-                                                <Icon source={images.video_play} size={24} />
-                                            </View>
-                                        </View>
-                                    )}
-                                </View>
-                            ))}
-                        </View>
-                    ) : null}
+                        ) : null}
 
                     {/* Poll Creator */}
                     {activeTab === 'poll' && (
@@ -161,20 +171,39 @@ const CreatePost = () => {
                     />
                 </View>
 
-                {/* Post Button */}
-                <TouchableOpacity
-                    style={[styles.postButton, isLoading && { opacity: 0.6 }]}
-                    onPress={handlePost}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <ActivityIndicator color={colors.white} />
-                    ) : (
+                {isPosting ? (
+                    <View style={styles.postProgressContainer}>
+                        <Text style={styles.postProgressLabel}>{postProgressLabel}</Text>
+                        <View style={styles.postProgressTrack}>
+                            <View
+                                style={[
+                                    styles.postProgressFill,
+                                    { width: `${postProgress}%` },
+                                ]}
+                            />
+                        </View>
+                    </View>
+                ) : (
+                    <TouchableOpacity
+                        style={[
+                            styles.postButton,
+                            !canPost && styles.postButtonDisabled,
+                        ]}
+                        onPress={handlePost}
+                        disabled={!canPost || isLoading}
+                    >
                         <Text style={styles.postButtonText}>Post</Text>
-                    )}
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
 
             </View>
+
+            <MediaViewerModal
+                visible={!!previewMedia}
+                mediaUrl={previewMedia?.url ?? ''}
+                isVideo={previewMedia?.isVideo ?? false}
+                onClose={() => setPreviewMedia(null)}
+            />
         </Wrapper>
     );
 }

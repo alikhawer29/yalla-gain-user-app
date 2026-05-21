@@ -48,6 +48,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dark_gray,
     marginTop: heightPixel(10),
   },
+  mediaTileSmall: {
+    borderRadius: heightPixel(8),
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  mediaPreviewTouchable: {
+    width: '100%',
+    height: '100%',
+  },
   mediaImage: {
     width: '100%',
     height: '100%',

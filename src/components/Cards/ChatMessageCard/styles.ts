@@ -57,6 +57,42 @@ const styles = StyleSheet.create({
     height: heightPixel(100),
     borderRadius: 8,
   },
+  file_video_wrap: {
+    position: 'relative',
+  },
+  file_video_overlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 8,
+  },
+  file_document: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: widthPixel(12),
+    paddingVertical: heightPixel(10),
+    paddingHorizontal: widthPixel(12),
+    borderRadius: heightPixel(10),
+    backgroundColor: colors.dark_gray,
+    minWidth: widthPixel(200),
+    maxWidth: widthPixel(260),
+    borderWidth: 1,
+    borderColor: colors.gray,
+  },
+  file_document_icon_wrap: {
+    width: widthPixel(44),
+    height: widthPixel(44),
+    borderRadius: heightPixel(8),
+    backgroundColor: colors.blackish_gray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  file_document_text: {
+    flex: 1,
+    gap: heightPixel(4),
+    minWidth: 0,
+  },
 });
 
 export default styles;

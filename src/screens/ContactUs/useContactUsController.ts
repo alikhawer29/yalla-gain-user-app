@@ -1,11 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useContactUsMutation } from "../../redux/Apis/User";
 import { Alert } from "react-native";
 import { goBack } from "../../utils/navigation";
+import { useAppSelector } from "../../hooks";
+import { selectUser } from "../../redux/Slices/AuthSlice";
+
+const buildFullName = (user: { first_name?: string; last_name?: string } | null) =>
+    [user?.first_name, user?.last_name].filter(Boolean).join(" ").trim();
 
 const useContactUsController = () => {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
+    const user = useAppSelector(selectUser);
+    const [name, setName] = useState(() => buildFullName(user));
+    const [email, setEmail] = useState(() => user?.email ?? "");
     const [subject, setSubject] = useState("");
     const [message, setMessage] = useState("");
     const [nameError, setNameError] = useState<string | undefined>(undefined);
@@ -15,6 +21,13 @@ const useContactUsController = () => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const [contactUs, { isLoading }] = useContactUsMutation();
+
+    useEffect(() => {
+        if (!user) return;
+        const fullName = buildFullName(user);
+        setName(prev => prev || fullName);
+        setEmail(prev => prev || user.email || "");
+    }, [user]);
 
     const onSubmit = useCallback(async () => {
         // Reset previous errors

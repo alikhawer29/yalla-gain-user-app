@@ -1,22 +1,28 @@
 import React, { useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  FlatList,
-} from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import images from '../../assets/images';
-import Text from '../Text';
-import Row from '../Row';
-import Icon from '../Icon';
-import { font, heightPixel, vw } from '../../utils/helper';
-import Button from '../Button';
 import colors from '../../utils/colors';
+import { heightPixel, vw } from '../../utils/helper';
+import Button from '../Button';
+import Icon from '../Icon';
+import Row from '../Row';
+import Text from '../Text';
 
-const ITEM_WIDTH = 269;
-const ITEM_HEIGHT = 420;
+const ITEM_WIDTH = 268;
+const ITEM_HEIGHT = 400;
+
+const isFeatureNotIncluded = feature =>
+  typeof feature === 'string' && /not\s+included/i.test(feature);
+
+/** Hide ": Included" / ": Not included" — icon already shows status */
+const getFeatureLabel = feature => {
+  if (typeof feature !== 'string') return feature;
+  return feature
+    .replace(/\s*:\s*not\s+included\s*$/i, '')
+    .replace(/\s*:\s*included\s*$/i, '')
+    .trim();
+};
 
 const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
   const [active, setActive] = useState(0);
@@ -30,7 +36,7 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
     >
       <View style={{ flex: 0.8 }}>
         <Text size={17} weight="bold">
-          {item.title}
+          {item.title} {item.duration ? `(${item.duration})` : ''}
         </Text>
         <Row align="center" style={{ marginTop: heightPixel(10) }} gap={5}>
           <Text size={20} weight="bold">
@@ -43,14 +49,24 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
         </Row>
         <FlatList
           data={item?.features}
-          renderItem={({ item }) => (
-            <Row gap={10} align="center">
-              <Icon source={images.check} size={14} />
-              <Text size={12} weight="bold">
-                {item}
-              </Text>
-            </Row>
-          )}
+          keyExtractor={(feature, featureIndex) =>
+            `${index}-feature-${featureIndex}`
+          }
+          renderItem={({ item: feature }) => {
+            const excluded = isFeatureNotIncluded(feature);
+            return (
+              <Row gap={10} align="center">
+                <Icon
+                  source={excluded ? images.cross : images.check}
+                  size={14}
+                  tint_color={excluded ? colors.danger : colors.success}
+                />
+                <Text size={11} weight="bold" style={styles.feature_text}>
+                  {getFeatureLabel(feature)}
+                </Text>
+              </Row>
+            );
+          }}
           style={styles.features}
         />
       </View>
@@ -113,6 +129,9 @@ const styles = StyleSheet.create({
   },
   features: {
     marginVertical: heightPixel(20),
+  },
+  feature_text: {
+    flex: 1,
   },
   dot: {
     height: heightPixel(10),

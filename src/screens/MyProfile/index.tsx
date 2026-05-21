@@ -83,7 +83,7 @@ const MyProfile = () => {
                   : formatPlanType(subscription?.title)}
               </Text>
             </View>
-            {/* {typeof subscription.days_remaining === 'number' ? (
+            {typeof subscription.days_remaining === 'number' ? (
               <View style={[styles.item, styles.item_width]}>
                 <Text color={colors.icon_gray}>Days Remaining</Text>
                 <Text weight="bold">
@@ -91,7 +91,7 @@ const MyProfile = () => {
                   {subscription.days_remaining === 1 ? '' : 's'}
                 </Text>
               </View>
-            ) : null} */}
+            ) : null}
             <View style={[styles.item, styles.item_width]}>
               <Text color={colors.icon_gray}>
                 {subscription.is_trial ? 'Trial Ends' : 'Expires On'}
