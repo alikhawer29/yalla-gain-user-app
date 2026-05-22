@@ -1,5 +1,5 @@
 import { FC, memo, useEffect, useRef, useState } from "react";
-import { Image as RNImage, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import Video from 'react-native-video';
 import images from "../../../assets/images";
 import { useModal } from "../../../contexts/ModalContext";
@@ -15,6 +15,7 @@ import { ROUTES } from "../../../utils/routes";
 import CardWrapper from "../../CardWrapper";
 import Icon from "../../Icon";
 import Image from "../../Image";
+import PostMediaImage from "../../PostMediaImage";
 import MediaViewerModal from "../../MediaViewerModal";
 import Menu from "../../Menu";
 import PostCommentsModal from "../../PostCommentsModal";
@@ -25,21 +26,6 @@ import ReportReasonModal from "../../ReportReasonModal";
 import ReportSuccessModal from "../../ReportSuccessModal";
 import Row from "../../Row";
 import Text from "../../Text";
-
-/** Feed post media: skip custom Image wrapper so failed/missing URIs do not show dummy.png */
-const isValidPostMediaUri = (uri?: string): uri is string =>
-    !!uri?.trim() && uri !== 'undefined';
-
-const PostMediaImage = ({ uri }: { uri?: string }) => {
-    if (!isValidPostMediaUri(uri)) return null;
-    return (
-        <RNImage
-            source={{ uri }}
-            resizeMode="cover"
-            style={{ width: '100%', height: '100%' }}
-        />
-    );
-};
 
 const NewsFeedCard: FC<INewsFeedCard> = ({
     id,

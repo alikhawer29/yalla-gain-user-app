@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity } from "react-native";
+import PostMediaImage from "../../components/PostMediaImage";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import useCreatePostController from "./useCreatePostController";
@@ -57,7 +58,9 @@ const CreatePost = () => {
                 onPress={() => openMediaPreview(item)}
                 activeOpacity={0.9}
             >
-                <Icon source={item.source} size="100%" resize="cover" />
+                <PostMediaImage
+                    uri={item.original?.uri ?? item.source?.uri}
+                />
                 {item.type === 'video' && (
                     <View style={styles.videoPlayButton} pointerEvents="none">
                         <View style={styles.videoPlayIcon}>

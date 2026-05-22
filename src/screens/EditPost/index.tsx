@@ -20,7 +20,7 @@ import images from '../../assets/images';
 import colors from '../../utils/colors';
 import Wrapper from '../../components/Wrapper';
 import { RootStackParamList } from '../../interfaces';
-import Image from '../../components/Image';
+import PostMediaImage from '../../components/PostMediaImage';
 import MediaViewerModal from '../../components/MediaViewerModal';
 import { heightPixel } from '../../utils/helper';
 
@@ -93,11 +93,7 @@ const EditPost = () => {
           onPress={() => openMediaPreview(item.path, isVideo)}
           activeOpacity={0.9}
         >
-          <Image
-            source={{ uri: item.path }}
-            resize="cover"
-            style={{ width: '100%', height: '100%' }}
-          />
+          <PostMediaImage uri={item.path} />
           {isVideo && (
             <View style={styles.videoPlayButton} pointerEvents="none">
               <View style={styles.videoPlayIcon}>
@@ -126,11 +122,7 @@ const EditPost = () => {
           onPress={() => openMediaPreview(uri, isVideo)}
           activeOpacity={0.9}
         >
-          <Image
-            source={item.source}
-            resize="cover"
-            style={{ width: '100%', height: '100%' }}
-          />
+          <PostMediaImage uri={uri} />
           {isVideo && (
             <View style={styles.videoPlayButton} pointerEvents="none">
               <View style={styles.videoPlayIcon}>
