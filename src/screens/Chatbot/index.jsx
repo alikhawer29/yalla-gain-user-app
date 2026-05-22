@@ -7,6 +7,8 @@ import {
     TextInput,
     View
 } from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import fonts from "../../assets/fonts";
 import images from "../../assets/images";
 import ChatItemCard from "../../components/Cards/ChatItemCard";
@@ -36,7 +38,9 @@ const Chatbot = () => {
         }
     } = useChatbotController()
 
-    const keyboardHeight = useKeyboard()
+    const insets = useSafeAreaInsets();
+    const headerHeight = useHeaderHeight();
+    const keyboardHeight = useKeyboard();
     const isNewAndroid = Platform.OS === "android" && Platform.Version >= 35;
 
     const renderItem = ({ item }) => (
@@ -50,32 +54,52 @@ const Chatbot = () => {
     )
 
     return (
-        <Wrapper>
-            <KeyboardAvoidingView
-                style={[styles.container, {
-                    marginBottom: isNewAndroid ? keyboardHeight : 0
-                }]}
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-            >
-                <FlatList
-                    ref={flatlist_ref}
-                    data={data}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    ItemSeparatorComponent={<Seperator />}
-                />
-                <View style={styles.input_container}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Type a message..."
-                        value={input}
-                        onChangeText={onChangeInput}
-                        placeholderTextColor={colors.icon_gray}
+        <KeyboardAvoidingView
+            style={styles.container}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
+        >
+            <Wrapper hide_bottom_bar>
+                <View
+                    style={[
+                        styles.container,
+                        isNewAndroid ? { marginBottom: keyboardHeight } : null,
+                    ]}
+                >
+                    <FlatList
+                        ref={flatlist_ref}
+                        data={data}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item.id}
+                        ItemSeparatorComponent={<Seperator />}
+                        keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode={
+                            Platform.OS === "ios" ? "interactive" : "on-drag"
+                        }
                     />
-                    <Icon rounded color={colors.primary} onPress={onSendMessage} source={images.send} size={50} />
+                    <View
+                        style={[
+                            styles.input_container,
+                            {
+                                paddingBottom:
+                                    Platform.OS === "ios"
+                                        ? insets.bottom
+                                        : heightPixel(30) + insets.bottom,
+                            },
+                        ]}
+                    >
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Type a message..."
+                            value={input}
+                            onChangeText={onChangeInput}
+                            placeholderTextColor={colors.icon_gray}
+                        />
+                        <Icon rounded color={colors.primary} onPress={onSendMessage} source={images.send} size={50} />
+                    </View>
                 </View>
-            </KeyboardAvoidingView>
-        </Wrapper>
+            </Wrapper>
+        </KeyboardAvoidingView>
     );
 };
 
@@ -85,9 +109,10 @@ const styles = StyleSheet.create({
     },
     input_container: {
         flexDirection: "row",
+        alignItems: "flex-end",
         backgroundColor: colors.transparent,
         gap: 10,
-        paddingVertical: heightPixel(30),
+        paddingTop: heightPixel(30),
     },
     input: {
         flex: 1,

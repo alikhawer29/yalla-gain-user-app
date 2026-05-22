@@ -9,8 +9,8 @@ import Icon from '../Icon';
 import Row from '../Row';
 import Text from '../Text';
 
-const ITEM_WIDTH = 268;
-const ITEM_HEIGHT = 400;
+const ITEM_WIDTH = 290;
+const ITEM_HEIGHT = 430;
 
 const isFeatureNotIncluded = feature =>
   typeof feature === 'string' && /not\s+included/i.test(feature);
