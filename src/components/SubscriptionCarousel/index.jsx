@@ -70,14 +70,17 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
           style={styles.features}
         />
       </View>
-      <View style={{ flex: 0.2, justifyContent: 'flex-end' }}>
-        <Button
-          text="Choose Plan"
-          type={active === index ? 'primary' : 'outlined'}
-          onPress={() => onChoosePlan(item.id)}
-          loading={isLoading}
-        />
-      </View>
+
+      {item.price > 0 && (
+        <View style={{ flex: 0.2, justifyContent: 'flex-end' }}>
+          <Button
+            text="Choose Plan"
+            type={active === index ? 'primary' : 'outlined'}
+            onPress={() => onChoosePlan(item.id)}
+            loading={isLoading}
+          />
+        </View>
+      )}
     </View>
   );
 

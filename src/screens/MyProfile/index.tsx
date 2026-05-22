@@ -10,17 +10,10 @@ import colors from '../../utils/colors';
 import { capitalizeFirst } from '../../utils/data';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
-import {
-  formatPlanType,
-  formatSubscriptionDate,
-  getTrialLabel,
-  getUserSubscription,
-} from '../../utils/subscription';
 import styles from './styles';
 
 const MyProfile = () => {
   const user = useAppSelector(selectUser);
-  const subscription = getUserSubscription(user);
 
   return (
     <Wrapper bottom_bar floating scrollable>
@@ -72,41 +65,6 @@ const MyProfile = () => {
           </Text>
           <Text weight="bold">{user?.email}</Text>
         </View>
-
-        {subscription ? (
-          <>
-            <View style={[styles.item, styles.item_width]}>
-              <Text color={colors.icon_gray}>Subscription</Text>
-              <Text weight="bold" capitalize>
-                {subscription.is_trial
-                  ? getTrialLabel(subscription)
-                  : formatPlanType(subscription?.title)}
-              </Text>
-            </View>
-            {typeof subscription.days_remaining === 'number' ? (
-              <View style={[styles.item, styles.item_width]}>
-                <Text color={colors.icon_gray}>Days Remaining</Text>
-                <Text weight="bold">
-                  {subscription.days_remaining} day
-                  {subscription.days_remaining === 1 ? '' : 's'}
-                </Text>
-              </View>
-            ) : null}
-            <View style={[styles.item, styles.item_width]}>
-              <Text color={colors.icon_gray}>
-                {subscription.is_trial ? 'Trial Ends' : 'Expires On'}
-              </Text>
-              <Text weight="bold">
-                {formatSubscriptionDate(
-                  subscription.is_trial
-                    ? subscription.trial_ends_at
-                    : subscription.expired_on,
-                )}
-              </Text>
-            </View>
-          </>
-        ) : null}
-
       </Row>
 
       <Button

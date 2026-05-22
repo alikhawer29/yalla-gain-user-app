@@ -415,6 +415,7 @@ export interface ISubscriptionLogCard {
         underline?: boolean,
         onPress?: () => void | undefined
     }
+    is_trial: boolean
 }
 
 export interface IEmpty {

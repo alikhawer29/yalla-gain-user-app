@@ -19,6 +19,10 @@ export interface UserSubscription {
   expired_on?: string | null;
   days_remaining?: number;
   status?: string;
+  is_cancelled?: boolean;
+  auto_renew?: boolean;
+  can_cancel?: boolean;
+  can_purchase_plan?: boolean;
   has_spotify?: boolean;
   has_messaging?: boolean;
   has_nutrition_chatbot?: boolean;
@@ -27,6 +31,27 @@ export interface UserSubscription {
   yalla_points_monthly?: number;
   yalla_points_annual?: number;
 }
+
+export type SubscribePaymentResponse = {
+  status?: boolean;
+  message?: string;
+  error?: string;
+  log_id?: number;
+  bonus_coins_awarded?: number;
+  coins?: number;
+  subscription?: UserSubscription;
+};
+
+export const getSubscribePaymentMessage = (
+  response: SubscribePaymentResponse | undefined,
+  fallback: string,
+): string => {
+  if (!response) return fallback;
+  if (response.status === false) {
+    return response.error || response.message || fallback;
+  }
+  return response.message || fallback;
+};
 
 export const getUserSubscription = (
   user: { subscription?: UserSubscription } | null | undefined,

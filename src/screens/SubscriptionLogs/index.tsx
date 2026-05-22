@@ -7,6 +7,7 @@ import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import styles from "./styles"
 import useSubscriptionLogsController from "./useSubscriptionLogsController"
+import { getTrialLabel } from "../../utils/subscription"
 
 const SubscriptionLogs = () => {
 
@@ -26,6 +27,8 @@ const SubscriptionLogs = () => {
 
     const current = data?.current
     const cancelledNote = current ? getCancelledAccessNote(current) : null
+    const isTrial = current?.is_trial
+    const title = isTrial ? getTrialLabel(current) : current?.subscription_plan?.title
 
     return (
         <Wrapper>
@@ -44,11 +47,12 @@ const SubscriptionLogs = () => {
                                 </Text>
                             ) : null}
                             <SubscriptionLogCard
-                                subscription_type={current?.subscription_plan?.title}
+                                subscription_type={title}
                                 subscribed_on={current?.subscribed_on}
                                 expired_on={current?.expired_on}
                                 amount={current?.price_paid}
                                 label={getCurrentSubscriptionLabel(current)}
+                                is_trial={isTrial}
                             />
                         </>
                         : <Empty message={current ? "Subscription has expired" : "No Current Subscription Found"} />
@@ -68,6 +72,7 @@ const SubscriptionLogs = () => {
                                     text: "Expired",
                                     color: colors.gray,
                                 }}
+                                is_trial={item.is_trial}
                             />
                         )}
                         ListEmptyComponent={<Empty message="No Past Subscription Logs Found" />}

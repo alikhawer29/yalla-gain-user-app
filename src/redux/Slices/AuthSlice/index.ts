@@ -4,6 +4,7 @@ import { userApi } from '../../Apis/User';
 import { RootState } from '../../Store';
 import { clearChatbotSession } from '../../../services/chatbot/chatbotSessionCache';
 import { writeUserIdToUnityGame } from '../../../utils/unityGameData';
+import type { UserSubscription } from '../../../utils/subscription';
 
 interface AuthState {
   user: any | null;
@@ -35,6 +36,23 @@ export const auth = createSlice({
       state.isLoggedIn = false;
       state.user = null;
       state.token = null;
+    },
+    /** Merge profile fields after payment / cancel so feature gates update immediately. */
+    patchAuthUser: (
+      state,
+      action: PayloadAction<{
+        coins?: number | string;
+        subscription?: UserSubscription;
+      }>,
+    ) => {
+      if (!state.user) return;
+      const { coins, subscription } = action.payload;
+      if (coins != null) {
+        state.user.coins = String(coins);
+      }
+      if (subscription) {
+        state.user.subscription = subscription;
+      }
     },
   },
   extraReducers: builder => {
@@ -80,10 +98,52 @@ export const auth = createSlice({
         }
       },
     );
+    builder.addMatcher(
+      userApi.endpoints.subscribe.matchFulfilled,
+      (state, action) => {
+        const payload = action.payload as {
+          status?: boolean;
+          coins?: number;
+          subscription?: UserSubscription;
+        };
+        if (!state.user || payload?.status === false || !payload.subscription) {
+          return;
+        }
+        state.user.subscription = payload.subscription;
+        if (payload.coins != null) {
+          state.user.coins = String(payload.coins);
+        }
+      },
+    );
+    builder.addMatcher(
+      userApi.endpoints.cancelSubscription.matchFulfilled,
+      (state, action) => {
+        const payload = action.payload as {
+          status?: boolean;
+          subscription?: UserSubscription;
+        };
+        if (!state.user || payload?.status === false) {
+          return;
+        }
+        if (payload.subscription) {
+          state.user.subscription = payload.subscription;
+          return;
+        }
+        if (state.user.subscription) {
+          state.user.subscription = {
+            ...state.user.subscription,
+            is_cancelled: true,
+            status: 'cancelled',
+            auto_renew: false,
+            can_cancel: false,
+          };
+        }
+      },
+    );
   },
 });
 
-export const { logout } = auth.actions;
+export const { logout, patchAuthUser } = auth.actions;
 
 export const selectUser = (state: RootState): any | null => state.auth.user;
 export const selectLoggedIn = (state: RootState): boolean =>

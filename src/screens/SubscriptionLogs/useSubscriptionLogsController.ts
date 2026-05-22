@@ -8,12 +8,17 @@ import colors from '../../utils/colors';
 type ApiPayload = {
   status?: boolean;
   message?: string;
+  error?: string;
+  subscription?: Record<string, unknown>;
   data?: { message?: string };
 };
 
 const getApiMessage = (response: unknown, fallback: string): string => {
   if (!response || typeof response !== 'object') return fallback;
   const payload = response as ApiPayload;
+  if (typeof payload.error === 'string' && payload.error.trim()) {
+    return payload.error;
+  }
   if (typeof payload.message === 'string' && payload.message.trim()) {
     return payload.message;
   }
@@ -105,12 +110,12 @@ const useSubscriptionLogsController = () => {
     const until = subscription.expired_on;
     const days = subscription.days_remaining;
     if (until && days != null) {
-      return `Auto-renew is off. Access remains until ${until} (${days} days left).`;
+      return `Access remains until ${until} (${days} days left).`;
     }
     if (until) {
-      return `Auto-renew is off. Access remains until ${until}.`;
+      return `Access remains until ${until}.`;
     }
-    return 'Auto-renew is off. Your plan stays active until the end of the billing period.';
+    return 'Your plan stays active until the end of the billing period.';
   };
 
   return {

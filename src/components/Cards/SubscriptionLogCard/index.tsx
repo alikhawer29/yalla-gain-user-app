@@ -9,7 +9,7 @@ import Row from "../../Row";
 import Text from "../../Text";
 import styles from "./styles";
 
-const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subscribed_on, expired_on, amount, label }) => {
+const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subscribed_on, expired_on, amount, label, is_trial }) => {
     return (
         <CardWrapper height={130} padding={16} color={colors.blackish_gray}>
             <View style={styles.container}>
@@ -22,9 +22,13 @@ const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subs
                         <Text weight="semibold">Subscribed On</Text>
                         <Text size={12} weight="semibold">{subscribed_on}</Text>
                     </View>
-                    <View style={styles.third}>
+                    {is_trial && label?.text != 'Expired' ? (
+                        <View style={styles.third} />
+                    ) : <View style={styles.third}>
                         <Text size={12} weight="semibold" position="right" color={label?.color} underline={label?.underline} onPress={label?.onPress}>{label?.text}</Text>
                     </View>
+                    }
+
                 </View>
                 <View style={styles.row}>
                     <View style={styles.first}>
@@ -33,11 +37,15 @@ const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subs
                     </View>
                     <View style={styles.second}>
                         <Text weight="semibold">Amount</Text>
-                        <Row gap={4} align="center">
-                            <Text size={12} weight="semibold">${amount ?? 0}</Text>
-                            <Icon size={12} source={images.coin} />
-                            <Text size={12} weight="semibold">Yalla Coins</Text>
-                        </Row>
+                        {is_trial ? (
+                            <Text size={12} weight="semibold">Free Trial</Text>
+                        ) : (
+                            <Row gap={4} align="center">
+                                <Text size={12} weight="semibold">{amount ?? 0}</Text>
+                                <Icon size={12} source={images.coin} />
+                                <Text size={12} weight="semibold">Yalla Coins</Text>
+                            </Row>
+                        )}
                     </View>
                     <View style={styles.third} />
                 </View>

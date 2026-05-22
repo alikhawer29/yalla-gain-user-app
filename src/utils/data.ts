@@ -3,7 +3,7 @@ import images from '../assets/images';
 
 /** Main backend origin (scheme + host, no path). Change here for staging/production. */
 // export const API_BASE_URL = 'https://custom-dev.onlinetestingserver.com';
-export const API_BASE_URL = 'http://109.1.1.8';
+export const API_BASE_URL = 'http://109.1.1.10';
 
 /** User-scoped REST API (`.../api/user/*`). */
 export const API_USER_BASE_URL = `${API_BASE_URL}/yalla-backend/api/user/`;

@@ -5,6 +5,10 @@ import {
 } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
+import {
+  getSubscribePaymentMessage,
+  type SubscribePaymentResponse,
+} from '../../utils/subscription';
 
 const useSubscriptionController = () => {
   const [alertModal, setAlertModal] = useState({
@@ -25,37 +29,47 @@ const useSubscriptionController = () => {
   ] = useSubscribeMutation();
 
   useEffect(() => {
-    if (isSubscribeSuccess) {
-      if (subscribeData?.status) {
-        setAlertModal({
-          visible: true,
-          type: 'success',
-          title: 'Successfully',
-          message: 'Payment has been Made Successfully.',
-        });
-      } else {
-        console.log(subscribeData);
-        setAlertModal({
-          visible: true,
-          type: 'error',
-          title: 'Unsuccessful!',
-          message:
-            subscribeData?.error ||
-            'Payment was Unsuccessful.\nPlease try again.',
-        });
-      }
+    if (!isSubscribeSuccess || subscribeData == null) return;
+
+    const payload = subscribeData as SubscribePaymentResponse;
+
+    if (payload.status === true) {
+      setAlertModal({
+        visible: true,
+        type: 'success',
+        title: 'Successfully',
+        message: getSubscribePaymentMessage(
+          payload,
+          'Subscription purchased successfully.',
+        ),
+      });
+      return;
     }
+
+    setAlertModal({
+      visible: true,
+      type: 'error',
+      title: 'Unsuccessful!',
+      message: getSubscribePaymentMessage(
+        payload,
+        'Payment was unsuccessful. Please try again.',
+      ),
+    });
   }, [isSubscribeSuccess, subscribeData]);
 
   const handleModalOk = () => {
-    if (subscribeData?.status) {
+    if ((subscribeData as SubscribePaymentResponse)?.status === true) {
       navigate(ROUTES.SUBSCRIPTION_LOGS);
     }
+    setAlertModal(prev => ({ ...prev, visible: false }));
   };
 
-  const onChoosePlan = useCallback((plan_id: number) => {
-    subscribe({ plan_id });
-  }, []);
+  const onChoosePlan = useCallback(
+    (plan_id: number) => {
+      subscribe({ plan_id });
+    },
+    [subscribe],
+  );
 
   const onSubscriptionLogs = useCallback(() => {
     navigate(ROUTES.SUBSCRIPTION_LOGS);
