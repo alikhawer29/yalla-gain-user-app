@@ -54,11 +54,13 @@ const MovementCorrection = () => {
                                 placeholder="Select Category"
                                 label="Select exercise which you want to monitor"
                                 options={dropdown_data}
-                                value={data?.exercise}
+                                value={data?.exercise_id}
                                 onChangeText={(e: any) =>
-                                    setFieldValue("exercise", e?.value)
+                                    setFieldValue("exercise_id", e?.value)
                                 }
-                                error={touched?.exercise && errors?.exercise}
+                                error={
+                                    touched?.exercise_id && errors?.exercise_id
+                                }
                             />
                         </View>
                         <Button

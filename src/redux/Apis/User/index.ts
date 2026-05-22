@@ -326,6 +326,13 @@ export const userApi = createApi({
       }),
       providesTags: ['VideoDetails'],
     }),
+    recordWorkoutVideoView: builder.mutation({
+      query: (body: { exercise_id: number }) => ({
+        url: `workout-video/view`,
+        method: 'POST',
+        body,
+      }),
+    }),
     // Consultation & Booking
     getAllDoctors: builder.query({
       query: params => ({
@@ -740,6 +747,7 @@ export const {
   useGetSavedContentQuery,
   useGetVideosByWorkoutQuery,
   useGetVideoDetailsQuery,
+  useRecordWorkoutVideoViewMutation,
   useSaveVideoMutation,
   // Consultation & Booking
   useGetAllDoctorsQuery,

@@ -249,3 +249,9 @@ export const CREATE_POST_SCHEMA = Yup.object().shape({
 export const EXERCISE_SCHEMA = Yup.object().shape({
   exercise: Yup.string().required('Exercise is required'),
 });
+
+export const MOVEMENT_EXERCISE_SCHEMA = Yup.object().shape({
+  exercise_id: Yup.number()
+    .typeError('Exercise is required')
+    .required('Exercise is required'),
+});
