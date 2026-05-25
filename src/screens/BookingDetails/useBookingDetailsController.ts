@@ -10,6 +10,10 @@ import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
 import {
+  getDownloadDirectory,
+  showDownloadSuccessToast,
+} from '../../utils/fileDownload';
+import {
   useGetBookingDetailsQuery,
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
@@ -418,28 +422,22 @@ const useBookingDetailsController = () => {
       const fileName =
         booking.prescription_file_name || `prescription_${booking.id}.pdf`;
 
-      // Get download directory
-      const downloadDir =
-        Platform.OS === 'android'
-          ? RNFS.DownloadDirectoryPath
-          : RNFS.DocumentDirectoryPath;
+      const filePath = `${getDownloadDirectory()}/${fileName}`;
 
-      const filePath = `${downloadDir}/${fileName}`;
-
-      // Download the file
       const downloadResult = await RNFS.downloadFile({
         fromUrl: fileUrl,
         toFile: filePath,
       }).promise;
 
       if (downloadResult.statusCode === 200) {
-        Toast.show({
-          type: 'success',
-          text1: 'Success',
-          text2: `File saved to ${
-            Platform.OS === 'android' ? 'Downloads' : 'Documents'
-          } folder`,
-        });
+        if (Platform.OS === 'android') {
+          try {
+            await RNFS.scanFile(filePath);
+          } catch {
+            // non-fatal
+          }
+        }
+        showDownloadSuccessToast(filePath, fileName);
       } else {
         throw new Error('Download failed');
       }

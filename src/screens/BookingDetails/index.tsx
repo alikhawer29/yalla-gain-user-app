@@ -2,7 +2,7 @@ import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
 import Icon from "../../components/Icon";
-import Image from "../../components/Image";
+import PrescriptionFileThumb from "../../components/PrescriptionFileThumb";
 import RateReviewModal from "../../components/RateReviewModal";
 import ReportModal from "../../components/ReportModal";
 import Row from "../../components/Row";
@@ -264,9 +264,11 @@ const BookingDetails = () => {
                                 {isDownloading ? (
                                     <ActivityIndicator size="small" color={colors.primary} />
                                 ) : (
-                                    <Image
-                                        source={images.helpdesk.pdf}
-                                        style={styles.pdf_icon}
+                                    <PrescriptionFileThumb
+                                        fileUrl={booking.prescription_file}
+                                        fileType={booking.prescription_file_type}
+                                        fileName={booking.prescription_file_name}
+                                        size={28}
                                     />
                                 )}
                                 <Text size={12} color={colors.icon_gray} lines={1} style={styles.document_name}>

@@ -1,7 +1,13 @@
-import { ImageSourcePropType, Linking, Platform, Share } from 'react-native';
+import { ImageSourcePropType, Linking } from 'react-native';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
 import images from '../assets/images';
+import {
+  getDownloadDirectory,
+  getFileNameFromPath,
+  openDownloadedFileLocation,
+  showDownloadSuccessToast,
+} from './fileDownload';
 
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'];
 const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'];
@@ -36,15 +42,8 @@ export const getChatFileUri = (file: ChatFileRef): string | null => {
   return file.path || file.url || file.uri || file.media_url || null;
 };
 
-export const getFileNameFromUri = (uri: string): string => {
-  try {
-    const clean = uri.split('?')[0];
-    const parts = clean.split('/');
-    return decodeURIComponent(parts[parts.length - 1] || 'file');
-  } catch {
-    return 'file';
-  }
-};
+export const getFileNameFromUri = (uri: string): string =>
+  getFileNameFromPath(uri);
 
 export const getDocumentExtension = (uri: string): string => {
   const name = getFileNameFromUri(uri);
@@ -80,75 +79,15 @@ export const isAllowedChatOutgoingAttachment = (
   return lower.includes('image');
 };
 
-const getChatDownloadDirectory = (): string =>
-  Platform.OS === 'android' && RNFS.DownloadDirectoryPath
-    ? RNFS.DownloadDirectoryPath
-    : RNFS.DocumentDirectoryPath;
-
-/** Open Downloads folder (Android) or the saved file (iOS). */
-export const openChatDownloadedFile = async (
-  savedPath: string,
-): Promise<void> => {
-  const path = savedPath.replace(/^file:\/\//, '');
-  const fileUri = savedPath.startsWith('file://')
-    ? savedPath
-    : `file://${path}`;
-
-  if (Platform.OS === 'android') {
-    try {
-      await RNFS.scanFile(path);
-    } catch {
-      // non-fatal
-    }
-
-    const downloadFolderUri =
-      'content://com.android.externalstorage.documents/document/primary:Download';
-    try {
-      if (await Linking.canOpenURL(downloadFolderUri)) {
-        await Linking.openURL(downloadFolderUri);
-        return;
-      }
-    } catch {
-      // try share fallback
-    }
-
-    try {
-      await Share.share({
-        url: fileUri,
-        title: getFileNameFromUri(path),
-        message: getFileNameFromUri(path),
-      });
-      return;
-    } catch {
-      // fall through
-    }
-  } else {
-    try {
-      if (await Linking.canOpenURL(fileUri)) {
-        await Linking.openURL(fileUri);
-        return;
-      }
-    } catch {
-      // fall through
-    }
-  }
-
-  Toast.show({
-    type: 'info',
-    text1: 'File saved',
-    text2:
-      Platform.OS === 'android'
-        ? `Downloads/${getFileNameFromUri(path)}`
-        : getFileNameFromUri(path),
-  });
-};
+/** @deprecated Use openDownloadedFileLocation from fileDownload */
+export const openChatDownloadedFile = openDownloadedFileLocation;
 
 export const downloadChatFile = async (
   url: string,
   fileName?: string,
 ): Promise<ChatDownloadResult | null> => {
   const name = fileName || getFileNameFromUri(url);
-  const baseDir = getChatDownloadDirectory();
+  const baseDir = getDownloadDirectory();
   const dest = `${baseDir}/${name}`;
 
   try {
@@ -174,21 +113,7 @@ export const downloadChatFile = async (
       }
 
       const saved: ChatDownloadResult = { savedPath: dest, fileName: name };
-
-      Toast.show({
-        type: 'success',
-        text1: 'Download complete',
-        text2:
-          Platform.OS === 'android'
-            ? `Download complete — tap to open`
-            : `Tap to open ${name}`,
-        visibilityTime: 6000,
-        onPress: () => {
-          Toast.hide();
-          openChatDownloadedFile(dest);
-        },
-      });
-
+      showDownloadSuccessToast(dest, name);
       return saved;
     }
 

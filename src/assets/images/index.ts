@@ -143,6 +143,8 @@ const images = {
     star: require('./helpdesk/star.png'),
     chat: require('./helpdesk/chat.png'),
     pdf: require('./helpdesk/pdf.png'),
+    xlsx: require('./helpdesk/xlsx.png'),
+    docs: require('./helpdesk/docs.png'),
   },
   guide_video: require('./guide_video.mp4'),
 };
