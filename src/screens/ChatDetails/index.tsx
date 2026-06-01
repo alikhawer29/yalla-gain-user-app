@@ -64,7 +64,6 @@ const ChatDetails = () => {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const keyboardHeight = useKeyboard();
-  const isKeyboardOpen = keyboardHeight > 0;
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -129,45 +128,53 @@ const ChatDetails = () => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight : 0}
     >
       <Wrapper hide_bottom_bar>
-        {renderHeader()}
-        {isLoading ? (
-          <View style={styles.loading_container}>
-            <ActivityIndicator size="large" color={colors.primary} />
-          </View>
-        ) : (
-          <FlatList
-            ref={flatlistRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => String(item.id)}
-            ItemSeparatorComponent={() => <Seperator size={10} />}
-            showsVerticalScrollIndicator={false}
-            style={styles.messages_container}
-            contentContainerStyle={styles.messages_content}
-            onContentSizeChange={() => flatlistRef.current?.scrollToEnd()}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={
-              Platform.OS === 'ios' ? 'interactive' : 'on-drag'
-            }
-          />
-        )}
-
         <View
           style={[
-            styles.input_container,
-            {
-              paddingBottom:
-                Platform.OS === 'ios'
-                  ? insets.bottom
-                  : (isKeyboardOpen ? heightPixel(80) : heightPixel(30)) +
-                    insets.bottom,
-            },
+            styles.container,
+            Platform.OS === 'android' && keyboardHeight > 0
+              ? { marginBottom: keyboardHeight }
+              : null,
           ]}
         >
+          {renderHeader()}
+          {isLoading ? (
+            <View style={styles.loading_container}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : (
+            <FlatList
+              ref={flatlistRef}
+              data={messages}
+              renderItem={renderMessage}
+              keyExtractor={item => String(item.id)}
+              ItemSeparatorComponent={() => <Seperator size={10} />}
+              showsVerticalScrollIndicator={false}
+              style={styles.messages_container}
+              contentContainerStyle={styles.messages_content}
+              onContentSizeChange={() => flatlistRef.current?.scrollToEnd()}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={
+                Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+              }
+            />
+          )}
+
+          <View
+            style={[
+              styles.input_container,
+              {
+                paddingTop: heightPixel(12),
+                paddingBottom:
+                  Platform.OS === 'ios'
+                    ? insets.bottom
+                    : heightPixel(30) + insets.bottom,
+              },
+            ]}
+          >
           <View style={styles.input_wrapper}>
             {selectedFiles.length > 0 ? (
               <View style={styles.input_attachments_row}>
@@ -207,6 +214,7 @@ const ChatDetails = () => {
               <Icon source={images.send} size={20} tint_color={colors.white} />
             )}
           </TouchableOpacity>
+          </View>
         </View>
       </Wrapper>
     </KeyboardAvoidingView>
