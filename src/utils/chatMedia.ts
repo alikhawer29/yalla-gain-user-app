@@ -123,11 +123,13 @@ export const downloadChatFile = async (
       const supported = await Linking.canOpenURL(url);
       if (supported) {
         await Linking.openURL(url);
-        Toast.show({
-          type: 'info',
-          text1: 'Opening file',
-          text2: 'Download started in browser',
-        });
+        if (Platform.OS !== 'ios') {
+          Toast.show({
+            type: 'info',
+            text1: 'Opening file',
+            text2: 'Download started in browser',
+          });
+        }
         return null;
       }
     } catch {

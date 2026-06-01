@@ -80,17 +80,7 @@ export const openDownloadedFileLocation = async (
   const fileUri = toFileUri(savedPath);
 
   if (Platform.OS === 'ios') {
-    const shared = await shareDownloadedFile(savedPath);
-    if (shared) {
-      return;
-    }
-
-    Toast.show({
-      type: 'info',
-      text1: 'File saved in app',
-      text2: `Files → On My iPhone → Yalla Gain → ${IOS_DOWNLOADS_FOLDER}`,
-      visibilityTime: 7000,
-    });
+    await shareDownloadedFile(savedPath);
     return;
   }
 
@@ -141,28 +131,28 @@ const promptIosSaveToFiles = (savedPath: string): void => {
   }, 350);
 };
 
-/** Success toast; on iOS also opens Share sheet to save into Files / Downloads. */
+/**
+ * Android: success toast (tap → open Downloads).
+ * iOS: no toast — only Share sheet to save to Files / Downloads.
+ */
 export const showDownloadSuccessToast = (
   savedPath: string,
   fileName?: string,
 ): void => {
-  const name = fileName || getFileNameFromPath(savedPath);
-  const isIos = Platform.OS === 'ios';
+  if (Platform.OS === 'ios') {
+    promptIosSaveToFiles(savedPath);
+    return;
+  }
 
+  const name = fileName || getFileNameFromPath(savedPath);
   Toast.show({
     type: 'success',
     text1: 'Download complete',
-    text2: isIos
-      ? 'Choose Save to Files → Downloads'
-      : 'Saved to Downloads — tap to open folder',
+    text2: 'Saved to Downloads — tap to open folder',
     visibilityTime: 6000,
     onPress: () => {
       Toast.hide();
       void openDownloadedFileLocation(savedPath);
     },
   });
-
-  if (isIos) {
-    promptIosSaveToFiles(savedPath);
-  }
 };
