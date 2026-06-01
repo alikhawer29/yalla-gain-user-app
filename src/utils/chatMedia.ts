@@ -1,9 +1,9 @@
-import { ImageSourcePropType, Linking } from 'react-native';
+import { ImageSourcePropType, Linking, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
 import images from '../assets/images';
 import {
-  getDownloadDirectory,
+  ensureDownloadDirectory,
   getFileNameFromPath,
   openDownloadedFileLocation,
   showDownloadSuccessToast,
@@ -87,7 +87,7 @@ export const downloadChatFile = async (
   fileName?: string,
 ): Promise<ChatDownloadResult | null> => {
   const name = fileName || getFileNameFromUri(url);
-  const baseDir = getDownloadDirectory();
+  const baseDir = await ensureDownloadDirectory();
   const dest = `${baseDir}/${name}`;
 
   try {

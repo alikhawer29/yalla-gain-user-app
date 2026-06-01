@@ -10,7 +10,7 @@ import { selectUser } from '../../redux/Slices/AuthSlice';
 import RNFS from 'react-native-fs';
 import Toast from 'react-native-toast-message';
 import {
-  getDownloadDirectory,
+  ensureDownloadDirectory,
   showDownloadSuccessToast,
 } from '../../utils/fileDownload';
 import {
@@ -422,7 +422,8 @@ const useBookingDetailsController = () => {
       const fileName =
         booking.prescription_file_name || `prescription_${booking.id}.pdf`;
 
-      const filePath = `${getDownloadDirectory()}/${fileName}`;
+      const downloadDir = await ensureDownloadDirectory();
+      const filePath = `${downloadDir}/${fileName}`;
 
       const downloadResult = await RNFS.downloadFile({
         fromUrl: fileUrl,
