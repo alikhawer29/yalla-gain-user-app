@@ -9,14 +9,15 @@ import Row from "../../Row";
 import Text from "../../Text";
 import styles from "./styles";
 
-const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subscribed_on, expired_on, amount, label, is_trial }) => {
+const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subscribed_on, expired_on, amount, label, is_trial, duration }) => {
     return (
         <CardWrapper height={130} padding={16} color={colors.blackish_gray}>
             <View style={styles.container}>
                 <View style={styles.row}>
                     <View style={styles.first}>
                         <Text weight="semibold">Subscription Type</Text>
-                        <Text size={12} weight="semibold">{subscription_type}</Text>
+                        <Text size={12} weight="semibold">{subscription_type}  {duration ? <Text size={12} weight="semibold">({duration})</Text> : null}</Text>
+
                     </View>
                     <View style={styles.second}>
                         <Text weight="semibold">Subscribed On</Text>

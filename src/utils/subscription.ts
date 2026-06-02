@@ -57,6 +57,22 @@ export const getUserSubscription = (
   user: { subscription?: UserSubscription } | null | undefined,
 ): UserSubscription | null => user?.subscription ?? null;
 
+/** True for trial, explicit free plan, missing subscription, or expired access. */
+export const isFreeSubscriptionPlan = (
+  user: { subscription?: UserSubscription } | null | undefined,
+): boolean => {
+  const subscription = getUserSubscription(user);
+  if (!subscription) return true;
+  if (subscription.is_trial === true) return true;
+  if (subscription.plan_type?.toLowerCase() === 'free') return true;
+  if (subscription.status === 'expired') return true;
+  return false;
+};
+
+export const hasPaidSubscriptionPlan = (
+  user: { subscription?: UserSubscription } | null | undefined,
+): boolean => !isFreeSubscriptionPlan(user);
+
 export const formatPlanType = (planType?: string): string => {
   if (!planType) return 'N/A';
   return planType.charAt(0).toUpperCase() + planType.slice(1);

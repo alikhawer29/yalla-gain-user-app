@@ -257,6 +257,12 @@ export interface ITrackingCard {
     stats?: ITrackingStats[]
 }
 
+export interface IConsultationSessionCard {
+    title: string
+    remaining: number
+    limit: number
+}
+
 export interface IVideoCard {
     image: ImageSourcePropType
     title: string
@@ -415,7 +421,8 @@ export interface ISubscriptionLogCard {
         underline?: boolean,
         onPress?: () => void | undefined
     }
-    is_trial: boolean
+    is_trial: boolean,
+    duration?: string
 }
 
 export interface IEmpty {

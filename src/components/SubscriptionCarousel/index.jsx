@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import Carousel, { Pagination } from 'react-native-snap-carousel';
 import images from '../../assets/images';
 import colors from '../../utils/colors';
-import { heightPixel, vw } from '../../utils/helper';
+import { heightPixel, vw, widthPixel } from '../../utils/helper';
 import Button from '../Button';
 import Icon from '../Icon';
 import Row from '../Row';
@@ -35,9 +35,18 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
       ]}
     >
       <View style={{ flex: 0.8 }}>
-        <Text size={17} weight="bold">
-          {item.title} {item.duration ? `(${item.duration})` : ''}
-        </Text>
+        <Row align="center" justify="space-between" style={styles.title_row}>
+          <Text size={17} weight="bold" style={styles.title_text}>
+            {item.title} {item.duration ? `(${item.duration})` : ''}
+          </Text>
+          {item.active_label ? (
+            <View style={styles.active_label}>
+              <Text size={10} color={colors.white} weight="semibold">
+                {item.active_label}
+              </Text>
+            </View>
+          ) : null}
+        </Row>
         <Row align="center" style={{ marginTop: heightPixel(10) }} gap={5}>
           <Text size={20} weight="bold">
             {item.price}
@@ -129,6 +138,22 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
     borderWidth: StyleSheet.hairlineWidth,
+  },
+  title_row: {
+    gap: widthPixel(8),
+  },
+  title_text: {
+    flex: 1,
+    flexShrink: 1,
+  },
+  active_label: {
+    paddingVertical: heightPixel(5),
+    paddingHorizontal: widthPixel(12),
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    backgroundColor: colors.blackish_gray,
+    flexShrink: 0,
   },
   features: {
     marginVertical: heightPixel(20),

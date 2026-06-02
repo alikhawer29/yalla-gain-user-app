@@ -8,6 +8,7 @@ import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
 import InfoCard from "../../components/Cards/InfoCard"
+import ConsultationSessionCard from "../../components/Cards/ConsultationSessionCard"
 import ProgressCard from "../../components/Cards/ProgressCard"
 import TrackingCard from "../../components/Cards/TrackingCard"
 import VideoCard from "../../components/Cards/VideoCard"
@@ -20,6 +21,7 @@ import Wrapper from "../../components/Wrapper"
 import {
     userApi,
     useGetCaloriesGraphQuery,
+    useGetConsultationSessionsQuery,
     useGetDashboardQuery,
     useGetWorkoutQuery,
     type CaloriesGraphResponse,
@@ -31,6 +33,7 @@ import { getProgressTrackingIconSource } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
 import { navigateToChallenges, navigateToWorkout, navigationRef } from '../../utils/navigation'
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
+import { hasPaidSubscriptionPlan } from "../../utils/subscription"
 import HomeScreen from "../HomeScreen";
 
 type DashboardPayload = {
@@ -84,6 +87,7 @@ const Home = () => {
     const dispatch = useDispatch()
     const user = useAppSelector(selectUser)
     const showCompleteProfileCard = user?.gender == null || user?.gender === ""
+    const showConsultationSessionCards = hasPaidSubscriptionPlan(user)
 
     const {
         data: workoutData,
@@ -97,6 +101,19 @@ const Home = () => {
         isFetching: dashboardFetching,
         refetch: refetchDashboard,
     } = useGetDashboardQuery(undefined);
+    const {
+        data: consultationSessionsRaw,
+        refetch: refetchConsultationSessions,
+    } = useGetConsultationSessionsQuery(undefined, {
+        skip: !showConsultationSessionCards,
+    });
+
+    const consultationSessions = useMemo(() => {
+        const root = consultationSessionsRaw as
+            | { data?: { doctor?: { sessions_remaining?: number; sessions_limit?: number }; trainer?: { sessions_remaining?: number; sessions_limit?: number } } }
+            | undefined
+        return root?.data
+    }, [consultationSessionsRaw])
 
     const dashboard = useMemo((): DashboardPayload => {
         const root = dashboardRaw as { data?: DashboardPayload } | undefined
@@ -206,9 +223,12 @@ const Home = () => {
         useCallback(() => {
             void (async () => {
                 await refetchDashboard()
+                if (showConsultationSessionCards) {
+                    await refetchConsultationSessions()
+                }
                 dispatch(userApi.util.invalidateTags(["Notifications"]))
             })()
-        }, [refetchDashboard, dispatch]),
+        }, [refetchDashboard, refetchConsultationSessions, showConsultationSessionCards, dispatch]),
     )
 
     const lastScrollRefetchAt = useRef(0)
@@ -258,6 +278,9 @@ const Home = () => {
                         refetch(),
                         refetchDashboard(),
                         refetchCaloriesGraph(),
+                        ...(showConsultationSessionCards
+                            ? [refetchConsultationSessions()]
+                            : []),
                     ])
                     dispatch(userApi.util.invalidateTags(["Notifications"]))
                 })()
@@ -296,6 +319,24 @@ const Home = () => {
                         />
                     </View>
                 </Row>
+                {showConsultationSessionCards ? (
+                    <Row justify="space-between">
+                        <View style={{ padding: heightPixel(8), width: "50%" }}>
+                            <ConsultationSessionCard
+                                title="Doctor Sessions"
+                                remaining={Number(consultationSessions?.doctor?.sessions_remaining ?? 0)}
+                                limit={Number(consultationSessions?.doctor?.sessions_limit ?? 0)}
+                            />
+                        </View>
+                        <View style={{ padding: heightPixel(8), width: "50%" }}>
+                            <ConsultationSessionCard
+                                title="Trainer Sessions"
+                                remaining={Number(consultationSessions?.trainer?.sessions_remaining ?? 0)}
+                                limit={Number(consultationSessions?.trainer?.sessions_limit ?? 0)}
+                            />
+                        </View>
+                    </Row>
+                ) : null}
             </View>
             <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
                 <Text weight="semibold" size={20}>Recommended Videos</Text>

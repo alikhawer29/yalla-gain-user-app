@@ -32,6 +32,27 @@ export interface MonthlyBmiGraphResponse {
   data: MonthlyBmiGraphPoint[];
 }
 
+export interface ConsultationSessionInfo {
+  provider_type: 'doctor' | 'trainer';
+  qualifies_for_plan_sessions: boolean;
+  sessions_limit: number;
+  sessions_used: number;
+  sessions_remaining: number;
+  can_book_with_plan_session: boolean;
+  requires_consultation_fee: boolean;
+  consultation_fee: number;
+  billing_month: string;
+}
+
+export interface ConsultationSessionsResponse {
+  status: boolean;
+  execution_time?: string;
+  data: {
+    doctor: ConsultationSessionInfo;
+    trainer: ConsultationSessionInfo;
+  };
+}
+
 export const userApi = createApi({
   reducerPath: 'userApi',
   tagTypes: [
@@ -715,6 +736,16 @@ export const userApi = createApi({
         method: 'DELETE',
       }),
     }),
+    getConsultationSessions: builder.query<
+      ConsultationSessionsResponse,
+      void
+    >({
+      query: () => ({
+        url: `consultation-sessions`,
+        method: 'GET',
+      }),
+      providesTags: ['Bookings'],
+    }),
   }),
 });
 
@@ -797,4 +828,5 @@ export const {
   useDeleteAccountMutation,
   useGetCaloriesGraphQuery,
   useGetMonthlyBmiGraphQuery,
+  useGetConsultationSessionsQuery,
 } = userApi;

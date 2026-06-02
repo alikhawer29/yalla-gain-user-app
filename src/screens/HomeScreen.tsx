@@ -50,10 +50,10 @@ export default function HomeScreen() {
   );
 
   const stepsDisplay =
-    loading || (steps === 0 && source === null) ? '—' : steps.toLocaleString();
+    loading || (steps === 0 && source === null) ? '0' : steps.toLocaleString();
   const caloriesDisplay =
     loading || (activeCalories === 0 && source === null)
-      ? '—'
+      ? '0'
       : String(activeCalories);
 
   const src = sourceLabel(source);

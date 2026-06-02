@@ -47,6 +47,7 @@ const SubscriptionLogs = () => {
                                 </Text>
                             ) : null}
                             <SubscriptionLogCard
+                                duration={current?.subscription_plan?.duration}
                                 subscription_type={title}
                                 subscribed_on={current?.subscribed_on}
                                 expired_on={current?.expired_on}
@@ -64,6 +65,7 @@ const SubscriptionLogs = () => {
                         data={data?.logs}
                         renderItem={({ item }) => (
                             <SubscriptionLogCard
+                                // duration={item.subscription_plan?.duration}
                                 subscription_type={item.subscription_plan?.title}
                                 subscribed_on={item.subscribed_on}
                                 expired_on={item.expired_on}

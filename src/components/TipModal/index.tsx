@@ -8,6 +8,7 @@ import Icon from '../Icon';
 import Row from '../Row';
 import Seperator from '../Seperator';
 import Text from '../Text';
+import { MIN_TIP_YALLA_POINTS, MIN_TIP_YALLA_POINTS_MESSAGE } from '../../utils/tip';
 
 interface ITipModal {
     visible: boolean;
@@ -20,11 +21,11 @@ interface ITipModal {
 type ModalView = 'select' | 'success' | 'error';
 
 const TipModal: FC<ITipModal> = ({ visible, onClose, onSubmit, loading }) => {
-    const [coins, setCoins] = useState(1);
+    const [coins, setCoins] = useState(MIN_TIP_YALLA_POINTS);
     const [view, setView] = useState<ModalView>('select');
 
     const handleClose = () => {
-        setCoins(1);
+        setCoins(MIN_TIP_YALLA_POINTS);
         setView('select');
         onClose();
     };
@@ -43,7 +44,7 @@ const TipModal: FC<ITipModal> = ({ visible, onClose, onSubmit, loading }) => {
     };
 
     const decrementCoins = () => {
-        if (coins > 1) {
+        if (coins > MIN_TIP_YALLA_POINTS) {
             setCoins(prev => prev - 1);
         }
     };
@@ -56,6 +57,10 @@ const TipModal: FC<ITipModal> = ({ visible, onClose, onSubmit, loading }) => {
             <Text size={14} weight="semibold">
                 Tip Quantity <Text color="#FF0000">*</Text>
             </Text>
+            <Seperator size={6} />
+            <Text size={12} color={colors.icon_gray}>
+                {MIN_TIP_YALLA_POINTS_MESSAGE}
+            </Text>
             <Seperator size={10} />
 
             <View style={styles.coin_selector}>
@@ -64,13 +69,13 @@ const TipModal: FC<ITipModal> = ({ visible, onClose, onSubmit, loading }) => {
                 </TouchableOpacity>
 
                 <View style={styles.coin_display}>
-                    <Text size={14} weight="semibold">{coins} Yala Coin</Text>
+                    <Text size={14} weight="semibold">{coins} Yalla Points</Text>
                 </View>
 
                 <TouchableOpacity
-                    style={[styles.coin_btn, coins <= 1 && styles.coin_btn_disabled]}
+                    style={[styles.coin_btn, coins <= MIN_TIP_YALLA_POINTS && styles.coin_btn_disabled]}
                     onPress={decrementCoins}
-                    disabled={coins <= 1}
+                    disabled={coins <= MIN_TIP_YALLA_POINTS}
                 >
                     <Icon source={images.minus} size={18} tint_color={colors.white} />
                 </TouchableOpacity>

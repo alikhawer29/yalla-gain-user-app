@@ -25,6 +25,10 @@ import {
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
+import {
+  MIN_TIP_YALLA_POINTS,
+  MIN_TIP_YALLA_POINTS_MESSAGE,
+} from '../../utils/tip';
 import dayjs from 'dayjs';
 
 const useBookingDetailsController = () => {
@@ -385,11 +389,11 @@ const useBookingDetailsController = () => {
   };
 
   const onSubmitTip = async (coins: number) => {
-    if (!Number.isFinite(coins) || coins < 1) {
+    if (!Number.isFinite(coins) || coins < MIN_TIP_YALLA_POINTS) {
       showOkModal({
         type: 'error',
         title: 'Error',
-        message: 'Please enter a valid tip amount.',
+        message: MIN_TIP_YALLA_POINTS_MESSAGE,
       });
       throw new Error('validation');
     }

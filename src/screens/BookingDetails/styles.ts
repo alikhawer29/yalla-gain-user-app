@@ -70,6 +70,9 @@ const styles = StyleSheet.create({
   half_btn: {
     flex: 1,
   },
+  tip_hint: {
+    marginBottom: heightPixel(10),
+  },
   report_btn: {
     flex: 1,
     borderColor: '#F20000',

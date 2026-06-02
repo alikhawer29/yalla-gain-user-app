@@ -300,7 +300,7 @@ const BookingDetails = () => {
                             />
                         ) : null}
 
-                        {consultant?.type === 'trainer' && !booking?.tip ? (
+                        {!booking?.tip ? (
                             <Button
                                 text="Give Tip"
                                 type="outlined"
