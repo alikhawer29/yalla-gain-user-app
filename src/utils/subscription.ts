@@ -88,12 +88,36 @@ export const getTrialLabel = (
   subscription?: UserSubscription | null,
 ): string => {
   if (!subscription?.is_trial) return '';
-  const days = subscription.days_remaining;
-  if (typeof days === 'number' && days >= 0) {
-    return '7-Day Free Trial';
-  }
   return '7-Day Free Trial';
 };
+
+export const isActiveTrialSubscription = (
+  user: { subscription?: UserSubscription } | null | undefined,
+): boolean => {
+  const subscription = getUserSubscription(user);
+  return subscription?.is_trial === true && subscription.status !== 'expired';
+};
+
+/** Short label for trial banner, e.g. "5 days remaining". */
+export const getTrialDaysRemainingLabel = (
+  subscription?: UserSubscription | null,
+): string => {
+  if (!subscription?.is_trial) return '';
+  const days = subscription.days_remaining;
+  if (typeof days === 'number' && days >= 0) {
+    return `${days} ${days === 1 ? 'day' : 'days'} remaining`;
+  }
+  if (subscription.trial_ends_at) {
+    return `Ends ${formatSubscriptionDate(subscription.trial_ends_at)}`;
+  }
+  if (subscription.expired_on) {
+    return `Ends ${formatSubscriptionDate(subscription.expired_on)}`;
+  }
+  return '';
+};
+
+/** @deprecated Use getTrialDaysRemainingLabel for banner */
+export const getTrialHomeSubtitle = getTrialDaysRemainingLabel;
 
 export const canAccessSubscriptionFeature = (
   user: { subscription?: UserSubscription } | null | undefined,

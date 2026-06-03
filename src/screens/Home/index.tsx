@@ -8,6 +8,7 @@ import { LineChart } from "react-native-chart-kit"
 import fonts from "../../assets/fonts"
 import images from "../../assets/images"
 import InfoCard from "../../components/Cards/InfoCard"
+import TrialBanner from "../../components/Cards/TrialBanner"
 import ConsultationSessionCard from "../../components/Cards/ConsultationSessionCard"
 import ProgressCard from "../../components/Cards/ProgressCard"
 import TrackingCard from "../../components/Cards/TrackingCard"
@@ -33,7 +34,11 @@ import { getProgressTrackingIconSource } from "../../utils/data"
 import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
 import { navigateToChallenges, navigateToWorkout, navigationRef } from '../../utils/navigation'
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
-import { hasPaidSubscriptionPlan } from "../../utils/subscription"
+import {
+    getUserSubscription,
+    hasPaidSubscriptionPlan,
+    isActiveTrialSubscription,
+} from "../../utils/subscription"
 import HomeScreen from "../HomeScreen";
 
 type DashboardPayload = {
@@ -88,6 +93,8 @@ const Home = () => {
     const user = useAppSelector(selectUser)
     const showCompleteProfileCard = user?.gender == null || user?.gender === ""
     const showConsultationSessionCards = hasPaidSubscriptionPlan(user)
+    const subscription = getUserSubscription(user)
+    const showTrialBanner = isActiveTrialSubscription(user)
 
     const {
         data: workoutData,
@@ -292,6 +299,11 @@ const Home = () => {
             }
         >
             <ProfileHeader />
+            {showTrialBanner && subscription ? (
+                <View style={{ marginTop: heightPixel(20) }}>
+                    <TrialBanner subscription={subscription} />
+                </View>
+            ) : null}
             {showCompleteProfileCard ? (
                 <View style={{ marginTop: heightPixel(30) }}>
                     <InfoCard />
