@@ -90,9 +90,9 @@ export const getTrialLabel = (
   if (!subscription?.is_trial) return '';
   const days = subscription.days_remaining;
   if (typeof days === 'number' && days >= 0) {
-    return '7-Day Trial';
+    return '7-Day Free Trial';
   }
-  return '7-Day Trial';
+  return '7-Day Free Trial';
 };
 
 export const canAccessSubscriptionFeature = (

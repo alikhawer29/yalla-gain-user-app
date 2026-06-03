@@ -16,7 +16,11 @@ const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subs
                 <View style={styles.row}>
                     <View style={styles.first}>
                         <Text weight="semibold">Subscription Type</Text>
-                        <Text size={12} weight="semibold">{subscription_type}  {duration ? <Text size={12} weight="semibold">({duration})</Text> : null}</Text>
+                        <Text size={12} weight="semibold">{subscription_type}  {!is_trial && duration && (
+                            <Text size={12} weight="semibold">
+                                ({duration})
+                            </Text>
+                        )}</Text>
 
                     </View>
                     <View style={styles.second}>
@@ -39,7 +43,7 @@ const SubscriptionLogCard: FC<ISubscriptionLogCard> = ({ subscription_type, subs
                     <View style={styles.second}>
                         <Text weight="semibold">Amount</Text>
                         {is_trial ? (
-                            <Text size={12} weight="semibold">Free Trial</Text>
+                            <Text size={12} weight="semibold">Free</Text>
                         ) : (
                             <Row gap={4} align="center">
                                 <Text size={12} weight="semibold">{amount ?? 0}</Text>

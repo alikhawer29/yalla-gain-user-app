@@ -59,7 +59,7 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
                 <Row align="center" gap={8}>
                     <Icon source={images.calendar} size={18} />
                     <Text weight="semibold" size={14} color={colors.white}>
-                        {formatDate(booking.appointment_date)}
+                        {formatDate(booking.is_rescheduled ? booking.rescheduled_appointment_date : booking.appointment_date)}
                     </Text>
                 </Row>
                 <View style={[styles.status_badge, { backgroundColor: getStatusColor(booking.status) }]}>
@@ -78,7 +78,7 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
             {/* Amount */}
             <Row align="center" style={styles.detail_row}>
                 <Text size={14} weight="semibold" color={colors.white}>Amount : </Text>
-                <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 10} Yalla Coins {" "}</Text>
+                <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 0} Yalla Coins {" "}</Text>
                 <Icon source={images.coin} size={18} style={styles.coin_icon} />
             </Row>
         </CardWrapper>

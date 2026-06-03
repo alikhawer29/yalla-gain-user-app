@@ -82,7 +82,7 @@ const BookingDetails = () => {
                 </View>
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Date:</Text>
-                    <Text size={14} color={colors.icon_gray}>{formatDate(booking?.appointment_date) || '-'}</Text>
+                    <Text size={14} color={colors.icon_gray}>{formatDate(booking?.is_rescheduled ? booking?.rescheduled_appointment_date : booking?.appointment_date) || '-'}</Text>
                 </View>
             </Row>
 
@@ -93,7 +93,7 @@ const BookingDetails = () => {
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Time:</Text>
                     <Text size={14} color={colors.icon_gray}>
-                        {formatTime(booking?.appointment_start_time)} - {formatTime(booking?.appointment_end_time)}
+                        {formatTime(booking?.is_rescheduled ? booking?.rescheduled_appointment_start_time : booking?.appointment_start_time)} - {formatTime(booking?.is_rescheduled ? booking?.rescheduled_appointment_end_time : booking?.appointment_end_time)}
                     </Text>
                 </View>
                 <View style={styles.column}>
