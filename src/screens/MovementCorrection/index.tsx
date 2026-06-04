@@ -24,7 +24,7 @@ const MovementCorrection = () => {
     } = useMovementCorrectionController()
 
     return (
-        <Wrapper>
+        <Wrapper scrollable>
             <Formik
                 initialValues={initial}
                 validationSchema={schema}
@@ -61,6 +61,10 @@ const MovementCorrection = () => {
                                 error={
                                     touched?.exercise_id && errors?.exercise_id
                                 }
+                                direction="TOP"
+                                zIndex={5000}
+                                zIndexInverse={1000}
+                                dropDownContainerStyle={styles.dropdown_list}
                             />
                         </View>
                         <Button

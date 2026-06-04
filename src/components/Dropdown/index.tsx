@@ -41,6 +41,11 @@ const Dropdown = props => {
 
   const [toggle, open] = useToggle();
 
+  const ITEM_ROW_HEIGHT = 48;
+  const resolvedMaxHeight =
+    maxHeight ??
+    heightPixel(Math.min(Math.max(options.length * ITEM_ROW_HEIGHT + 12, 120), 360));
+
   return (
     <View style={styles.container}>
       {label && (
@@ -76,7 +81,7 @@ const Dropdown = props => {
         dropDownContainerStyle={[styles.dropdown, dropDownContainerStyle]}
         textStyle={[styles.text, textStyle].filter(Boolean)}
         listMode={listMode}
-        {...(maxHeight != null ? { maxHeight } : {})}
+        maxHeight={resolvedMaxHeight}
         {...(modalProps ? { modalProps } : {})}
         multiple={multiple}
         mode="BADGE"

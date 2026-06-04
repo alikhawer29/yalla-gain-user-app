@@ -29,7 +29,7 @@ const MyProfile = () => {
       <Row style={styles.item_container}>
         <View style={[styles.item, styles.item_width]}>
           <Text color={colors.icon_gray}>User's Unique Id</Text>
-          <Text weight="bold">{user?.id}</Text>
+          <Text weight="bold">{user?.unique_code}</Text>
         </View>
         <View style={[styles.item, styles.item_width]}>
           <Text color={colors.icon_gray}>First Name</Text>
