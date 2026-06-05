@@ -15,6 +15,7 @@ import {
 } from '../../utils/fileDownload';
 import {
   useGetBookingDetailsQuery,
+  useJoinZoomSessionMutation,
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
   useCreateChatMutation,
@@ -25,10 +26,15 @@ import {
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
+import { clearZoomSessionActive } from '../../utils/zoomSessionStorage';
 import {
   MIN_TIP_YALLA_POINTS,
   MIN_TIP_YALLA_POINTS_MESSAGE,
 } from '../../utils/tip';
+import {
+  isDoctorSessionNotStartedError,
+  mapJoinSessionMessage,
+} from '../../utils/mapJoinSessionMessage';
 import dayjs from 'dayjs';
 
 const useBookingDetailsController = () => {
@@ -69,6 +75,8 @@ const useBookingDetailsController = () => {
   const [reportBooking, { isLoading: isReporting }] =
     useReportBookingMutation();
   const [giveTip, { isLoading: isGivingTip }] = useGiveTipMutation();
+  const [joinZoomSession, { isLoading: isJoiningSession }] =
+    useJoinZoomSessionMutation();
 
   const booking = data?.data;
   const service = booking?.service;
@@ -216,27 +224,41 @@ const useBookingDetailsController = () => {
     if (!consultant?.id) return;
     try {
       const response = await createChat(consultant.id).unwrap();
-      // Navigate to chat details screen with chat info
       const chatData = response?.data;
+      const consultantName =
+        [consultant.first_name, consultant.last_name]
+          .filter(Boolean)
+          .join(' ')
+          .trim() ||
+        consultant.name?.trim() ||
+        'Chat';
+
       if (chatData?.id) {
-        // Navigate through nested navigators: Drawer -> Bottom -> ChatStack -> ChatDetails
-        navigate(NAVIGATORS.BOTTOM as any, {
-          screen: NAVIGATORS.CHAT_STACK,
+        navigate(NAVIGATORS.DRAWER as any, {
+          screen: NAVIGATORS.BOTTOM,
           params: {
-            screen: ROUTES.CHAT_DETAILS,
+            screen: NAVIGATORS.CHAT_STACK,
             params: {
-              chatId: chatData.id,
-              name: consultant.name || 'Chat',
-              image: consultant.image || '',
-              userRole: consultant.type || 'doctor',
-              userId: consultant.id,
+              screen: ROUTES.CHAT_DETAILS,
+              params: {
+                chatId: chatData.id,
+                name: consultantName,
+                title: consultantName,
+                image: consultant.image || consultant.photo || '',
+                userRole: consultant.type || 'doctor',
+                userId: consultant.id,
+                returnToBookingId: id,
+              },
             },
           },
         });
       } else {
-        // Fallback to chat list if no chat data
-        navigate(NAVIGATORS.BOTTOM as any, {
-          screen: NAVIGATORS.CHAT_STACK,
+        navigate(NAVIGATORS.DRAWER as any, {
+          screen: NAVIGATORS.BOTTOM,
+          params: {
+            screen: NAVIGATORS.CHAT_STACK,
+            params: { screen: ROUTES.CHAT },
+          },
         });
       }
     } catch (err: any) {
@@ -248,7 +270,7 @@ const useBookingDetailsController = () => {
     }
   };
 
-  const onJoinSession = () => {
+  const onJoinSession = async () => {
     const status = booking?.status?.toLowerCase();
     const isInProgress = status === 'in-progress' || status === 'inprogress';
 
@@ -279,33 +301,74 @@ const useBookingDetailsController = () => {
       return;
     }
 
-    const hasZoomDetails =
-      booking?.sdk_key && booking?.signature && booking?.meeting_number;
+    try {
+      const response = await joinZoomSession(id).unwrap();
+      const session = response?.data as
+        | {
+            session_token?: string;
+            session_name?: string;
+            role?: number;
+          }
+        | undefined;
 
-    if (!hasZoomDetails) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message:
-          'Your appointment is in progress, but the meeting hasn’t been started by the doctor yet. Please wait or try again shortly.',
+      const sessionToken = session?.session_token?.trim();
+      const sessionName = session?.session_name?.trim();
+      const role = Number(session?.role ?? 0);
+
+      if (!sessionToken || !sessionName) {
+        showOkModal({
+          type: 'error',
+          title: 'Error',
+          message:
+            response?.message ||
+            'Could not start the video session. Please try again.',
+        });
+        return;
+      }
+
+      const userName =
+        [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
+        'Participant';
+
+      const consultantName = consultant
+        ? [consultant.first_name, consultant.last_name]
+            .filter(Boolean)
+            .join(' ')
+        : 'Doctor';
+      const patientName =
+        [booking?.first_name, booking?.last_name].filter(Boolean).join(' ') ||
+        'Patient';
+
+      await clearZoomSessionActive();
+
+      (navigation as any).navigate(ROUTES.VIDEO_SESSION, {
+        session_token: sessionToken,
+        session_name: sessionName,
+        user_name: userName,
+        role,
+        doctor_name: consultantName,
+        patient_name: patientName,
+        booking_id: id,
       });
-      return;
+    } catch (err: any) {
+      const apiMessage = err?.data?.message ?? err?.message;
+      const sessionNotStarted = isDoctorSessionNotStartedError(err);
+      const message = mapJoinSessionMessage(apiMessage);
+
+      showOkModal(
+        {
+          type: sessionNotStarted ? 'warning' : 'error',
+          title: sessionNotStarted ? 'Join Session' : 'Error',
+          message,
+          okText: sessionNotStarted ? 'Retry' : 'OK',
+        },
+        sessionNotStarted
+          ? () => {
+              void refetch();
+            }
+          : undefined,
+      );
     }
-
-    // Use logged-in user's name so participant shows their real name in Zoom
-    const userName =
-      [user?.first_name, user?.last_name].filter(Boolean).join(' ').trim() ||
-      'Participant';
-
-    (navigation as any).navigate(ROUTES.ZOOM_MEETING, {
-      sdk_key: booking.sdk_key,
-      signature: booking.signature,
-      meeting_number: String(booking.meeting_number),
-      password: booking.password ?? '',
-      join_url: booking.join_url,
-      userName,
-      booking_id: id,
-    });
   };
 
   const onRateBooking = async (rating: number, review: string) => {
@@ -470,6 +533,7 @@ const useBookingDetailsController = () => {
       isRating,
       isReporting,
       isGivingTip,
+      isJoiningSession,
       isDownloading,
       showRateModal,
       showReportModal,

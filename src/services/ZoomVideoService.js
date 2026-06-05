@@ -1,0 +1,711 @@
+/**
+ * Zoom Video SDK service (wraps @zoom/react-native-videosdk useZoom instance).
+ *
+ * Note: Official npm package is `@zoom/react-native-videosdk` (not @zoom/videosdk-react-native).
+ * Call ZoomVideoService.attach(zoom) from VideoSessionScreen after useZoom() is available.
+ */
+
+import { NativeModules } from 'react-native';
+
+const { RNZoomVideoSdk, RNZoomVideoSdkVideoHelper } = NativeModules;
+
+const SESSION_IDLE_TIMEOUT_MINS = 40;
+
+class ZoomVideoServiceClass {
+  /** @type {import('@zoom/react-native-videosdk').ZoomVideoSdkContext | null} */
+  _zoom = null;
+
+  /** @type {string | null} */
+  _sessionToken = null;
+
+  /** @type {string | null} */
+  _myUserId = null;
+
+  /** @type {boolean} */
+  _isVideoOn = true;
+
+  /** @type {boolean} */
+  _isAudioOn = true;
+
+  /** @type {boolean} */
+  _isSpeakerOn = true;
+
+  /** @type {boolean} */
+  _isBackCamera = false;
+
+  /** @type {string | null} */
+  _frontDeviceId = null;
+
+  /** @type {string | null} */
+  _backDeviceId = null;
+
+  /** @type {boolean | null} */
+  _lastMirrorEnabled = null;
+
+  /** @type {ReturnType<typeof setTimeout>[]} */
+  _rotationLockTimers = [];
+
+  /** @type {boolean} */
+  _releaseInProgress = false;
+
+  /** @type {boolean} */
+  _intentionalLeave = false;
+
+  markIntentionalLeave() {
+    this._intentionalLeave = true;
+  }
+
+  isIntentionalLeave() {
+    return this._intentionalLeave;
+  }
+
+  _clearRotationLockTimers() {
+    this._rotationLockTimers.forEach(id => clearTimeout(id));
+    this._rotationLockTimers = [];
+  }
+
+  /**
+   * Bind the hook instance from ZoomVideoSdkProvider tree.
+   * @param {import('@zoom/react-native-videosdk').ZoomVideoSdkContext} zoomInstance
+   */
+  attach(zoomInstance) {
+    this._zoom = zoomInstance;
+    this._releaseInProgress = false;
+    console.log('[ZoomVideoService] SDK instance attached');
+  }
+
+  /** Detach on screen unmount. */
+  detach() {
+    this._clearRotationLockTimers();
+    this._zoom = null;
+    this._sessionToken = null;
+    this._myUserId = null;
+    this._frontDeviceId = null;
+    this._backDeviceId = null;
+    this._lastMirrorEnabled = null;
+    this._intentionalLeave = false;
+    console.log('[ZoomVideoService] SDK instance detached');
+  }
+
+  /**
+   * Leave an active native session without calling cleanup().
+   * cleanup() tears down initSdk state and breaks the next join.
+   */
+  async releaseActiveSession() {
+    const zoom = this._zoom;
+    if (!zoom) return;
+
+    this._clearRotationLockTimers();
+
+    try {
+      let inSession = false;
+      try {
+        inSession = await zoom.isInSession();
+      } catch (e) {
+        console.log('[ZoomVideoService] releaseActiveSession isInSession', e);
+      }
+
+      if (!inSession) {
+        return;
+      }
+
+      console.log('[ZoomVideoService] Leaving stale native session');
+      try {
+        await zoom.videoHelper.stopVideo();
+      } catch (e) {
+        console.log('[ZoomVideoService] stopVideo on release', e);
+      }
+      try {
+        zoom.leaveSession(false);
+      } catch (e) {
+        console.log('[ZoomVideoService] leaveSession on release', e);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 600));
+    } catch (e) {
+      console.log('[ZoomVideoService] releaseActiveSession', e);
+    }
+
+    this._myUserId = null;
+    this._isVideoOn = true;
+    this._isBackCamera = false;
+    this._frontDeviceId = null;
+    this._backDeviceId = null;
+    this._lastMirrorEnabled = null;
+    this._releaseInProgress = false;
+  }
+
+  /** Best-effort leave on unmount — never call cleanup() here. */
+  releaseActiveSessionSync() {
+    if (this._releaseInProgress) {
+      return;
+    }
+    this._releaseInProgress = true;
+    this._clearRotationLockTimers();
+
+    try {
+      RNZoomVideoSdkVideoHelper?.stopVideo?.();
+    } catch (e) {
+      console.log('[ZoomVideoService] native stopVideo', e);
+    }
+
+    try {
+      RNZoomVideoSdk?.leaveSession?.(false);
+    } catch (e) {
+      console.log('[ZoomVideoService] native leaveSession', e);
+    }
+
+    const zoom = this._zoom;
+    if (zoom) {
+      try {
+        zoom.leaveSession(false);
+      } catch (e) {
+        console.log('[ZoomVideoService] sync leaveSession', e);
+      }
+    }
+
+    this._myUserId = null;
+    console.log('[ZoomVideoService] releaseActiveSessionSync done');
+    this._releaseInProgress = false;
+  }
+
+  _cameraLabel(camera) {
+    // Only use device name for detection, not the ID (IDs like "1" can confuse regex)
+    return (camera?.deviceName || '').toLowerCase();
+  }
+
+  /** Best-effort facing from SDK labels (often generic on Android). */
+  _facingFromLabel(label) {
+    // Check for "front" first (more specific)
+    if (/front|user|selfie|face|facing.*front/.test(label)) {
+      return 'front';
+    }
+    // Then check for "back"
+    if (/back|rear|environment|facing.*back/.test(label)) {
+      return 'back';
+    }
+    return null;
+  }
+
+  _seedFacingMap(cameras, selected) {
+    if (!cameras?.length || !selected?.deviceId) return;
+
+    // Only seed once - don't override learned mappings
+    if (this._frontDeviceId && this._backDeviceId) {
+      console.log('[ZoomVideoService] Camera IDs already learned, skipping seed');
+      return;
+    }
+
+    console.log('[ZoomVideoService] Seeding camera map from labels');
+    for (const cam of cameras) {
+      const label = this._cameraLabel(cam);
+      const facing = this._facingFromLabel(label);
+      console.log('[ZoomVideoService] Camera:', cam.deviceId, label, '-> facing:', facing);
+      if (facing === 'front' && !this._frontDeviceId) {
+        this._frontDeviceId = cam.deviceId;
+        console.log('[ZoomVideoService] Set front camera ID to:', cam.deviceId);
+      }
+      if (facing === 'back' && !this._backDeviceId) {
+        this._backDeviceId = cam.deviceId;
+        console.log('[ZoomVideoService] Set back camera ID to:', cam.deviceId);
+      }
+    }
+
+    // Only use fallback if we couldn't determine from labels
+    if (!this._frontDeviceId && !this._backDeviceId && cameras.length >= 2) {
+      console.log('[ZoomVideoService] Could not determine from labels, using fallback: assuming selected is front');
+      this._frontDeviceId = selected.deviceId;
+      const other = cameras.find(c => c.deviceId !== selected.deviceId);
+      if (other?.deviceId) {
+        this._backDeviceId = other.deviceId;
+      }
+    } else if (this._frontDeviceId && !this._backDeviceId) {
+      const other = cameras.find(c => c.deviceId !== this._frontDeviceId);
+      if (other?.deviceId) {
+        this._backDeviceId = other.deviceId;
+        console.log('[ZoomVideoService] Set back camera ID (by elimination) to:', other.deviceId);
+      }
+    } else if (this._backDeviceId && !this._frontDeviceId) {
+      const other = cameras.find(c => c.deviceId !== this._backDeviceId);
+      if (other?.deviceId) {
+        this._frontDeviceId = other.deviceId;
+        console.log('[ZoomVideoService] Set front camera ID (by elimination) to:', other.deviceId);
+      }
+    }
+  }
+
+  _learnFacingFromSwitch(previousId, newId, preferBack) {
+    if (!previousId || !newId || previousId === newId) return;
+    if (preferBack) {
+      this._backDeviceId = newId;
+      this._frontDeviceId = previousId;
+    } else {
+      this._frontDeviceId = newId;
+      this._backDeviceId = previousId;
+    }
+  }
+
+  _isDeviceBack(cameras, device) {
+    if (!device?.deviceId) return this._isBackCamera;
+
+    if (this._backDeviceId && device.deviceId === this._backDeviceId) {
+      return true;
+    }
+    if (this._frontDeviceId && device.deviceId === this._frontDeviceId) {
+      return false;
+    }
+
+    const facing = this._facingFromLabel(this._cameraLabel(device));
+    if (facing === 'back') return true;
+    if (facing === 'front') return false;
+
+    if (cameras?.length > 1) {
+      const idx = cameras.findIndex(c => c.deviceId === device.deviceId);
+      return idx === cameras.length - 1;
+    }
+    return false;
+  }
+
+  async _getCameraList() {
+    const zoom = this._requireZoom();
+    return (await zoom.videoHelper.getCameraList()) || [];
+  }
+
+  _getSelectedCamera(cameras) {
+    return cameras.find(c => c.isSelectedDevice) ?? cameras[0] ?? null;
+  }
+
+  _requireZoom() {
+    if (!this._zoom) {
+      throw new Error(
+        'Zoom Video SDK is not ready. Open VideoSessionScreen inside ZoomVideoSdkProvider.',
+      );
+    }
+    return this._zoom;
+  }
+
+  /**
+   * Store JWT before join. Native SDK is initialized by ZoomVideoSdkProvider.
+   * @param {string} sessionToken
+   */
+  async initializeSDK(sessionToken) {
+    if (!sessionToken?.trim()) {
+      throw new Error('session_token is required');
+    }
+    this._sessionToken = sessionToken.trim();
+    console.log('[ZoomVideoService] Session token stored for join');
+    return true;
+  }
+
+  /**
+   * Join a Video SDK session.
+   * @param {{ sessionName: string, userName: string, sessionToken?: string, sessionPassword?: string }} params
+   */
+  async joinSession({ sessionName, userName, sessionToken, sessionPassword = '' }) {
+    const zoom = this._requireZoom();
+    const token = (sessionToken || this._sessionToken || '').trim();
+    if (!token) {
+      throw new Error('session_token is required to join');
+    }
+    if (!sessionName?.trim()) {
+      throw new Error('session_name is required to join');
+    }
+    if (!userName?.trim()) {
+      throw new Error('user_name is required to join');
+    }
+
+    console.log('[ZoomVideoService] Joining session', sessionName);
+
+    const session = await zoom.joinSession({
+      sessionName: sessionName.trim(),
+      sessionPassword,
+      token,
+      userName: userName.trim(),
+      audioOptions: {
+        connect: true,
+        mute: false,
+        autoAdjustSpeakerVolume: true,
+      },
+      videoOptions: {
+        localVideoOn: true,
+      },
+      sessionIdleTimeoutMins: SESSION_IDLE_TIMEOUT_MINS,
+    });
+
+    // getMySelf() only after onSessionJoin / isInSession — session is null until then.
+    this._isVideoOn = true;
+    this._isAudioOn = true;
+    this._isBackCamera = false;
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Lock rotation to portrait mode once at initialization
+    try {
+      await zoom.videoHelper.rotateMyVideo(0);
+      console.log('[ZoomVideoService] Locked video rotation to portrait (0)');
+    } catch (e) {
+      console.log('[ZoomVideoService] Could not set rotation:', e);
+    }
+    
+    // Apply initial mirror settings
+    await this.applyPortraitVideoSettings(false);
+    console.log('[ZoomVideoService] Applied initial portrait video settings');
+
+    return session;
+  }
+
+  /**
+   * Poll until native session is active (join is async).
+   * @param {number} timeoutMs
+   */
+  async waitUntilInSession(timeoutMs = 20000) {
+    const zoom = this._requireZoom();
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        if (await zoom.isInSession()) {
+          return true;
+        }
+      } catch (e) {
+        console.log('[ZoomVideoService] isInSession poll', e);
+      }
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    try {
+      return await zoom.isInSession();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Leave or end session.
+   * @param {boolean} isHost — true ends session for everyone
+   */
+  leaveSession(isHost = false) {
+    const zoom = this._requireZoom();
+    console.log('[ZoomVideoService] leaveSession', { isHost });
+    zoom.leaveSession(Boolean(isHost));
+    this._myUserId = null;
+  }
+
+  /** Cleanup native SDK resources. */
+  cleanup() {
+    try {
+      const zoom = this._zoom;
+      if (zoom?.cleanup) {
+        zoom.cleanup();
+        console.log('[ZoomVideoService] cleanup() called');
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] cleanup error', e);
+    }
+    this.detach();
+  }
+
+  /**
+   * Portrait app: apply rotation lock and mirroring for the active camera.
+   * @param {boolean} isBackCamera
+   * @param {boolean} forceLockRotation - Force rotation lock (used after camera switches)
+   */
+  async applyPortraitVideoSettings(isBackCamera, forceLockRotation = false) {
+    const zoom = this._requireZoom();
+    const shouldMirror = !isBackCamera;
+
+    try {
+      // Force rotation lock after camera switches to prevent SDK auto-rotation
+      if (forceLockRotation) {
+        await zoom.videoHelper.rotateMyVideo(0);
+        console.log('[ZoomVideoService] Force-locked rotation to portrait (0)');
+        
+        // Apply rotation lock multiple times to override SDK's orientation listener
+        // The SDK appears to have a delayed orientation listener that kicks in ~1 second
+        this._clearRotationLockTimers();
+        const reapplyTimes = [800, 1400, 2000];
+        reapplyTimes.forEach(delayMs => {
+          const timerId = setTimeout(async () => {
+            if (!this._zoom) return;
+            try {
+              await zoom.videoHelper.rotateMyVideo(0);
+              console.log(`[ZoomVideoService] Re-applied rotation lock after ${delayMs}ms`);
+            } catch {
+              // zoom may be detached after reload/unmount
+            }
+          }, delayMs);
+          this._rotationLockTimers.push(timerId);
+        });
+      }
+      
+      // Apply mirroring based on camera
+      if (this._lastMirrorEnabled !== shouldMirror) {
+        await zoom.videoHelper.mirrorMyVideo(shouldMirror);
+        this._lastMirrorEnabled = shouldMirror;
+        console.log('[ZoomVideoService] Set mirror to:', shouldMirror, 'for', isBackCamera ? 'back' : 'front', 'camera');
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] applyPortraitVideoSettings error:', e);
+    }
+    this._isBackCamera = isBackCamera;
+  }
+
+  /** Read which camera is active (uses learned device ids after first toggle). */
+  async getActiveCameraIsBack() {
+    try {
+      const cameras = await this._getCameraList();
+      const selected = this._getSelectedCamera(cameras);
+      this._seedFacingMap(cameras, selected);
+      return this._isDeviceBack(cameras, selected);
+    } catch {
+      return this._isBackCamera;
+    }
+  }
+
+  /**
+   * Toggle front ↔ back. When the physical camera changes we trust the
+   * requested facing (Android device names are often not "front"/"back").
+   * @param {boolean} preferBack
+   */
+  async switchToFacing(preferBack) {
+    const zoom = this._requireZoom();
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    console.log('[ZoomVideoService] switchToFacing called, preferBack:', preferBack);
+
+    const cameras = await this._getCameraList();
+    console.log('[ZoomVideoService] Available cameras:', 
+      cameras.map(c => ({ id: c.deviceId, name: c.deviceName, selected: c.isSelectedDevice }))
+    );
+
+    if (!cameras.length) {
+      console.log('[ZoomVideoService] No cameras found');
+      return { switched: false, isBackCamera: this._isBackCamera };
+    }
+
+    const selected = this._getSelectedCamera(cameras);
+    console.log('[ZoomVideoService] Currently selected camera:', 
+      { id: selected?.deviceId, name: selected?.deviceName }
+    );
+
+    this._seedFacingMap(cameras, selected);
+    console.log('[ZoomVideoService] Learned device IDs - front:', this._frontDeviceId, 'back:', this._backDeviceId);
+
+    const currentIsBack = this._isDeviceBack(cameras, selected);
+    console.log('[ZoomVideoService] Current camera is back?', currentIsBack, 'want back?', preferBack);
+
+    // Don't return early - always attempt to switch to ensure we're on the right camera
+    const previousId = selected?.deviceId ?? null;
+    const target =
+      (preferBack
+        ? cameras.find(c => c.deviceId === this._backDeviceId)
+        : cameras.find(c => c.deviceId === this._frontDeviceId)) ??
+      cameras.find(c => c.deviceId !== previousId) ??
+      null;
+
+    console.log('[ZoomVideoService] Target camera:', 
+      { id: target?.deviceId, name: target?.deviceName }
+    );
+
+    const wasVideoOn = this._isVideoOn;
+    try {
+      if (wasVideoOn) {
+        console.log('[ZoomVideoService] Stopping video before switch');
+        await zoom.videoHelper.stopVideo();
+        await delay(150);
+      }
+
+      let switched = false;
+      
+      // Try generic switchCamera() first - it's more reliable on some devices
+      console.log('[ZoomVideoService] Switching camera (generic)');
+      switched = await zoom.videoHelper.switchCamera();
+      console.log('[ZoomVideoService] Generic switch result:', switched);
+      
+      // If generic didn't work and we have a specific target, try that
+      if (!switched && target?.deviceId && target.deviceId !== previousId) {
+        console.log('[ZoomVideoService] Generic switch failed, trying specific camera:', target.deviceId);
+        switched = await zoom.videoHelper.switchCamera(target.deviceId);
+        console.log('[ZoomVideoService] Specific switch result:', switched);
+      }
+
+      await delay(320);
+
+      if (wasVideoOn) {
+        console.log('[ZoomVideoService] Restarting video after switch');
+        await zoom.videoHelper.startVideo();
+        // Wait longer for video stream to fully stabilize before applying settings
+        await delay(750);
+      }
+
+      const afterCameras = await this._getCameraList();
+      const newSelected = this._getSelectedCamera(afterCameras);
+      console.log('[ZoomVideoService] After switch, selected camera:', 
+        { id: newSelected?.deviceId, name: newSelected?.deviceName }
+      );
+
+      const didChange =
+        Boolean(newSelected?.deviceId) &&
+        Boolean(previousId) &&
+        newSelected.deviceId !== previousId;
+
+      console.log('[ZoomVideoService] Did device ID change?', didChange);
+
+      if (didChange) {
+        this._learnFacingFromSwitch(previousId, newSelected.deviceId, preferBack);
+        console.log('[ZoomVideoService] Learned from switch - applying settings for preferBack:', preferBack);
+        await this.applyPortraitVideoSettings(preferBack, true);
+        return { switched: true, isBackCamera: preferBack };
+      }
+
+      // If device ID didn't change but we wanted to switch, try one more time with generic switch
+      if (currentIsBack !== preferBack && !didChange) {
+        console.log('[ZoomVideoService] Device ID unchanged but camera facing is wrong, trying one more generic switch');
+        await zoom.videoHelper.switchCamera();
+        await delay(320);
+        
+        const finalCameras = await this._getCameraList();
+        const finalSelected = this._getSelectedCamera(finalCameras);
+        const finalBack = this._isDeviceBack(finalCameras, finalSelected);
+        console.log('[ZoomVideoService] After final retry - camera is back?', finalBack);
+        
+        await this.applyPortraitVideoSettings(preferBack, true);
+        return { switched: finalBack === preferBack, isBackCamera: preferBack };
+      }
+
+      const fallbackBack = this._isDeviceBack(afterCameras, newSelected);
+      console.log('[ZoomVideoService] Using fallback facing:', fallbackBack);
+      await this.applyPortraitVideoSettings(fallbackBack, true);
+      return { switched: Boolean(switched), isBackCamera: fallbackBack };
+    } catch (e) {
+      console.log('[ZoomVideoService] switchToFacing error:', e);
+      if (wasVideoOn && this._isVideoOn) {
+        try {
+          await zoom.videoHelper.startVideo();
+        } catch (startErr) {
+          console.log('[ZoomVideoService] restart video error:', startErr);
+        }
+      }
+      return { switched: false, isBackCamera: this._isBackCamera };
+    }
+  }
+
+  /** Toggle local camera on/off. */
+  async toggleVideo() {
+    const zoom = this._requireZoom();
+    if (this._isVideoOn) {
+      await zoom.videoHelper.stopVideo();
+      this._isVideoOn = false;
+    } else {
+      await zoom.videoHelper.startVideo();
+      this._isVideoOn = true;
+      // Lock rotation and apply mirror settings when video is turned back on
+      await this.applyPortraitVideoSettings(this._isBackCamera, true);
+    }
+    console.log('[ZoomVideoService] Video', this._isVideoOn ? 'ON' : 'OFF');
+    return this._isVideoOn;
+  }
+
+  /** Toggle local mic mute/unmute. */
+  async toggleAudio() {
+    const zoom = this._requireZoom();
+    let userId = this._myUserId;
+    if (!userId) {
+      const myself = await zoom.session.getMySelf();
+      userId = myself?.userId;
+      this._myUserId = userId ?? null;
+    }
+    if (!userId) {
+      throw new Error('Cannot toggle audio: local user id not found');
+    }
+
+    if (this._isAudioOn) {
+      await zoom.audioHelper.muteAudio(userId);
+      this._isAudioOn = false;
+    } else {
+      await zoom.audioHelper.unmuteAudio(userId);
+      this._isAudioOn = true;
+    }
+    console.log('[ZoomVideoService] Audio', this._isAudioOn ? 'ON' : 'OFF');
+    return this._isAudioOn;
+  }
+
+  /** Toggle speaker (earpiece vs speaker). */
+  async toggleSpeaker() {
+    const zoom = this._requireZoom();
+    this._isSpeakerOn = !this._isSpeakerOn;
+    await zoom.audioHelper.setSpeaker(this._isSpeakerOn);
+    console.log('[ZoomVideoService] Speaker', this._isSpeakerOn ? 'ON' : 'OFF');
+    return this._isSpeakerOn;
+  }
+
+  getIsVideoOn() {
+    return this._isVideoOn;
+  }
+
+  getIsAudioOn() {
+    return this._isAudioOn;
+  }
+
+  getIsSpeakerOn() {
+    return this._isSpeakerOn;
+  }
+
+  /** Current session metadata. */
+  async getSessionInfo() {
+    const zoom = this._requireZoom();
+    const inSession = await zoom.isInSession();
+    if (!inSession) {
+      return { inSession: false };
+    }
+
+    const [sessionName, sessionId, remoteUsers, myself] = await Promise.all([
+      zoom.session.getSessionName(),
+      zoom.session.getSessionID(),
+      zoom.session.getRemoteUsers(),
+      zoom.session.getMySelf(),
+    ]);
+
+    const mappedRemoteUsers = await Promise.all(
+      (remoteUsers || []).map(async u => {
+        let isVideoOn = false;
+        try {
+          isVideoOn = (await u.videoStatus?.isOn?.()) === true;
+        } catch (e) {
+          console.log('[ZoomVideoService] remote videoStatus.isOn', e);
+        }
+        return {
+          userId: u.userId,
+          userName: u.userName,
+          isHost: u.isHost,
+          isVideoOn,
+        };
+      }),
+    );
+
+    return {
+      inSession: true,
+      sessionName,
+      sessionId,
+      myUserId: myself?.userId ?? this._myUserId,
+      myUserName: myself?.userName,
+      remoteUsers: mappedRemoteUsers,
+    };
+  }
+
+  /** First remote participant userId for ZoomView. */
+  async getPrimaryRemoteUserId() {
+    const info = await this.getSessionInfo();
+    return info.remoteUsers?.[0]?.userId ?? null;
+  }
+
+  async getMyUserId() {
+    if (this._myUserId) return this._myUserId;
+    const zoom = this._requireZoom();
+    const myself = await zoom.session.getMySelf();
+    this._myUserId = myself?.userId ?? null;
+    return this._myUserId;
+  }
+}
+
+const ZoomVideoService = new ZoomVideoServiceClass();
+
+export default ZoomVideoService;

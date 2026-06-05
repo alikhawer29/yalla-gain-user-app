@@ -1,42 +1,8 @@
-diff --git a/node_modules/react-native-app-auth/android/.project b/node_modules/react-native-app-auth/android/.project
-new file mode 100644
-index 0000000..fd2ab94
---- /dev/null
-+++ b/node_modules/react-native-app-auth/android/.project
-@@ -0,0 +1,28 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<projectDescription>
-+	<name>react-native-app-auth</name>
-+	<comment>Project react-native-app-auth created by Buildship.</comment>
-+	<projects>
-+	</projects>
-+	<buildSpec>
-+		<buildCommand>
-+			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
-+			<arguments>
-+			</arguments>
-+		</buildCommand>
-+	</buildSpec>
-+	<natures>
-+		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
-+	</natures>
-+	<filteredResources>
-+		<filter>
-+			<id>1775127557129</id>
-+			<name></name>
-+			<type>30</type>
-+			<matcher>
-+				<id>org.eclipse.core.resources.regexFilterMatcher</id>
-+				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
-+			</matcher>
-+		</filter>
-+	</filteredResources>
-+</projectDescription>
 diff --git a/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java b/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
-index dd35442..41a4cf1 100644
+index dd35442..2243edb 100644
 --- a/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
 +++ b/node_modules/react-native-app-auth/android/src/main/java/com/rnappauth/RNAppAuthModule.java
-@@ -669,7 +669,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+@@ -674,7 +674,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
          }
  
          final Context context = this.reactContext;
@@ -44,7 +10,7 @@ index dd35442..41a4cf1 100644
  
          AuthorizationRequest.Builder authRequestBuilder = new AuthorizationRequest.Builder(
                  serviceConfiguration,
-@@ -725,27 +724,45 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+@@ -734,27 +733,45 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
              authRequestBuilder.setNonce(null);
          }
  
@@ -53,8 +19,6 @@ index dd35442..41a4cf1 100644
  
 -        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
 -            AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
-+        // @ReactMethod runs off the main thread; getCurrentActivity() is often null until we
-+        // post to the UI queue (especially with New Architecture / ReactHost).
 +        reactContext.runOnUiQueueThread(new Runnable() {
 +            @Override
 +            public void run() {
@@ -70,29 +34,32 @@ index dd35442..41a4cf1 100644
 +                }
  
 -            CustomTabsIntent.Builder intentBuilder = authService.createCustomTabsIntentBuilder();
--            CustomTabsIntent customTabsIntent = intentBuilder.build();
-+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-+                    AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
- 
+-            CustomTabsIntent customTabsIntent = intentBuilder.setEphemeralBrowsingEnabled(androidPrefersEphemeralSession).build();
+-            
 -            if (androidTrustedWebActivity) {
 -                customTabsIntent.intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
 -            }
-+                    CustomTabsIntent.Builder intentBuilder = authService.createCustomTabsIntentBuilder();
-+                    CustomTabsIntent customTabsIntent = intentBuilder.build();
++                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
++                    AuthorizationService authService = new AuthorizationService(context, appAuthConfiguration);
  
 -            Intent authIntent = authService.getAuthorizationRequestIntent(authRequest, customTabsIntent);
-+                    if (androidTrustedWebActivity) {
-+                        customTabsIntent.intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
-+                    }
++                    CustomTabsIntent.Builder intentBuilder = authService.createCustomTabsIntentBuilder();
++                    CustomTabsIntent customTabsIntent = intentBuilder
++                            .setEphemeralBrowsingEnabled(androidPrefersEphemeralSession)
++                            .build();
  
 -            currentActivity.startActivityForResult(authIntent, 52);
 -        } else {
 -            AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
 -            PendingIntent pendingIntent = currentActivity.createPendingResult(52, new Intent(), 0);
-+                    Intent authIntent = authService.getAuthorizationRequestIntent(authRequest, customTabsIntent);
++                    if (androidTrustedWebActivity) {
++                        customTabsIntent.intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
++                    }
  
 -            authService.performAuthorizationRequest(authRequest, pendingIntent);
 -        }
++                    Intent authIntent = authService.getAuthorizationRequestIntent(authRequest, customTabsIntent);
++
 +                    currentActivity.startActivityForResult(authIntent, 52);
 +                } else {
 +                    AuthorizationService authService = new AuthorizationService(currentActivity, appAuthConfiguration);
@@ -105,7 +72,7 @@ index dd35442..41a4cf1 100644
      }
  
      /*
-@@ -820,7 +837,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+@@ -828,7 +845,6 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
              final String postLogoutRedirectUri,
              final Map<String, String> additionalParametersMap) {
          final Context context = this.reactContext;
@@ -113,7 +80,7 @@ index dd35442..41a4cf1 100644
  
          EndSessionRequest.Builder endSessionRequestBuilder = new EndSessionRequest.Builder(serviceConfiguration)
                  .setIdTokenHint(idTokenHint)
-@@ -834,19 +850,35 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
+@@ -842,19 +858,35 @@ public class RNAppAuthModule extends ReactContextBaseJavaModule implements Activ
              endSessionRequestBuilder.setAdditionalParameters(additionalParametersMap);
          }
  

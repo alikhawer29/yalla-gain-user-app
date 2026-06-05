@@ -417,6 +417,12 @@ export const userApi = createApi({
       // Alternative: Set cache time to 0
       keepUnusedDataFor: 0, // Immediately remove from cache when unused
     }),
+    joinZoomSession: builder.mutation({
+      query: (id: number) => ({
+        url: `my-booking/${id}/zoom/join-session`,
+        method: 'POST',
+      }),
+    }),
     getDoctorReviews: builder.query({
       query: id => ({
         url: `doctor-reviews/${id}`,
@@ -789,6 +795,7 @@ export const {
   useBookAppointmentMutation,
   useGetMyBookingsQuery,
   useGetBookingDetailsQuery,
+  useJoinZoomSessionMutation,
   useGetDoctorReviewsQuery,
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,

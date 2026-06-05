@@ -57,7 +57,9 @@ const ROUTES = {
   APPOINTMENT_BOOKING: 'AppointmentBooking',
   MY_BOOKINGS: 'MyBookings',
   BOOKING_DETAILS: 'BookingDetails',
-  ZOOM_MEETING: 'ZoomMeeting',
+  VIDEO_SESSION: 'VideoSession',
+  /** @deprecated Use VIDEO_SESSION */
+  ZOOM_MEETING: 'VideoSession',
   REVIEWS: 'Reviews',
   NETWORK_LOGGER: 'NetworkLogger',
   CHAT_DETAILS: 'ChatDetails',
@@ -313,11 +315,11 @@ const ROUTES_OPTIONS = [
     title: 'Booking Details',
   },
   {
-    route_name: ROUTES.ZOOM_MEETING,
+    route_name: ROUTES.VIDEO_SESSION,
     left: 'null',
     right: null,
     logo: false,
-    title: 'Zoom Meeting',
+    title: 'Video Session',
   },
   {
     route_name: ROUTES.REVIEWS,

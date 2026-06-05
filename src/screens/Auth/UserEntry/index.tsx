@@ -50,6 +50,7 @@ const UserEntry = () => {
                     label="Gender"
                     placeholder="Select Gender"
                     options={GENDER_OPTIONS}
+                    required
                     value={data?.gender}
                     onChangeText={(e: { value?: string }) => setFieldValue("gender", e?.value ?? "")}
                     error={touched?.gender ? errors?.gender : ""}

@@ -63,14 +63,13 @@ export type RootStackParamList = {
     AppointmentBooking: { serviceId: number; type: 'doctor' | 'trainer'; charges: string }
     MyBookings: undefined
     BookingDetails: { id: number; refreshAfterMeeting?: boolean }
-    ZoomMeeting: {
-        sdk_key?: string
-        signature: string
-        meeting_number: string
-        password?: string
-        join_url?: string
-        userName?: string
-        /** Used after meeting ends to open booking details + refresh status */
+    VideoSession: {
+        session_token: string
+        session_name: string
+        user_name: string
+        role?: number
+        doctor_name?: string
+        patient_name?: string
         booking_id?: number
     }
     Reviews: { consultant_id: number }
@@ -81,6 +80,8 @@ export type RootStackParamList = {
         image: string;
         userRole: string;
         userId: number;
+        returnToBookingId?: number;
+        title?: string;
     }
     // Wallet
     Wallet: undefined;

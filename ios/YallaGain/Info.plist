@@ -77,9 +77,9 @@
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>We will use your Bluetooth to access your Bluetooth headphones.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>For people to see you during meetings, we need access to your camera.</string>
+	<string>Camera for video sessions</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>For people to hear you during meetings, we need access to your microphone.</string>
+	<string>Microphone for audio in sessions</string>
 	<key>NSContactsUsageDescription</key>
 	<string>YallaGain needs access to your contacts so you can quickly invite and connect with teammates.</string>
 	<key>NSCalendarsUsageDescription</key>

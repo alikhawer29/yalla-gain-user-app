@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { FlatList } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { BackHandler, FlatList } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Toast from 'react-native-toast-message';
@@ -8,6 +8,7 @@ import { useGetChatQuery, useSendMessageMutation } from '../../redux/Apis/User';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { IChatMessage } from '../../interfaces';
 import socketService from '../../services/socketService';
+import { navigateToBookingDetails } from '../../utils/navigation';
 import { ChatSelectedAttachment } from './types';
 import { isAllowedChatOutgoingAttachment } from '../../utils/chatMedia';
 
@@ -17,13 +18,36 @@ interface RouteParams {
   image: string;
   userRole: string;
   userId: number;
+  returnToBookingId?: number;
+  title?: string;
 }
 
 const useChatDetailsController = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const params = route.params as RouteParams;
   const flatlistRef = useRef<FlatList>(null);
   const user = useSelector(selectUser);
+
+  const consultantDisplayName = params.name?.trim() || 'Chat';
+
+  useLayoutEffect(() => {
+    navigation.setParams({
+      title: consultantDisplayName,
+    } as { title: string });
+  }, [navigation, consultantDisplayName]);
+
+  useEffect(() => {
+    if (!params.returnToBookingId) return;
+
+    const onHardwareBack = () => {
+      navigateToBookingDetails(params.returnToBookingId!);
+      return true;
+    };
+
+    const sub = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+    return () => sub.remove();
+  }, [params.returnToBookingId]);
 
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<IChatMessage[]>([]);
@@ -198,7 +222,7 @@ const useChatDetailsController = () => {
     },
     values: {
       chatId: params.chatId,
-      chatName: params.name,
+      chatName: consultantDisplayName,
       chatImage: params.image,
       userRole: params.userRole,
       userId: params.userId,

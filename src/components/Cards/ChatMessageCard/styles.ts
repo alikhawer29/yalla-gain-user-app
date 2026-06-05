@@ -19,7 +19,8 @@ const styles = StyleSheet.create({
     marginTop: heightPixel(8),
   },
   message_bubble: {
-    flex: 1,
+    flexShrink: 1,
+    maxWidth: '78%',
     borderRadius: heightPixel(10),
     padding: heightPixel(10),
     marginTop: heightPixel(8),

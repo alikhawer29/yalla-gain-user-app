@@ -53,6 +53,30 @@ export const navigateToHome = () => {
     }
 };
 
+export const navigateToChatList = () => {
+  if (navigationRef.isReady()) {
+    (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+      screen: NAVIGATORS.BOTTOM,
+      params: {
+        screen: NAVIGATORS.CHAT_STACK,
+        params: { screen: ROUTES.CHAT },
+      },
+    });
+  }
+};
+
+export const navigateToBookingDetails = (bookingId: number) => {
+  if (navigationRef.isReady()) {
+    (navigationRef as any).navigate(NAVIGATORS.DRAWER, {
+      screen: NAVIGATORS.CONSULTATION_STACK,
+      params: {
+        screen: ROUTES.BOOKING_DETAILS,
+        params: { id: bookingId },
+      },
+    });
+  }
+};
+
 /** Navigate to Challenges stack from drawer level */
 export const navigateToChallenges = () => {
   if (navigationRef.isReady()) {

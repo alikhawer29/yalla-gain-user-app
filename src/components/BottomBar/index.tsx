@@ -85,18 +85,20 @@ const BottomBar = ({ state, descriptors, navigation }) => {
                             return;
                         }
 
-                        if (!isFocused && !event.defaultPrevented) {
-                            // Reset stack for Chat tab to go back to Chat list
-                            if (route.name === NAVIGATORS.CHAT_STACK) {
+                        if (route.name === NAVIGATORS.CHAT_STACK) {
+                            if (!event.defaultPrevented) {
                                 navigation.dispatch(
-                                    CommonActions.reset({
-                                        index: 0,
-                                        routes: [{ name: route.name }],
-                                    })
+                                    CommonActions.navigate({
+                                        name: NAVIGATORS.CHAT_STACK,
+                                        params: { screen: ROUTES.CHAT },
+                                    }),
                                 );
-                            } else {
-                                navigation.navigate(route.name, route.params);
                             }
+                            return;
+                        }
+
+                        if (!isFocused && !event.defaultPrevented) {
+                            navigation.navigate(route.name, route.params);
                         }
                     };
 

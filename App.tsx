@@ -1,7 +1,8 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useEffect } from 'react';
-import { AppState, StatusBar, StyleSheet } from 'react-native';
+import { AppState, LogBox, StatusBar, StyleSheet } from 'react-native';
+import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import BootSplash from 'react-native-bootsplash';
 import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -23,6 +24,10 @@ import { navigationRef } from './src/utils/navigation';
 const STRIPE_PUBLISHABLE_KEY =
   'pk_test_51OHpI2EN9IooQZRaU3MAJ8mKTWdFhvI7vequEoOlA9qlEOP1gdLKSB01ec6GeJkfAjHgQjipR85UligbuLBs5UaI00aoghaww7';
 
+// Zoom Video SDK native module (harmless RN 0.82 warning).
+LogBox.ignoreLogs([
+  '`new NativeEventEmitter()` was called with a non-null argument',
+]);
 
 function App() {
   useEffect(() => {
@@ -80,7 +85,14 @@ function App() {
               <MenuProvider>
                 <ModalProvider>
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
-                    <AppStackNavigator />
+                    <ZoomVideoSdkProvider
+                      config={{
+                        domain: 'zoom.us',
+                        enableLog: __DEV__,
+                      }}
+                    >
+                      <AppStackNavigator />
+                    </ZoomVideoSdkProvider>
                     {/* <NetworkLoggerFAB /> */}
                     <Toast />
                   </NavigationContainer>

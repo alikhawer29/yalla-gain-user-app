@@ -18,7 +18,7 @@ const BookingDetails = () => {
     const {
         values: {
             booking, service, consultant, isLoading, isApproving, isRejecting,
-            isCreatingChat, isRating, isReporting, isGivingTip, isDownloading,
+            isCreatingChat, isRating, isReporting, isGivingTip, isJoiningSession, isDownloading,
             showRateModal, showReportModal, showTipModal
         },
         functions: {
@@ -231,6 +231,8 @@ const BookingDetails = () => {
                     <Button
                         text="Join Session"
                         onPress={onJoinSession}
+                        loading={isJoiningSession}
+                        disabled={isUpcoming || isJoiningSession}
                         style={isUpcoming ? styles.disabled : {}}
                     />
                 </>

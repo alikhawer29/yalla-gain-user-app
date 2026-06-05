@@ -10,7 +10,7 @@ import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
-import { goBack, navigate } from "../../utils/navigation"
+import { goBack, navigate, navigateToBookingDetails } from "../../utils/navigation"
 import { ROUTES, ROUTES_OPTIONS } from "../../utils/routes"
 import { useGetNotificationsQuery } from "../../redux/Apis/User"
 
@@ -22,6 +22,7 @@ interface OptionsProps {
     name?: string
     params?: {
       title?: string
+      returnToBookingId?: number
     }
   }
   navigation?: StackNavigationProp<any, any> | {
@@ -55,6 +56,14 @@ function OptionsHeader(props: OptionsProps) {
 
   const handleLeftPress = () => {
     if (route?.left === "back") {
+      const returnToBookingId = props?.route?.params?.returnToBookingId
+      if (
+        (props?.route as { name?: string })?.name === ROUTES.CHAT_DETAILS &&
+        returnToBookingId
+      ) {
+        navigateToBookingDetails(Number(returnToBookingId))
+        return
+      }
       goBack()
     } else if (route?.left === "drawer") {
       const nav = props?.navigation as any
@@ -118,6 +127,11 @@ function OptionsHeader(props: OptionsProps) {
   }
 
   const renderTitle = () => {
+    const headerTitle =
+      props?.route?.params?.title ||
+      (route && 'title' in route ? route.title : undefined) ||
+      '';
+
     return route?.logo ? (
       <Image style={styles.logo} source={images.logo} />
     ) : (
@@ -131,7 +145,7 @@ function OptionsHeader(props: OptionsProps) {
           size={22}
           position="center"
         >
-          {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
+          {headerTitle}
         </Text>
       </View>
     )

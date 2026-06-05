@@ -100,6 +100,7 @@ const useChatController = () => {
     navigate(ROUTES.CHAT_DETAILS, {
       chatId: chat.id,
       name: chat.name,
+      title: chat.name,
       image: chat.image,
       userRole: chat.user_role,
       userId: chat.user_id,

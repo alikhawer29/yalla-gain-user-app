@@ -13,7 +13,15 @@ const styles = StyleSheet.create({
   content_container: {
     flex: 0.88,
     height: '100%',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
+    gap: heightPixel(6),
+  },
+  name: {
+    flex: 1,
+  },
+  time_row: {
+    flexShrink: 0,
+    marginTop: heightPixel(2),
   },
   badge: {
     paddingVertical: heightPixel(1),

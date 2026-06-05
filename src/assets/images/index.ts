@@ -40,6 +40,7 @@ const images = {
   polling: require('./polling.png'),
   gallery: require('./gallery.png'),
   video: require('./video.png'),
+  flip: require('./flip.png'),
   clock: require('./clock.png'),
   tab_chat: require('./tab_chat.png'),
   tab_gallery: require('./tab_gallery.png'),

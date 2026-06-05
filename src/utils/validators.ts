@@ -111,11 +111,9 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
         return !/^(.)\1+$/.test(digits);
       },
     ),
-  gender: Yup.string().test(
-    'valid-gender',
-    'Please select a valid gender',
-    value => !value || value === 'male' || value === 'female',
-  ),
+  gender: Yup.string()
+    .required('Gender is required')
+    .oneOf(['male', 'female'], 'Please select a valid gender'),
   photo: Yup.mixed().required('Profile Image is required'),
 });
 
@@ -147,11 +145,9 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
       const digits = (value || '').replace(/\D/g, '');
       return digits.length >= 6 && digits.length <= 15;
     }),
-  gender: Yup.string().test(
-    'valid-gender',
-    'Please select a valid gender',
-    value => !value || value === 'male' || value === 'female',
-  ),
+  gender: Yup.string()
+    .required('Gender is required')
+    .oneOf(['male', 'female'], 'Please select a valid gender'),
 });
 
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
