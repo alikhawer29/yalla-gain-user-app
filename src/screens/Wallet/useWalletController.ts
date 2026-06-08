@@ -3,11 +3,13 @@ import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import {
+  userApi,
   useGetWalletCoinsQuery,
   useBuyYallaCoinMutation,
   useConfirmPaymentMutation,
 } from '../../redux/Apis/User';
 import { useStripe } from '@stripe/stripe-react-native';
+import { confirmTransactionWithFee } from '../../utils/transactionCommission';
 
 const useWalletController = () => {
   const {
@@ -21,7 +23,9 @@ const useWalletController = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-  const { showOkModal } = useModal();
+  const { showOkModal, showYesNoModal } = useModal();
+  const [fetchTransactionCommission] =
+    userApi.useLazyGetTransactionCommissionQuery();
 
   const initializePaymentSheet = useCallback(
     async (clientSecret: string) => {
@@ -63,17 +67,8 @@ const useWalletController = () => {
     }
   }, [presentPaymentSheet]);
 
-  const handlePayment = useCallback(
+  const proceedWithPayment = useCallback(
     async (amount: string) => {
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        showOkModal({
-          type: 'error',
-          title: 'Invalid Amount',
-          message: 'Please enter a valid amount',
-        });
-        return;
-      }
-
       try {
         // Make the API call to buy coins and get clientSecret
         const response = await buyCoins({ amount }).unwrap();
@@ -139,6 +134,35 @@ const useWalletController = () => {
       initializePaymentSheet,
       openPaymentSheet,
       refetchWallet,
+    ],
+  );
+
+  const handlePayment = useCallback(
+    async (amount: string) => {
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        showOkModal({
+          type: 'error',
+          title: 'Invalid Amount',
+          message: 'Please enter a valid amount',
+        });
+        return;
+      }
+
+      await confirmTransactionWithFee(
+        fetchTransactionCommission,
+        showYesNoModal,
+        showOkModal,
+        'buy',
+        () => {
+          void proceedWithPayment(amount);
+        },
+      );
+    },
+    [
+      fetchTransactionCommission,
+      showYesNoModal,
+      showOkModal,
+      proceedWithPayment,
     ],
   );
 

@@ -218,7 +218,8 @@ export const ModalProvider = ({ children }) => {
                     >
                       <Button
                         text={modalContent.yesText || 'Yes'}
-                        style={{ width: '50%', minWidth: 'auto' }}
+                        style={styles.modalActionButton}
+                        font_size={14}
                         onPress={() => {
                           setIsVisible(false);
                           setTimeout(() => {
@@ -229,7 +230,8 @@ export const ModalProvider = ({ children }) => {
                       <Button
                         text={modalContent.noText || 'No'}
                         type="outlined"
-                        style={{ width: '50%', minWidth: 'auto' }}
+                        style={styles.modalActionButton}
+                        font_size={14}
                         onPress={() => {
                           if (modalContent?.onCancel) {
                             modalContent.onCancel();
@@ -275,7 +277,12 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   buttonContainer: {
-    width: '90%',
+    width: '100%',
+  },
+  modalActionButton: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: widthPixel(10),
   },
   textInput: {
     width: '100%',

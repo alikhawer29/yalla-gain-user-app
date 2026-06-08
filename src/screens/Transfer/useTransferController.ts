@@ -1,44 +1,31 @@
 import { useCallback } from "react";
 import { useModal } from "../../contexts/ModalContext";
 import { goBack } from "../../utils/navigation";
-import { useGetWalletCoinsQuery, useTransferYallaCoinMutation } from "../../redux/Apis/User";
+import {
+    userApi,
+    useGetWalletCoinsQuery,
+    useTransferYallaCoinMutation,
+} from "../../redux/Apis/User";
+import { confirmTransactionWithFee } from "../../utils/transactionCommission";
 
 const useTransferController = () => {
     const { data, isLoading } = useGetWalletCoinsQuery({})
     const [transfer, { isLoading: isTransferLoading }] = useTransferYallaCoinMutation()
     
-    const { showOkModal } = useModal()
+    const { showOkModal, showYesNoModal } = useModal()
+    const [fetchTransactionCommission] =
+        userApi.useLazyGetTransactionCommissionQuery()
 
-    const handleTransfer = useCallback((coins: string, unique_id: string) => {
-        if (!coins || !unique_id) {
-            showOkModal({
-                type: "error",
-                title: "Validation Error",
-                message: "Please fill in all fields"
-            })
-            return
-        }
-
-        if (isNaN(Number(coins)) || Number(coins) <= 0) {
-            showOkModal({
-                type: "error", 
-                title: "Invalid Amount",
-                message: "Please enter a valid amount"
-            })
-            return
-        }
-
-        // Make the actual API call to transfer coins
+    const executeTransfer = useCallback((coins: string, unique_id: string) => {
         transfer({ coins, unique_id })
             .unwrap()
-            .then((response) => {
+            .then(() => {
                 showOkModal({
                     type: "success",
                     title: "Transfer Successful",
                     message: `Successfully transferred ${coins} coins to user ${unique_id}`
                 })
-                
-                // Reset form and go back
+
                 setTimeout(() => {
                     goBack()
                 }, 2000)
@@ -51,6 +38,18 @@ const useTransferController = () => {
                 })
             })
     }, [transfer, showOkModal])
+
+    const handleTransfer = useCallback(async (coins: string, unique_id: string) => {
+        await confirmTransactionWithFee(
+            fetchTransactionCommission,
+            showYesNoModal,
+            showOkModal,
+            "transfer",
+            () => {
+                executeTransfer(coins, unique_id)
+            },
+        )
+    }, [fetchTransactionCommission, showYesNoModal, showOkModal, executeTransfer])
 
     return {
         values: {

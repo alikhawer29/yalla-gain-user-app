@@ -12,8 +12,8 @@ import styles from "./styles";
 
 const AppointmentBooking = () => {
     const {
-        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking },
-        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, formatTime },
+        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, onRefresh, formatTime },
     } = useAppointmentBookingController();
 
     const displayName = [user?.first_name, user?.last_name]
@@ -32,7 +32,7 @@ const AppointmentBooking = () => {
     };
 
     return (
-        <Wrapper scrollable bottom_bar>
+        <Wrapper scrollable bottom_bar onRefresh={onRefresh} refreshing={isRefreshing}>
 
             {/* Form Inputs */}
             <Input

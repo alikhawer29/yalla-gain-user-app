@@ -14,6 +14,10 @@ const styles = StyleSheet.create({
     list: {
         paddingBottom: heightPixel(100),
     },
+    emptyList: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    },
     card: {
         padding: heightPixel(15),
         borderRadius: heightPixel(15),

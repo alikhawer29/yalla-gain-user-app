@@ -332,26 +332,48 @@ class ZoomVideoServiceClass {
       sessionIdleTimeoutMins: SESSION_IDLE_TIMEOUT_MINS,
     });
 
-    // getMySelf() only after onSessionJoin / isInSession — session is null until then.
+    // Video rotation/mirror is applied in prepareLocalVideo() after onSessionJoin.
     this._isVideoOn = true;
     this._isAudioOn = true;
     this._isBackCamera = false;
 
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Lock rotation to portrait mode once at initialization
-    try {
-      await zoom.videoHelper.rotateMyVideo(0);
-      console.log('[ZoomVideoService] Locked video rotation to portrait (0)');
-    } catch (e) {
-      console.log('[ZoomVideoService] Could not set rotation:', e);
-    }
-    
-    // Apply initial mirror settings
-    await this.applyPortraitVideoSettings(false);
-    console.log('[ZoomVideoService] Applied initial portrait video settings');
-
     return session;
+  }
+
+  /**
+   * Start local camera and apply portrait settings once the session is active.
+   * Must run after onSessionJoin — calling rotate/startVideo before that breaks the PiP feed.
+   */
+  async prepareLocalVideo() {
+    const zoom = this._requireZoom();
+    let isOn = false;
+
+    try {
+      const myself = await zoom.session.getMySelf();
+      if (myself?.userId != null) {
+        this._myUserId = myself.userId;
+      }
+      isOn = (await myself?.videoStatus?.isOn?.()) === true;
+    } catch (e) {
+      console.log('[ZoomVideoService] prepareLocalVideo status', e);
+    }
+
+    try {
+      if (!isOn) {
+        await zoom.videoHelper.startVideo();
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      this._isVideoOn = true;
+      await this.applyPortraitVideoSettings(false, true);
+      console.log('[ZoomVideoService] Local video prepared');
+    } catch (e) {
+      console.log('[ZoomVideoService] prepareLocalVideo', e);
+    }
+
+    return {
+      userId: this._myUserId != null ? String(this._myUserId) : null,
+      isVideoOn: this._isVideoOn,
+    };
   }
 
   /**

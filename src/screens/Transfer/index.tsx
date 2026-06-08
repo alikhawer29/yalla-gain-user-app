@@ -10,10 +10,8 @@ import styles from "./styles"
 const Transfer = () => {
     const [fundAmount, setFundAmount] = useState("")
     const [uniqueId, setUniqueId] = useState("")
-
-    const onTransfer = () => {
-        handleTransfer(fundAmount, uniqueId)
-    }
+    const [fundAmountError, setFundAmountError] = useState("")
+    const [uniqueIdError, setUniqueIdError] = useState("")
 
     const {
         values: {
@@ -22,10 +20,54 @@ const Transfer = () => {
             isTransferLoading,
         },
         functions: {
-            // handleAddCoins,
             handleTransfer,
         }
     } = useTransferController()
+
+    const handleFundAmountChange = (value: string) => {
+        setFundAmount(value)
+        if (fundAmountError) {
+            setFundAmountError("")
+        }
+    }
+
+    const handleUniqueIdChange = (value: string) => {
+        setUniqueId(value)
+        if (uniqueIdError) {
+            setUniqueIdError("")
+        }
+    }
+
+    const onTransfer = () => {
+        const trimmedAmount = fundAmount.trim()
+        const trimmedUniqueId = uniqueId.trim()
+
+        let hasError = false
+        let nextAmountError = ""
+        let nextUniqueIdError = ""
+
+        if (!trimmedAmount) {
+            nextAmountError = "Fund Amount is required"
+            hasError = true
+        } else if (isNaN(Number(trimmedAmount)) || Number(trimmedAmount) <= 0) {
+            nextAmountError = "Please enter a valid amount"
+            hasError = true
+        }
+
+        if (!trimmedUniqueId) {
+            nextUniqueIdError = "Unique Id is required"
+            hasError = true
+        }
+
+        setFundAmountError(nextAmountError)
+        setUniqueIdError(nextUniqueIdError)
+
+        if (hasError) {
+            return
+        }
+
+        handleTransfer(trimmedAmount, trimmedUniqueId)
+    }
 
     return (
         <KeyboardAvoidingView
@@ -54,19 +96,21 @@ const Transfer = () => {
                                     required
                                     placeholder="Enter amount"
                                     value={fundAmount}
-                                    onChangeText={setFundAmount}
+                                    onChangeText={handleFundAmountChange}
                                     type="number"
+                                    error={fundAmountError}
                                 />
                             </View>
 
                             <View>
                                 <Input
-                                    label="Unique Id Of User *"
+                                    label="Unique Id Of User"
                                     required
                                     placeholder="Enter Unique Id"
                                     value={uniqueId}
-                                    onChangeText={setUniqueId}
+                                    onChangeText={handleUniqueIdChange}
                                     type="number"
+                                    error={uniqueIdError}
                                 />
                             </View>
                         </View>

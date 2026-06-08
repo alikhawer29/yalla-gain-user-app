@@ -30,17 +30,30 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     isLoading,
 }) => {
     const [amount, setAmount] = useState('');
+    const [amountError, setAmountError] = useState('');
+
+    const handleAmountChange = (value: string) => {
+        setAmount(value);
+        if (amountError) {
+            setAmountError('');
+        }
+    };
 
     const handlePayment = () => {
         Keyboard.dismiss();
-        if (amount) {
-            onPayment(amount);
+        const trimmed = amount.trim();
+        if (!trimmed) {
+            setAmountError('Fund Amount is required');
+            return;
         }
+        setAmountError('');
+        onPayment(trimmed);
     };
 
     const handleClose = () => {
         Keyboard.dismiss();
         setAmount('');
+        setAmountError('');
         onClose();
     };
 
@@ -79,9 +92,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                     label="Fund Amount"
                                     required
                                     placeholder="Enter amount"
-                                    onChangeText={setAmount}
+                                    onChangeText={handleAmountChange}
                                     type="number"
                                     value={amount}
+                                    error={amountError}
                                 />
                             </View>
 

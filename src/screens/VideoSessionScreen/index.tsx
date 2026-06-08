@@ -429,12 +429,16 @@ function VideoSessionContent() {
     setSessionStatus('In Session');
     setIsConnecting(false);
     try {
-      const userId = await ZoomVideoService.getMyUserId();
-      setMyUserId(userId);
+      const { userId, isVideoOn: videoOn } =
+        await ZoomVideoService.prepareLocalVideo();
+      if (userId) {
+        setMyUserId(userId);
+      }
+      setIsVideoOn(videoOn);
       const back = await ZoomVideoService.getActiveCameraIsBack();
       setIsBackCamera(back);
     } catch (e) {
-      console.log('[VideoSession] getMyUserId', e);
+      console.log('[VideoSession] prepareLocalVideo', e);
     }
     handlersRef.current.startTimer();
     await handlersRef.current.refreshRemoteUsers();
@@ -794,6 +798,7 @@ function VideoSessionContent() {
             >
               {isVideoOn ? (
                 <SafeZoomView
+                  key={`local-${myUserId}`}
                   userId={myUserId}
                   preview={false}
                   isPiPView

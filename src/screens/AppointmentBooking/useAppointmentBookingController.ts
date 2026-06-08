@@ -68,13 +68,14 @@ const useAppointmentBookingController = () => {
     start: string;
     end: string;
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Format date for API query (YYYY-MM-DD)
   const formattedDate = selectedDate
     ? selectedDate.toISOString().split('T')[0]
     : undefined;
 
-  const { data: slotsData, isFetching: isLoadingSlots } =
+  const { data: slotsData, isFetching: isLoadingSlots, refetch } =
     useGetServiceSlotsQuery(
       { serviceId, date: formattedDate },
       { skip: !selectedDate },
@@ -124,6 +125,20 @@ const useAppointmentBookingController = () => {
   const onSlotSelect = (slot: { start: string; end: string }) => {
     setSelectedSlot(slot);
   };
+
+  const onRefresh = useCallback(async () => {
+    if (!selectedDate) {
+      return;
+    }
+
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      setSelectedSlot(null);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [selectedDate, refetch]);
 
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':');
@@ -325,6 +340,7 @@ const useAppointmentBookingController = () => {
       selectedDate,
       selectedSlot,
       isLoadingSlots,
+      isRefreshing,
       isBooking,
       type,
     },
@@ -334,6 +350,7 @@ const useAppointmentBookingController = () => {
       onDateSelect,
       onSlotSelect,
       onBook,
+      onRefresh,
       formatTime,
     },
   };

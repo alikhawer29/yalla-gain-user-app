@@ -1,6 +1,7 @@
 import React, { FC } from "react"
 import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View } from "react-native"
 import images from "../../assets/images"
+import Empty from "../../components/Empty"
 import Icon from "../../components/Icon"
 import Row from "../../components/Row"
 import Text from "../../components/Text"
@@ -85,7 +86,10 @@ const Notifications: FC = () => {
                     data={notifications}
                     renderItem={renderNotificationItem}
                     keyExtractor={(item) => item.id}
-                    contentContainerStyle={styles.list}
+                    contentContainerStyle={[
+                        styles.list,
+                        notifications.length === 0 && !isInitialLoading && styles.emptyList,
+                    ]}
                     showsVerticalScrollIndicator={false}
                     refreshControl={
                         <RefreshControl
@@ -106,7 +110,12 @@ const Notifications: FC = () => {
                             <View style={{ paddingVertical: heightPixel(20) }}>
                                 <ActivityIndicator size="small" color={colors.primary} />
                             </View>
-                        ) : null
+                        ) : (
+                            <Empty
+                                message="No notifications yet"
+                                image={images.notifications}
+                            />
+                        )
                     }
                     ListFooterComponent={
                         isLoadingMore ? (

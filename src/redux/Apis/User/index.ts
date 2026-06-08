@@ -742,15 +742,20 @@ export const userApi = createApi({
         method: 'DELETE',
       }),
     }),
-    getConsultationSessions: builder.query<
-      ConsultationSessionsResponse,
-      void
-    >({
+    getConsultationSessions: builder.query<ConsultationSessionsResponse, void>({
       query: () => ({
         url: `consultation-sessions`,
         method: 'GET',
       }),
       providesTags: ['Bookings'],
+    }),
+    //GET Transaction Commission
+    getTransactionCommission: builder.query({
+      query: () => ({
+        url: 'transaction-commission',
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
     }),
   }),
 });
@@ -807,6 +812,7 @@ export const {
   useRateBookingMutation,
   useReportBookingMutation,
   useGiveTipMutation,
+  useGetTransactionCommissionQuery,
   // Chat APIs
   useGetChatListQuery,
   useGetChatQuery,
