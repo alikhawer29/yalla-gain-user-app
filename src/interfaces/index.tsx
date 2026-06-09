@@ -71,6 +71,13 @@ export type RootStackParamList = {
         doctor_name?: string
         patient_name?: string
         booking_id?: number
+        scheduled_start_at?: string
+        scheduled_end_at?: string
+        duration_minutes?: number
+        started_at?: string
+        session_status?: string
+        appointment_date?: string
+        appointment_end_time?: string
     }
     Reviews: { consultant_id: number }
     // Chat

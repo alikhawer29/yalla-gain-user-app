@@ -308,8 +308,27 @@ const useBookingDetailsController = () => {
             session_token?: string;
             session_name?: string;
             role?: number;
+            video_session?: {
+              status?: string;
+              scheduled_start_at?: string;
+              scheduled_end_at?: string;
+              duration_minutes?: number;
+              started_at?: string;
+            };
           }
         | undefined;
+
+      const videoSession =
+        session?.video_session ??
+        (booking as {
+          video_session?: {
+            status?: string;
+            scheduled_start_at?: string;
+            scheduled_end_at?: string;
+            duration_minutes?: number;
+            started_at?: string;
+          };
+        })?.video_session;
 
       const sessionToken = session?.session_token?.trim();
       const sessionName = session?.session_name?.trim();
@@ -341,6 +360,13 @@ const useBookingDetailsController = () => {
 
       await clearZoomSessionActive();
 
+      const appointmentDate = booking?.is_rescheduled
+        ? booking?.rescheduled_appointment_date
+        : booking?.appointment_date;
+      const appointmentEndTime = booking?.is_rescheduled
+        ? booking?.rescheduled_appointment_end_time
+        : booking?.appointment_end_time;
+
       (navigation as any).navigate(ROUTES.VIDEO_SESSION, {
         session_token: sessionToken,
         session_name: sessionName,
@@ -349,6 +375,13 @@ const useBookingDetailsController = () => {
         doctor_name: consultantName,
         patient_name: patientName,
         booking_id: id,
+        scheduled_start_at: videoSession?.scheduled_start_at,
+        scheduled_end_at: videoSession?.scheduled_end_at,
+        duration_minutes: videoSession?.duration_minutes,
+        started_at: videoSession?.started_at,
+        session_status: videoSession?.status,
+        appointment_date: appointmentDate,
+        appointment_end_time: appointmentEndTime,
       });
     } catch (err: any) {
       const apiMessage = err?.data?.message ?? err?.message;

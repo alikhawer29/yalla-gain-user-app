@@ -37,6 +37,11 @@ import {
   clearZoomSessionActive,
   markZoomSessionActive,
 } from '../../utils/zoomSessionStorage';
+import {
+  formatCountdown,
+  getRemainingSeconds,
+  getSessionEndMs,
+} from '../../utils/videoSessionTimer';
 import { ROUTES } from '../../utils/routes';
 import styles, {
   CONTROL_BAR_HEIGHT,
@@ -57,15 +62,16 @@ type VideoSessionParams = {
   doctor_name?: string;
   patient_name?: string;
   booking_id?: number;
+  scheduled_start_at?: string;
+  scheduled_end_at?: string;
+  duration_minutes?: number;
+  started_at?: string;
+  session_status?: string;
+  appointment_date?: string;
+  appointment_end_time?: string;
 };
 
 type SessionStatus = 'Connecting...' | 'In Session' | 'Session Ended' | 'Waiting...';
-
-const formatDuration = (totalSeconds: number): string => {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-};
 
 const getInitials = (name?: string): string => {
   if (!name?.trim()) return '?';
@@ -161,6 +167,28 @@ function VideoSessionContent() {
   const isHost = Number(params.role) === 1;
   const bookingId = params.booking_id;
 
+  const sessionEndMs = useMemo(
+    () =>
+      getSessionEndMs({
+        scheduled_start_at: params.scheduled_start_at,
+        scheduled_end_at: params.scheduled_end_at,
+        duration_minutes: params.duration_minutes,
+        started_at: params.started_at,
+        session_status: params.session_status,
+        appointment_date: params.appointment_date,
+        appointment_end_time: params.appointment_end_time,
+      }),
+    [
+      params.scheduled_start_at,
+      params.scheduled_end_at,
+      params.duration_minutes,
+      params.started_at,
+      params.session_status,
+      params.appointment_date,
+      params.appointment_end_time,
+    ],
+  );
+
   const [sessionStatus, setSessionStatus] = useState<SessionStatus>('Connecting...');
   const [isConnecting, setIsConnecting] = useState(true);
   const [isInSession, setIsInSession] = useState(false);
@@ -168,7 +196,9 @@ function VideoSessionContent() {
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-  const [sessionDuration, setSessionDuration] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(() =>
+    sessionEndMs != null ? getRemainingSeconds(sessionEndMs) : 0,
+  );
   const [remoteUserJoined, setRemoteUserJoined] = useState(false);
   const [remoteUserId, setRemoteUserId] = useState<string | null>(null);
   const [remoteVideoOn, setRemoteVideoOn] = useState(true);
@@ -280,10 +310,14 @@ function VideoSessionContent() {
 
   const startTimer = useCallback(() => {
     stopTimer();
-    timerRef.current = setInterval(() => {
-      setSessionDuration(prev => prev + 1);
-    }, 1000);
-  }, [stopTimer]);
+    if (sessionEndMs == null) return;
+
+    const tick = () => {
+      setRemainingSeconds(getRemainingSeconds(sessionEndMs));
+    };
+    tick();
+    timerRef.current = setInterval(tick, 1000);
+  }, [sessionEndMs, stopTimer]);
 
   const stopRemotePoll = useCallback(() => {
     if (remotePollRef.current) {
@@ -845,7 +879,9 @@ function VideoSessionContent() {
                 <View style={styles.timerWrap}>
                   {isInSession && !isConnecting ? <View style={styles.liveDot} /> : null}
                   <Text size={14} weight="semibold" color={colors.completed}>
-                    {formatDuration(sessionDuration)}
+                    {sessionEndMs != null
+                      ? formatCountdown(remainingSeconds)
+                      : '--:--'}
                   </Text>
                 </View>
               </View>
