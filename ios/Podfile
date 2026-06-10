@@ -49,6 +49,16 @@ target 'YallaGain' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # Xcode 26.4 + fmt 11.0.2: Apple Clang rejects FMT_STRING consteval in format-inl.h.
+    # Compile only the fmt pod as C++17 so FMT_USE_CONSTEVAL stays disabled.
+    installer.pods_project.targets.each do |target|
+      if target.name == 'fmt'
+        target.build_configurations.each do |build_config|
+          build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+      end
+    end
     
     # Exclude react-native-unity's RNUnityView and RNUnityViewManager files since we're using our own implementations
     installer.pods_project.targets.each do |target|
