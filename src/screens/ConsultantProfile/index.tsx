@@ -144,6 +144,17 @@ const ConsultantProfile = () => {
                 )}
                 keyExtractor={(item) => item.id.toString()}
                 ItemSeparatorComponent={() => <View style={{ width: widthPixel(15) }} />}
+                ListEmptyComponent={
+                    !isLoading ? (
+                        <View style={styles.emptyServices}>
+                            <Text size={14} color={colors.icon_gray}>
+                                {search.trim()
+                                    ? 'No services found'
+                                    : 'No services available'}
+                            </Text>
+                        </View>
+                    ) : null
+                }
             />
         </Wrapper>
     );

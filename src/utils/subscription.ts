@@ -98,6 +98,37 @@ export const isActiveTrialSubscription = (
   return subscription?.is_trial === true && subscription.status !== 'expired';
 };
 
+/** Free-tier plan only — trial on Gold/Silver is not treated as free here. */
+export const isExplicitFreePlan = (
+  subscription: UserSubscription | null | undefined,
+): boolean => {
+  if (!subscription) return true;
+  if (subscription.status === 'expired') return true;
+  return subscription.plan_type?.toLowerCase() === 'free';
+};
+
+const canAccessAppointmentBooking = (
+  subscription: UserSubscription,
+  kind: 'doctor' | 'trainer' | 'any',
+): boolean => {
+  if (subscription.status === 'expired') return false;
+  if (isExplicitFreePlan(subscription)) return false;
+
+  // Trial users can book; payment is deducted from Yalla Coins.
+  if (subscription.is_trial === true) return true;
+
+  if (kind === 'doctor') {
+    return Number(subscription.doctor_sessions_monthly) > 0;
+  }
+  if (kind === 'trainer') {
+    return Number(subscription.trainer_sessions_monthly) > 0;
+  }
+  return (
+    Number(subscription.doctor_sessions_monthly) > 0 ||
+    Number(subscription.trainer_sessions_monthly) > 0
+  );
+};
+
 /** Short label for trial banner, e.g. "5 days remaining". */
 export const getTrialDaysRemainingLabel = (
   subscription?: UserSubscription | null,
@@ -134,14 +165,11 @@ export const canAccessSubscriptionFeature = (
     case 'nutrition_chatbot':
       return subscription.has_nutrition_chatbot === true;
     case 'doctor_appointments':
-      return Number(subscription.doctor_sessions_monthly) > 0;
+      return canAccessAppointmentBooking(subscription, 'doctor');
     case 'trainer_appointments':
-      return Number(subscription.trainer_sessions_monthly) > 0;
+      return canAccessAppointmentBooking(subscription, 'trainer');
     case 'any_appointments':
-      return (
-        Number(subscription.doctor_sessions_monthly) > 0 ||
-        Number(subscription.trainer_sessions_monthly) > 0
-      );
+      return canAccessAppointmentBooking(subscription, 'any');
     default:
       return false;
   }

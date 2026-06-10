@@ -99,10 +99,17 @@ const BookingDetails = () => {
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Charges:</Text>
                     <Row align="center">
-                        <Text size={14} color={colors.icon_gray}>{booking?.amount_paid || 0} Yalla Coins {" "}</Text>
-                        <View style={styles.coin_icon}>
-                            <Icon source={images.coin} size={16} />
-                        </View>
+                        {booking?.payment_type === 'subscription_included' ? (
+                            <Text size={14} color={colors.icon_gray}>Included in Plan</Text>
+                        ) : (
+                            <>
+                                <Text size={14} color={colors.icon_gray}>{booking?.amount_paid || 0} Yalla Coins {" "}</Text>
+                                <View style={styles.coin_icon}>
+                                    <Icon source={images.coin} size={16} />
+                                </View>
+                            </>
+                        )}
+
                     </Row>
                 </View>
             </Row>

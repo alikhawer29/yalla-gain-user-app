@@ -78,8 +78,16 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
             {/* Amount */}
             <Row align="center" style={styles.detail_row}>
                 <Text size={14} weight="semibold" color={colors.white}>Amount : </Text>
-                <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 0} Yalla Coins {" "}</Text>
-                <Icon source={images.coin} size={18} style={styles.coin_icon} />
+                {booking.payment_type === 'subscription_included' ? (
+                    <Text size={14} color={colors.icon_gray}>Included in Plan</Text>
+                ) : (
+                    <>
+                        <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 0} Yalla Coins {" "}</Text>
+                        <Icon source={images.coin} size={18} style={styles.coin_icon} />
+                    </>
+                )}
+                {/* <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 0} Yalla Coins {" "}</Text> */}
+                {/* <Icon source={images.coin} size={18} style={styles.coin_icon} /> */}
             </Row>
         </CardWrapper>
     );

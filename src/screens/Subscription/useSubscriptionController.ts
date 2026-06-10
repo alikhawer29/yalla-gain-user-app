@@ -18,7 +18,8 @@ const useSubscriptionController = () => {
     message: '',
   });
 
-  const { data, isLoading } = useGetSubscriptionPlansQuery({});
+  const { data, isLoading, refetch: refetchPlans } =
+    useGetSubscriptionPlansQuery({});
   const [
     subscribe,
     {
@@ -34,6 +35,7 @@ const useSubscriptionController = () => {
     const payload = subscribeData as SubscribePaymentResponse;
 
     if (payload.status === true) {
+      void refetchPlans();
       setAlertModal({
         visible: true,
         type: 'success',
@@ -55,7 +57,7 @@ const useSubscriptionController = () => {
         'Payment was unsuccessful. Please try again.',
       ),
     });
-  }, [isSubscribeSuccess, subscribeData]);
+  }, [isSubscribeSuccess, subscribeData, refetchPlans]);
 
   const handleModalOk = () => {
     if ((subscribeData as SubscribePaymentResponse)?.status === true) {

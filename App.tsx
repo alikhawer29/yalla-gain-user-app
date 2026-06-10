@@ -93,7 +93,7 @@ function App() {
                     >
                       <AppStackNavigator />
                     </ZoomVideoSdkProvider>
-                    {/* <NetworkLoggerFAB /> */}
+                    <NetworkLoggerFAB />
                     <Toast />
                   </NavigationContainer>
                 </ModalProvider>

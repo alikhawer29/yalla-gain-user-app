@@ -13,7 +13,7 @@ import styles from "./styles";
 const AppointmentBooking = () => {
     const {
         values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing },
-        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, onRefresh, formatTime },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, onRefresh, formatTime, isSlotPassed },
     } = useAppointmentBookingController();
 
     const displayName = [user?.first_name, user?.last_name]
@@ -114,6 +114,8 @@ const AppointmentBooking = () => {
                         const slotData = { start: slot.start_time, end: slot.end_time };
                         const isSelected = selectedSlot?.start === slot.start_time && selectedSlot?.end === slot.end_time;
                         const isBooked = slot.is_booked;
+                        const isPassed = isSlotPassed(slot.start_time, selectedDate);
+                        const isDisabled = isBooked || isPassed;
                         return (
                             <Touchable
                                 key={index}
@@ -121,11 +123,15 @@ const AppointmentBooking = () => {
                                     styles.slot_item,
                                     isSelected && styles.slot_item_selected,
                                     isBooked && styles.slot_item_booked,
+                                    isPassed && !isBooked && styles.slot_item_passed,
                                 ]}
-                                onPress={() => !isBooked && onSlotSelect(slotData)}
-                                disabled={isBooked}
+                                onPress={() => !isDisabled && onSlotSelect(slotData)}
+                                disabled={isDisabled}
                             >
-                                <Text size={14} color={isBooked ? colors.white : colors.white}>
+                                <Text
+                                    size={14}
+                                    color={isPassed && !isBooked ? colors.icon_gray : colors.white}
+                                >
                                     {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                                 </Text>
 

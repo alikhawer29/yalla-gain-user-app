@@ -49,7 +49,7 @@ const SubscriptionCarousel = ({ data, onChoosePlan, isLoading }) => {
         </Row>
         <Row align="center" style={{ marginTop: heightPixel(10) }} gap={5}>
           <Text size={20} weight="bold">
-            {item.price}
+            {item.coins}
           </Text>
           <Icon source={images.coin} size={24} />
           <Text size={12} weight="bold">

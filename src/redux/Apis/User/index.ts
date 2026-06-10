@@ -68,6 +68,8 @@ export const userApi = createApi({
     'Challenges',
     'Notifications',
     'HealthCalories',
+    'SubscriptionPlans',
+    'SubscriptionLogs',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl: API_USER_BASE_URL,
@@ -104,6 +106,7 @@ export const userApi = createApi({
         method: 'GET',
       }),
       keepUnusedDataFor: 0,
+      providesTags: ['SubscriptionPlans'],
     }),
     getSubscriptionLogs: builder.query({
       query: () => ({
@@ -111,6 +114,7 @@ export const userApi = createApi({
         method: 'GET',
       }),
       keepUnusedDataFor: 0,
+      providesTags: ['SubscriptionLogs'],
     }),
     subscribe: builder.mutation({
       query: body => ({
@@ -118,13 +122,14 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Wallet'],
+      invalidatesTags: ['Wallet', 'SubscriptionPlans', 'SubscriptionLogs'],
     }),
     cancelSubscription: builder.mutation({
       query: id => ({
         url: `subscription/${id}/cancel`,
         method: 'POST',
       }),
+      invalidatesTags: ['SubscriptionPlans', 'SubscriptionLogs'],
     }),
     // Newsfeed
     createFeed: builder.mutation({

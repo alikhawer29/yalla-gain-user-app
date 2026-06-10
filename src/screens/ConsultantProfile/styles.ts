@@ -31,6 +31,10 @@ const styles = StyleSheet.create({
   education_row: {
     marginBottom: heightPixel(15),
   },
+  emptyServices: {
+    paddingVertical: heightPixel(20),
+    paddingHorizontal: widthPixel(4),
+  },
 });
 
 export default styles;

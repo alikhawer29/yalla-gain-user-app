@@ -50,6 +50,11 @@ const styles = StyleSheet.create({
     borderColor: '#FF0000',
     // opacity: 0.8,
   },
+  slot_item_passed: {
+    backgroundColor: '#3A3A3A',
+    borderColor: '#555555',
+    opacity: 0.7,
+  },
 });
 
 export default styles;

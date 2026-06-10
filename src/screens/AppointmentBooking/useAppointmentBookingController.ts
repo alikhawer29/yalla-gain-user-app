@@ -148,6 +148,21 @@ const useAppointmentBookingController = () => {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  const isSlotPassed = (startTime: string, date: Date | null) => {
+    if (!date || !startTime) return false;
+
+    const [hours, minutes, seconds = '0'] = startTime.split(':');
+    const slotStart = new Date(date);
+    slotStart.setHours(
+      parseInt(hours, 10),
+      parseInt(minutes, 10),
+      parseInt(seconds, 10),
+      0,
+    );
+
+    return slotStart.getTime() <= Date.now();
+  };
+
   const confirmBooking = async () => {
     const appointmentDate = selectedDate!.toISOString().split('T')[0];
 
@@ -172,13 +187,19 @@ const useAppointmentBookingController = () => {
       const remainingCoins = currentCoins - chargesAmount;
       const bookingId =
         response?.data?.id || response?.data?.booking_id || '123456789';
+      const isSubscriptionIncluded =
+        response?.data?.payment_type === 'subscription_included';
 
-      // Show success modal with combined message
+      let successMessage = `Appointment Has Been Booked Successfully!\n\nYour Booking ID Is #${bookingId}.`;
+      if (!isSubscriptionIncluded) {
+        successMessage += `\n\n${chargesAmount} Yalla Coins Have Been Deducted.`;
+      }
+
       showOkModal(
         {
           type: 'success',
           title: 'Successful',
-          message: `Appointment Has Been Booked Successfully!\n\nYour Booking ID Is #${bookingId}.\n\n${chargesAmount} Yalla Coins Have Been Deducted.`,
+          message: successMessage,
         },
         () => {
           // Navigate to My Bookings
@@ -320,6 +341,15 @@ const useAppointmentBookingController = () => {
       return;
     }
 
+    if (isSlotPassed(selectedSlot.start, selectedDate)) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'This time slot has already passed. Please select another slot.',
+      });
+      return;
+    }
+
     // Show confirmation modal
     showYesNoModal(
       {
@@ -352,6 +382,7 @@ const useAppointmentBookingController = () => {
       onBook,
       onRefresh,
       formatTime,
+      isSlotPassed,
     },
   };
 };
