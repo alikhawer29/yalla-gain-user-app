@@ -41,6 +41,13 @@ const styles = StyleSheet.create({
   inputContainer: {
     gap: heightPixel(10),
   },
+  conversionPreview: {
+    fontSize: 14,
+    color: colors.primary,
+    textAlign: 'center',
+    fontWeight: '600',
+    paddingHorizontal: widthPixel(8),
+  },
   buttonContainer: {
     flexDirection: 'row',
     gap: widthPixel(15),

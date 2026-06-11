@@ -8,9 +8,9 @@ import useTransferController from "./useTransferController"
 import styles from "./styles"
 
 const Transfer = () => {
-    const [fundAmount, setFundAmount] = useState("")
+    const [coinAmount, setCoinAmount] = useState("")
     const [uniqueId, setUniqueId] = useState("")
-    const [fundAmountError, setFundAmountError] = useState("")
+    const [coinAmountError, setCoinAmountError] = useState("")
     const [uniqueIdError, setUniqueIdError] = useState("")
 
     const {
@@ -24,10 +24,10 @@ const Transfer = () => {
         }
     } = useTransferController()
 
-    const handleFundAmountChange = (value: string) => {
-        setFundAmount(value)
-        if (fundAmountError) {
-            setFundAmountError("")
+    const handleCoinAmountChange = (value: string) => {
+        setCoinAmount(value)
+        if (coinAmountError) {
+            setCoinAmountError("")
         }
     }
 
@@ -39,7 +39,7 @@ const Transfer = () => {
     }
 
     const onTransfer = () => {
-        const trimmedAmount = fundAmount.trim()
+        const trimmedAmount = coinAmount.trim()
         const trimmedUniqueId = uniqueId.trim()
 
         let hasError = false
@@ -47,10 +47,10 @@ const Transfer = () => {
         let nextUniqueIdError = ""
 
         if (!trimmedAmount) {
-            nextAmountError = "Fund Amount is required"
+            nextAmountError = "Coin Transfer is required"
             hasError = true
         } else if (isNaN(Number(trimmedAmount)) || Number(trimmedAmount) <= 0) {
-            nextAmountError = "Please enter a valid amount"
+            nextAmountError = "Please enter valid coins"
             hasError = true
         }
 
@@ -59,7 +59,7 @@ const Transfer = () => {
             hasError = true
         }
 
-        setFundAmountError(nextAmountError)
+        setCoinAmountError(nextAmountError)
         setUniqueIdError(nextUniqueIdError)
 
         if (hasError) {
@@ -92,13 +92,13 @@ const Transfer = () => {
                         <View style={styles.formContainer}>
                             <View>
                                 <Input
-                                    label="Fund Amount"
+                                    label="Coin Transfer"
                                     required
-                                    placeholder="Enter amount"
-                                    value={fundAmount}
-                                    onChangeText={handleFundAmountChange}
+                                    placeholder="Enter coins"
+                                    value={coinAmount}
+                                    onChangeText={handleCoinAmountChange}
                                     type="number"
-                                    error={fundAmountError}
+                                    error={coinAmountError}
                                 />
                             </View>
 

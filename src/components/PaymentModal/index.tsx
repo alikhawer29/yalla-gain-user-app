@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -31,6 +31,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 }) => {
     const [amount, setAmount] = useState('');
     const [amountError, setAmountError] = useState('');
+
+    const coinRate = useMemo(() => {
+        const parsed = parseFloat(String(coinValue).replace(/[^0-9.]/g, ''));
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+    }, [coinValue]);
+
+    const estimatedCoins = useMemo(() => {
+        const parsedAmount = parseFloat(amount);
+        if (!coinRate || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+            return null;
+        }
+        return parsedAmount / coinRate;
+    }, [amount, coinRate]);
+
+    const formatCoins = (value: number) => {
+        if (Number.isInteger(value)) return String(value);
+        return value.toFixed(2).replace(/\.?0+$/, '');
+    };
 
     const handleAmountChange = (value: string) => {
         setAmount(value);
@@ -97,6 +115,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                     value={amount}
                                     error={amountError}
                                 />
+                                {estimatedCoins != null ? (
+                                    <Text style={styles.conversionPreview}>
+                                        You will receive {formatCoins(estimatedCoins)} Yalla
+                                        Coins for {amount} AED
+                                    </Text>
+                                ) : null}
                             </View>
 
                             <View style={styles.buttonContainer}>
