@@ -7,6 +7,36 @@ type ShowYesNoModal = (
 
 type ShowOkModal = (data: Record<string, unknown>) => void;
 
+export const getTransactionFeeInlineLabel = (
+  commissionPercentage: string | number | null | undefined,
+): string | null => {
+  const pct =
+    commissionPercentage != null && String(commissionPercentage).trim() !== ''
+      ? String(commissionPercentage).trim()
+      : null;
+
+  if (!pct) return null;
+  return `A transaction fee of ${pct}% applies to this purchase.`;
+};
+
+export const getTransactionFeeAmountLabel = (
+  amount: string | number,
+  commissionPercentage: string | number | null | undefined,
+): string | null => {
+  const parsedAmount = parseFloat(String(amount));
+  const pct = parseFloat(String(commissionPercentage ?? '').trim());
+
+  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) return null;
+  if (!Number.isFinite(pct) || pct <= 0) return null;
+
+  const fee = (parsedAmount * pct) / 100;
+  const formattedFee = Number.isInteger(fee)
+    ? String(fee)
+    : fee.toFixed(2).replace(/\.?0+$/, '');
+
+  return `Estimated fee: ${formattedFee} AED (${pct}%)`;
+};
+
 export const getTransactionFeeConfirmMessage = (
   commissionPercentage: string | number | null | undefined,
   action: TransactionCommissionAction,

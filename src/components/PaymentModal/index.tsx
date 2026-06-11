@@ -1,17 +1,19 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-    View,
-    Text,
-    Modal,
-    TouchableOpacity,
     Keyboard,
     KeyboardAvoidingView,
+    Modal,
     Platform,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import Input from '../Input';
+import {
+    getTransactionFeeAmountLabel,
+    getTransactionFeeInlineLabel,
+} from '../../utils/transactionCommission';
 import Button from '../Button';
-import colors from '../../utils/colors';
-import { heightPixel, widthPixel } from '../../utils/helper';
+import Input from '../Input';
 import styles from './styles.ts';
 
 interface PaymentModalProps {
@@ -19,7 +21,10 @@ interface PaymentModalProps {
     onClose: () => void;
     onPayment: (amount: string) => void;
     coinValue: string;
+    commissionPercentage?: string | number | null;
+    isCommissionLoading?: boolean;
     isLoading: boolean;
+    formResetToken?: number;
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -27,10 +32,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     onClose,
     onPayment,
     coinValue,
+    commissionPercentage,
+    isCommissionLoading = false,
     isLoading,
+    formResetToken = 0,
 }) => {
     const [amount, setAmount] = useState('');
     const [amountError, setAmountError] = useState('');
+
+    const resetForm = () => {
+        setAmount('');
+        setAmountError('');
+    };
+
+    useEffect(() => {
+        if (formResetToken > 0) {
+            resetForm();
+        }
+    }, [formResetToken]);
 
     const coinRate = useMemo(() => {
         const parsed = parseFloat(String(coinValue).replace(/[^0-9.]/g, ''));
@@ -49,6 +68,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         if (Number.isInteger(value)) return String(value);
         return value.toFixed(2).replace(/\.?0+$/, '');
     };
+
+    const commissionLabel = getTransactionFeeInlineLabel(commissionPercentage);
+    const commissionAmountLabel = getTransactionFeeAmountLabel(
+        amount,
+        commissionPercentage,
+    );
 
     const handleAmountChange = (value: string) => {
         setAmount(value);
@@ -70,8 +95,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
     const handleClose = () => {
         Keyboard.dismiss();
-        setAmount('');
-        setAmountError('');
+        resetForm();
         onClose();
     };
 
@@ -101,9 +125,25 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         </View>
 
                         <View style={styles.content}>
-                            <Text style={styles.coinValue}>
-                                1 Yalla Coin Is Equal To {coinValue} AED
-                            </Text>
+                            <View style={styles.coinValueBox}>
+                                <Text style={styles.coinValue}>
+                                    1 Yalla Coin Is Equal To {coinValue} AED
+                                </Text>
+                                {isCommissionLoading ? (
+                                    <Text style={styles.commissionNote}>
+                                        Loading transaction fee...
+                                    </Text>
+                                ) : commissionLabel ? (
+                                    <Text style={styles.commissionNote}>
+                                        {commissionLabel}
+                                    </Text>
+                                ) : null}
+                                {commissionAmountLabel ? (
+                                    <Text style={styles.commissionAmount}>
+                                        {commissionAmountLabel}
+                                    </Text>
+                                ) : null}
+                            </View>
 
                             <View style={styles.inputContainer}>
                                 <Input

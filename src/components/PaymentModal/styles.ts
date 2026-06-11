@@ -28,15 +28,29 @@ const styles = StyleSheet.create({
   content: {
     gap: heightPixel(20),
   },
-  coinValue: {
-    fontSize: 16,
-    color: colors.white,
-    textAlign: 'center',
+  coinValueBox: {
     backgroundColor: colors.inputBackground,
     padding: heightPixel(15),
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    gap: heightPixel(8),
+  },
+  coinValue: {
+    fontSize: 16,
+    color: colors.white,
+    textAlign: 'center',
+  },
+  commissionNote: {
+    fontSize: 13,
+    color: colors.icon_gray,
+    textAlign: 'center',
+  },
+  commissionAmount: {
+    fontSize: 13,
+    color: colors.primary,
+    textAlign: 'center',
+    fontWeight: '600',
   },
   inputContainer: {
     gap: heightPixel(10),

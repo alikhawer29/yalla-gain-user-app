@@ -15,6 +15,9 @@ const Wallet = () => {
             isLoading,
             showPaymentModal,
             isBuyCoinsLoading,
+            commissionPercentage,
+            isCommissionLoading,
+            paymentFormResetToken,
         },
         functions: {
             handleAddCoins,
@@ -65,7 +68,10 @@ const Wallet = () => {
                     onClose={closePaymentModal}
                     onPayment={handlePayment}
                     coinValue={data?.coin_amount || '1$'}
+                    commissionPercentage={commissionPercentage}
+                    isCommissionLoading={isCommissionLoading}
                     isLoading={isBuyCoinsLoading}
+                    formResetToken={paymentFormResetToken}
                 />
             </SafeAreaView>
         </Wrapper>

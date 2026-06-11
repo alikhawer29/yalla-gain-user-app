@@ -1,15 +1,20 @@
 import { useCallback, useState } from 'react';
+import { Platform } from 'react-native';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import {
-  userApi,
   useGetWalletCoinsQuery,
+  useGetTransactionCommissionQuery,
   useBuyYallaCoinMutation,
   useConfirmPaymentMutation,
 } from '../../redux/Apis/User';
 import { useStripe } from '@stripe/stripe-react-native';
-import { confirmTransactionWithFee } from '../../utils/transactionCommission';
+
+const waitForModalDismiss = () =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, Platform.OS === 'ios' ? 350 : 100);
+  });
 
 const useWalletController = () => {
   const {
@@ -21,11 +26,18 @@ const useWalletController = () => {
     useBuyYallaCoinMutation();
   const [confirmPayment] = useConfirmPaymentMutation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentFormResetToken, setPaymentFormResetToken] = useState(0);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-  const { showOkModal, showYesNoModal } = useModal();
-  const [fetchTransactionCommission] =
-    userApi.useLazyGetTransactionCommissionQuery();
+  const { showOkModal } = useModal();
+
+  const { data: commissionData, isFetching: isCommissionLoading } =
+    useGetTransactionCommissionQuery(undefined, {
+      skip: !showPaymentModal,
+    });
+
+  const commissionPercentage =
+    commissionData?.data?.commission_percentage ?? null;
 
   const initializePaymentSheet = useCallback(
     async (clientSecret: string) => {
@@ -60,7 +72,7 @@ const useWalletController = () => {
         throw new Error(error.message);
       }
 
-      return true; // Payment successful
+      return true;
     } catch (error) {
       console.error('Error presenting payment sheet:', error);
       throw error;
@@ -78,6 +90,9 @@ const useWalletController = () => {
 
         await initializePaymentSheet(response.client_secret);
 
+        setShowPaymentModal(false);
+        await waitForModalDismiss();
+
         const paymentSuccess = await openPaymentSheet();
 
         if (paymentSuccess) {
@@ -89,8 +104,8 @@ const useWalletController = () => {
             }).unwrap();
 
             refetchWallet();
+            setPaymentFormResetToken(token => token + 1);
 
-            setShowPaymentModal(false);
             showOkModal({
               type: 'success',
               title: 'Payment Successful',
@@ -101,7 +116,7 @@ const useWalletController = () => {
           } catch (confirmError: any) {
             console.error('Payment confirmation error:', confirmError);
             refetchWallet();
-            setShowPaymentModal(false);
+            setPaymentFormResetToken(token => token + 1);
             showOkModal({
               type: 'success',
               title: 'Payment Successful',
@@ -132,7 +147,7 @@ const useWalletController = () => {
   );
 
   const handlePayment = useCallback(
-    async (amount: string) => {
+    (amount: string) => {
       if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
         showOkModal({
           type: 'error',
@@ -142,22 +157,9 @@ const useWalletController = () => {
         return;
       }
 
-      await confirmTransactionWithFee(
-        fetchTransactionCommission,
-        showYesNoModal,
-        showOkModal,
-        'buy',
-        () => {
-          void proceedWithPayment(amount);
-        },
-      );
+      void proceedWithPayment(amount);
     },
-    [
-      fetchTransactionCommission,
-      showYesNoModal,
-      showOkModal,
-      proceedWithPayment,
-    ],
+    [showOkModal, proceedWithPayment],
   );
 
   const handleAddCoins = useCallback(() => {
@@ -178,6 +180,9 @@ const useWalletController = () => {
       isLoading,
       showPaymentModal,
       isBuyCoinsLoading,
+      commissionPercentage,
+      isCommissionLoading,
+      paymentFormResetToken,
     },
     functions: {
       handleAddCoins,
