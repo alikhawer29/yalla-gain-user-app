@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Platform } from 'react-native';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
@@ -28,6 +28,7 @@ const useWalletController = () => {
     useBuyYallaCoinMutation();
   const [confirmPayment] = useConfirmPaymentMutation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const pendingPaymentAmountRef = useRef<string | null>(null);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const { showOkModal, showYesNoModal } = useModal();
@@ -76,8 +77,6 @@ const useWalletController = () => {
 
   const proceedWithPayment = useCallback(
     async (amount: string) => {
-      setShowPaymentModal(false);
-
       try {
         // Make the API call to buy coins and get clientSecret
         const response = await buyCoins({ amount }).unwrap();
@@ -89,6 +88,8 @@ const useWalletController = () => {
         // Initialize payment sheet with clientSecret
         await initializePaymentSheet(response.client_secret);
 
+        // iOS: dismiss payment modal before Stripe sheet (cannot stack modals)
+        setShowPaymentModal(false);
         await waitForModalDismiss();
 
         // Present payment sheet to user
@@ -148,20 +149,8 @@ const useWalletController = () => {
     ],
   );
 
-  const handlePayment = useCallback(
+  const startPaymentFlow = useCallback(
     async (amount: string) => {
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        showOkModal({
-          type: 'error',
-          title: 'Invalid Amount',
-          message: 'Please enter a valid amount',
-        });
-        return;
-      }
-
-      setShowPaymentModal(false);
-      await waitForModalDismiss();
-
       await confirmTransactionWithFee(
         fetchTransactionCommission,
         showYesNoModal,
@@ -180,6 +169,37 @@ const useWalletController = () => {
     ],
   );
 
+  const handlePayment = useCallback(
+    async (amount: string) => {
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        showOkModal({
+          type: 'error',
+          title: 'Invalid Amount',
+          message: 'Please enter a valid amount',
+        });
+        return;
+      }
+
+      if (Platform.OS === 'ios') {
+        pendingPaymentAmountRef.current = amount;
+        setShowPaymentModal(false);
+        return;
+      }
+
+      await startPaymentFlow(amount);
+    },
+    [showOkModal, startPaymentFlow],
+  );
+
+  const onPaymentModalDismissed = useCallback(() => {
+    const amount = pendingPaymentAmountRef.current;
+    if (!amount) {
+      return;
+    }
+    pendingPaymentAmountRef.current = null;
+    void startPaymentFlow(amount);
+  }, [startPaymentFlow]);
+
   const handleAddCoins = useCallback(() => {
     setShowPaymentModal(true);
   }, []);
@@ -189,6 +209,7 @@ const useWalletController = () => {
   }, []);
 
   const closePaymentModal = useCallback(() => {
+    pendingPaymentAmountRef.current = null;
     setShowPaymentModal(false);
   }, []);
 
@@ -204,6 +225,7 @@ const useWalletController = () => {
       handleSendCoins,
       handlePayment,
       closePaymentModal,
+      onPaymentModalDismissed,
     },
   };
 };

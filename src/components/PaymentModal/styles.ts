@@ -41,6 +41,10 @@ const styles = StyleSheet.create({
   inputContainer: {
     gap: heightPixel(10),
   },
+  conversionContainer: {
+    minHeight: heightPixel(36),
+    justifyContent: 'center',
+  },
   conversionPreview: {
     fontSize: 14,
     color: colors.primary,

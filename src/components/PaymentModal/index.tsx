@@ -7,6 +7,7 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
+    InteractionManager,
 } from 'react-native';
 import Input from '../Input';
 import Button from '../Button';
@@ -18,6 +19,7 @@ interface PaymentModalProps {
     visible: boolean;
     onClose: () => void;
     onPayment: (amount: string) => void;
+    onDismiss?: () => void;
     coinValue: string;
     isLoading: boolean;
 }
@@ -26,6 +28,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     visible,
     onClose,
     onPayment,
+    onDismiss,
     coinValue,
     isLoading,
 }) => {
@@ -58,14 +61,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
 
     const handlePayment = () => {
-        Keyboard.dismiss();
         const trimmed = amount.trim();
         if (!trimmed) {
             setAmountError('Fund Amount is required');
             return;
         }
         setAmountError('');
-        onPayment(trimmed);
+        Keyboard.dismiss();
+
+        const submitPayment = () => onPayment(trimmed);
+
+        if (Platform.OS === 'ios') {
+            InteractionManager.runAfterInteractions(() => {
+                setTimeout(submitPayment, 150);
+            });
+            return;
+        }
+
+        submitPayment();
     };
 
     const handleClose = () => {
@@ -81,6 +94,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             transparent
             animationType="fade"
             onRequestClose={handleClose}
+            presentationStyle="overFullScreen"
+            onDismiss={onDismiss}
         >
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
@@ -115,12 +130,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                     value={amount}
                                     error={amountError}
                                 />
-                                {estimatedCoins != null ? (
-                                    <Text style={styles.conversionPreview}>
-                                        You will receive {formatCoins(estimatedCoins)} Yalla
-                                        Coins for {amount} AED
-                                    </Text>
-                                ) : null}
+                                <View style={styles.conversionContainer}>
+                                    {estimatedCoins != null ? (
+                                        <Text style={styles.conversionPreview}>
+                                            You will receive {formatCoins(estimatedCoins)} Yalla
+                                            Coins for {amount} AED
+                                        </Text>
+                                    ) : null}
+                                </View>
                             </View>
 
                             <View style={styles.buttonContainer}>
