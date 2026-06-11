@@ -1,7 +1,12 @@
 import { ImageSourcePropType } from 'react-native';
 import images from '../assets/images';
 
-export type PrescriptionFileCategory = 'image' | 'pdf' | 'xlsx' | 'docs';
+export type PrescriptionFileCategory =
+  | 'image'
+  | 'pdf'
+  | 'xlsx'
+  | 'docs'
+  | 'csv';
 
 const IMAGE_EXTENSIONS = new Set([
   'jpg',
@@ -16,7 +21,7 @@ const IMAGE_EXTENSIONS = new Set([
 
 const PDF_EXTENSIONS = new Set(['pdf']);
 
-const XLSX_EXTENSIONS = new Set(['xlsx', 'xls']);
+const XLSX_EXTENSIONS = new Set(['xlsx', 'xls', 'csv']);
 
 const DOCS_EXTENSIONS = new Set(['doc', 'docx', 'txt', 'rtf', 'odt']);
 
@@ -39,6 +44,7 @@ export const resolvePrescriptionFileCategory = (
     normalized === 'image' ||
     normalized === 'pdf' ||
     normalized === 'xlsx' ||
+    normalized === 'csv' ||
     normalized === 'docs'
   ) {
     return normalized;
@@ -48,6 +54,7 @@ export const resolvePrescriptionFileCategory = (
   if (IMAGE_EXTENSIONS.has(ext)) return 'image';
   if (PDF_EXTENSIONS.has(ext)) return 'pdf';
   if (XLSX_EXTENSIONS.has(ext)) return 'xlsx';
+  if (XLSX_EXTENSIONS.has(ext)) return 'csv';
   if (DOCS_EXTENSIONS.has(ext)) return 'docs';
   return 'pdf';
 };
