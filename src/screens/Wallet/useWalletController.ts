@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { Platform } from 'react-native';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -10,6 +11,12 @@ import {
 } from '../../redux/Apis/User';
 import { useStripe } from '@stripe/stripe-react-native';
 import { confirmTransactionWithFee } from '../../utils/transactionCommission';
+
+/** iOS cannot present Stripe sheet while another RN Modal is still dismissing. */
+const waitForModalDismiss = () =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, Platform.OS === 'ios' ? 400 : 100);
+  });
 
 const useWalletController = () => {
   const {
@@ -69,6 +76,8 @@ const useWalletController = () => {
 
   const proceedWithPayment = useCallback(
     async (amount: string) => {
+      setShowPaymentModal(false);
+
       try {
         // Make the API call to buy coins and get clientSecret
         const response = await buyCoins({ amount }).unwrap();
@@ -79,6 +88,8 @@ const useWalletController = () => {
 
         // Initialize payment sheet with clientSecret
         await initializePaymentSheet(response.client_secret);
+
+        await waitForModalDismiss();
 
         // Present payment sheet to user
         const paymentSuccess = await openPaymentSheet();
@@ -147,6 +158,9 @@ const useWalletController = () => {
         });
         return;
       }
+
+      setShowPaymentModal(false);
+      await waitForModalDismiss();
 
       await confirmTransactionWithFee(
         fetchTransactionCommission,
