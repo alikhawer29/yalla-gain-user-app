@@ -7,7 +7,6 @@ import {
     Keyboard,
     KeyboardAvoidingView,
     Platform,
-    InteractionManager,
 } from 'react-native';
 import Input from '../Input';
 import Button from '../Button';
@@ -19,7 +18,6 @@ interface PaymentModalProps {
     visible: boolean;
     onClose: () => void;
     onPayment: (amount: string) => void;
-    onDismiss?: () => void;
     coinValue: string;
     isLoading: boolean;
 }
@@ -28,7 +26,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     visible,
     onClose,
     onPayment,
-    onDismiss,
     coinValue,
     isLoading,
 }) => {
@@ -61,24 +58,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
 
     const handlePayment = () => {
+        Keyboard.dismiss();
         const trimmed = amount.trim();
         if (!trimmed) {
             setAmountError('Fund Amount is required');
             return;
         }
         setAmountError('');
-        Keyboard.dismiss();
-
-        const submitPayment = () => onPayment(trimmed);
-
-        if (Platform.OS === 'ios') {
-            InteractionManager.runAfterInteractions(() => {
-                setTimeout(submitPayment, 150);
-            });
-            return;
-        }
-
-        submitPayment();
+        onPayment(trimmed);
     };
 
     const handleClose = () => {
@@ -94,8 +81,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             transparent
             animationType="fade"
             onRequestClose={handleClose}
-            presentationStyle="overFullScreen"
-            onDismiss={onDismiss}
         >
             <KeyboardAvoidingView
                 style={{ flex: 1 }}

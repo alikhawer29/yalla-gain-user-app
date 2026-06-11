@@ -1,5 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -12,12 +11,6 @@ import {
 import { useStripe } from '@stripe/stripe-react-native';
 import { confirmTransactionWithFee } from '../../utils/transactionCommission';
 
-/** iOS cannot present Stripe sheet while another RN Modal is still dismissing. */
-const waitForModalDismiss = () =>
-  new Promise<void>(resolve => {
-    setTimeout(resolve, Platform.OS === 'ios' ? 400 : 100);
-  });
-
 const useWalletController = () => {
   const {
     data,
@@ -28,7 +21,6 @@ const useWalletController = () => {
     useBuyYallaCoinMutation();
   const [confirmPayment] = useConfirmPaymentMutation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const pendingPaymentAmountRef = useRef<string | null>(null);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   const { showOkModal, showYesNoModal } = useModal();
@@ -78,25 +70,17 @@ const useWalletController = () => {
   const proceedWithPayment = useCallback(
     async (amount: string) => {
       try {
-        // Make the API call to buy coins and get clientSecret
         const response = await buyCoins({ amount }).unwrap();
 
         if (!response?.client_secret) {
           throw new Error('No client secret received from server');
         }
 
-        // Initialize payment sheet with clientSecret
         await initializePaymentSheet(response.client_secret);
 
-        // iOS: dismiss payment modal before Stripe sheet (cannot stack modals)
-        setShowPaymentModal(false);
-        await waitForModalDismiss();
-
-        // Present payment sheet to user
         const paymentSuccess = await openPaymentSheet();
 
         if (paymentSuccess) {
-          // Call after-payment API to confirm the payment
           try {
             const confirmResponse = await confirmPayment({
               intent_id: response.intent_id,
@@ -104,7 +88,6 @@ const useWalletController = () => {
               coins: response.coins,
             }).unwrap();
 
-            // Refetch wallet data to show updated coin balance
             refetchWallet();
 
             setShowPaymentModal(false);
@@ -117,7 +100,6 @@ const useWalletController = () => {
             });
           } catch (confirmError: any) {
             console.error('Payment confirmation error:', confirmError);
-            // Still show success but with a warning and refetch wallet
             refetchWallet();
             setShowPaymentModal(false);
             showOkModal({
@@ -149,8 +131,17 @@ const useWalletController = () => {
     ],
   );
 
-  const startPaymentFlow = useCallback(
+  const handlePayment = useCallback(
     async (amount: string) => {
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        showOkModal({
+          type: 'error',
+          title: 'Invalid Amount',
+          message: 'Please enter a valid amount',
+        });
+        return;
+      }
+
       await confirmTransactionWithFee(
         fetchTransactionCommission,
         showYesNoModal,
@@ -169,37 +160,6 @@ const useWalletController = () => {
     ],
   );
 
-  const handlePayment = useCallback(
-    async (amount: string) => {
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        showOkModal({
-          type: 'error',
-          title: 'Invalid Amount',
-          message: 'Please enter a valid amount',
-        });
-        return;
-      }
-
-      if (Platform.OS === 'ios') {
-        pendingPaymentAmountRef.current = amount;
-        setShowPaymentModal(false);
-        return;
-      }
-
-      await startPaymentFlow(amount);
-    },
-    [showOkModal, startPaymentFlow],
-  );
-
-  const onPaymentModalDismissed = useCallback(() => {
-    const amount = pendingPaymentAmountRef.current;
-    if (!amount) {
-      return;
-    }
-    pendingPaymentAmountRef.current = null;
-    void startPaymentFlow(amount);
-  }, [startPaymentFlow]);
-
   const handleAddCoins = useCallback(() => {
     setShowPaymentModal(true);
   }, []);
@@ -209,7 +169,6 @@ const useWalletController = () => {
   }, []);
 
   const closePaymentModal = useCallback(() => {
-    pendingPaymentAmountRef.current = null;
     setShowPaymentModal(false);
   }, []);
 
@@ -225,7 +184,6 @@ const useWalletController = () => {
       handleSendCoins,
       handlePayment,
       closePaymentModal,
-      onPaymentModalDismissed,
     },
   };
 };

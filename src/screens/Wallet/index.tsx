@@ -21,7 +21,6 @@ const Wallet = () => {
             handleSendCoins,
             handlePayment,
             closePaymentModal,
-            onPaymentModalDismissed,
         }
     } = useWalletController()
 
@@ -65,7 +64,6 @@ const Wallet = () => {
                     visible={showPaymentModal}
                     onClose={closePaymentModal}
                     onPayment={handlePayment}
-                    onDismiss={onPaymentModalDismissed}
                     coinValue={data?.coin_amount || '1$'}
                     isLoading={isBuyCoinsLoading}
                 />
