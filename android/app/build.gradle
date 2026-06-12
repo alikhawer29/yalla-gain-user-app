@@ -88,8 +88,8 @@ android {
         applicationId "com.blitzapp.yallagain"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33  
-        versionName "0.0.33"
+        versionCode 34  
+        versionName "0.0.34"
         // Required by react-native-app-auth for OAuth redirect
         manifestPlaceholders = [appAuthRedirectScheme: 'myapp']
     }

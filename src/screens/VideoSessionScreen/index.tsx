@@ -471,6 +471,8 @@ function VideoSessionContent() {
       setIsVideoOn(videoOn);
       const back = await ZoomVideoService.getActiveCameraIsBack();
       setIsBackCamera(back);
+      const speakerOn = await ZoomVideoService.syncSpeakerState();
+      setIsSpeakerOn(speakerOn);
     } catch (e) {
       console.log('[VideoSession] prepareLocalVideo', e);
     }
@@ -513,6 +515,31 @@ function VideoSessionContent() {
         await handlersRef.current.refreshRemoteUsers();
         handlersRef.current.pollForRemoteUsers();
       }),
+      zoomRef.current.addListener(
+        EventType.onUserAudioStatusChanged,
+        async (event: { changedUsers?: Array<{ userId?: string | number }> }) => {
+          const myId = ZoomVideoService.getMyUserId();
+          if (!myId) {
+            return;
+          }
+
+          const changedUsers = event?.changedUsers ?? [];
+          const localAudioChanged = changedUsers.some(
+            user => String(user?.userId) === String(myId),
+          );
+          if (!localAudioChanged) {
+            return;
+          }
+
+          try {
+            const speakerOn =
+              await ZoomVideoService.refreshSpeakerAfterAudioConnect();
+            setIsSpeakerOn(speakerOn);
+          } catch (e) {
+            console.log('[VideoSession] refreshSpeakerAfterAudioConnect', e);
+          }
+        },
+      ),
       zoomRef.current.addListener(EventType.onUserLeave, () => {
         console.log('[VideoSession] onUserLeave');
         setRemoteUserJoined(false);
@@ -675,6 +702,12 @@ function VideoSessionContent() {
       setIsSpeakerOn(on);
     } catch (e) {
       console.log('[VideoSession] toggleSpeaker', e);
+      try {
+        const actual = await ZoomVideoService.syncSpeakerState();
+        setIsSpeakerOn(actual);
+      } catch (syncErr) {
+        console.log('[VideoSession] syncSpeakerState after toggle error', syncErr);
+      }
     }
   };
 

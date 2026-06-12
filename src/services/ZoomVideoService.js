@@ -5,7 +5,12 @@
  * Call ZoomVideoService.attach(zoom) from VideoSessionScreen after useZoom() is available.
  */
 
-import { NativeModules } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
+import {
+  forceAndroidEarpieceRoute,
+  isAndroidSpeakerphoneOn,
+  setAndroidSpeakerphoneOn,
+} from '../utils/androidAudioRoute';
 
 const { RNZoomVideoSdk, RNZoomVideoSdkVideoHelper } = NativeModules;
 
@@ -84,6 +89,7 @@ class ZoomVideoServiceClass {
     this._backDeviceId = null;
     this._lastMirrorEnabled = null;
     this._intentionalLeave = false;
+    this._isSpeakerOn = true;
     console.log('[ZoomVideoService] SDK instance detached');
   }
 
@@ -128,6 +134,8 @@ class ZoomVideoServiceClass {
 
     this._myUserId = null;
     this._isVideoOn = true;
+    this._isAudioOn = true;
+    this._isSpeakerOn = true;
     this._isBackCamera = false;
     this._frontDeviceId = null;
     this._backDeviceId = null;
@@ -275,6 +283,172 @@ class ZoomVideoServiceClass {
     return cameras.find(c => c.isSelectedDevice) ?? cameras[0] ?? null;
   }
 
+  _isZoomSuccess(result) {
+    if (result == null) return true;
+    if (typeof result === 'boolean') return result;
+    const value = String(result);
+    return value.includes('Success');
+  }
+
+  async _readSpeakerStatus() {
+    if (Platform.OS === 'android') {
+      const androidStatus = await isAndroidSpeakerphoneOn();
+      if (androidStatus != null) {
+        return androidStatus;
+      }
+    }
+
+    try {
+      const zoom = this._requireZoom();
+      const status = await zoom.audioHelper.getSpeakerStatus();
+      return status === true;
+    } catch (e) {
+      console.log('[ZoomVideoService] getSpeakerStatus', e);
+      return this._isSpeakerOn;
+    }
+  }
+
+  async _applyAndroidSpeakerRoute(target) {
+    await setAndroidSpeakerphoneOn(target);
+
+    let actual = await this._readSpeakerStatus();
+
+    if (target === false && actual === true) {
+      const forced = await forceAndroidEarpieceRoute();
+      if (forced != null) {
+        actual = forced;
+      } else {
+        actual = await this._readSpeakerStatus();
+      }
+    }
+
+    try {
+      const zoom = this._requireZoom();
+      const result = await zoom.audioHelper.setSpeaker(target);
+      if (!this._isZoomSuccess(result)) {
+        console.log(
+          '[ZoomVideoService] Zoom setSpeaker returned',
+          result,
+          'target',
+          target,
+        );
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] Zoom setSpeaker error', e);
+    }
+
+    return this._readSpeakerStatus();
+  }
+
+  async _callSetSpeaker(target) {
+    if (Platform.OS === 'android') {
+      return this._applyAndroidSpeakerRoute(target);
+    }
+
+    const zoom = this._requireZoom();
+    const setSpeakerPromise = zoom.audioHelper.setSpeaker(target);
+
+    if (Platform.OS === 'ios') {
+      // Zoom iOS bridge does not always resolve this promise.
+      await Promise.race([
+        setSpeakerPromise,
+        new Promise(resolve => setTimeout(resolve, 150)),
+      ]);
+      return;
+    }
+
+    const result = await setSpeakerPromise;
+    if (!this._isZoomSuccess(result)) {
+      console.log(
+        '[ZoomVideoService] setSpeaker returned',
+        result,
+        'target',
+        target,
+      );
+    }
+  }
+
+  /**
+   * Apply speakerphone vs earpiece and sync cached/UI state with native SDK.
+   * Android may need retries until audio routing is fully initialized.
+   */
+  async _applySpeakerRoute(enabled) {
+    const target = Boolean(enabled);
+
+    try {
+      const zoom = this._requireZoom();
+      const canSwitch = await zoom.audioHelper.canSwitchSpeaker();
+      if (canSwitch === false) {
+        console.log(
+          '[ZoomVideoService] Speaker routing locked by connected audio device',
+        );
+        this._isSpeakerOn = await this._readSpeakerStatus();
+        return this._isSpeakerOn;
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] canSwitchSpeaker', e);
+    }
+
+    const retryDelaysMs =
+      Platform.OS === 'android' ? [0, 300, 700, 1200] : [0];
+    let actual = this._isSpeakerOn;
+
+    for (const delayMs of retryDelaysMs) {
+      if (delayMs > 0) {
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+
+      try {
+        await this._callSetSpeaker(target);
+      } catch (e) {
+        console.log('[ZoomVideoService] setSpeaker error', e);
+      }
+
+      actual = await this._readSpeakerStatus();
+      if (actual === target) {
+        break;
+      }
+    }
+
+    this._isSpeakerOn = actual;
+    console.log(
+      '[ZoomVideoService] Speaker',
+      this._isSpeakerOn ? 'ON' : 'OFF',
+      '(requested',
+      target ? 'ON' : 'OFF',
+      ')',
+    );
+    return this._isSpeakerOn;
+  }
+
+  /** Read native speaker route and update cached state. */
+  async syncSpeakerState() {
+    if (!this._zoom) {
+      return this._isSpeakerOn;
+    }
+
+    try {
+      const inSession = await this._zoom.isInSession();
+      if (!inSession) {
+        return this._isSpeakerOn;
+      }
+    } catch {
+      return this._isSpeakerOn;
+    }
+
+    this._isSpeakerOn = await this._readSpeakerStatus();
+    return this._isSpeakerOn;
+  }
+
+  /** Re-apply current speaker preference after local audio connects (Android). */
+  async refreshSpeakerAfterAudioConnect() {
+    return this._applySpeakerRoute(this._isSpeakerOn);
+  }
+
+  getMyUserId() {
+    return this._myUserId;
+  }
+
   _requireZoom() {
     if (!this._zoom) {
       throw new Error(
@@ -365,6 +539,8 @@ class ZoomVideoServiceClass {
       }
       this._isVideoOn = true;
       await this.applyPortraitVideoSettings(false, true);
+      await this.syncSpeakerState();
+      await this._applySpeakerRoute(this._isSpeakerOn);
       console.log('[ZoomVideoService] Local video prepared');
     } catch (e) {
       console.log('[ZoomVideoService] prepareLocalVideo', e);
@@ -650,13 +826,14 @@ class ZoomVideoServiceClass {
     return this._isAudioOn;
   }
 
-  /** Toggle speaker (earpiece vs speaker). */
+  /** Toggle speaker (earpiece vs speakerphone). */
   async toggleSpeaker() {
-    const zoom = this._requireZoom();
-    this._isSpeakerOn = !this._isSpeakerOn;
-    await zoom.audioHelper.setSpeaker(this._isSpeakerOn);
-    console.log('[ZoomVideoService] Speaker', this._isSpeakerOn ? 'ON' : 'OFF');
-    return this._isSpeakerOn;
+    const target = !this._isSpeakerOn;
+    return this._applySpeakerRoute(target);
+  }
+
+  async setSpeakerOn(enabled) {
+    return this._applySpeakerRoute(enabled);
   }
 
   getIsVideoOn() {

@@ -67,17 +67,26 @@ const styles = StyleSheet.create({
   document_name: {
     maxWidth: widthPixel(150),
   },
+  action_row: {
+    width: '100%',
+  },
+  action_btn: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: widthPixel(10),
+  },
   half_btn: {
     flex: 1,
+    minWidth: 0,
+    paddingHorizontal: widthPixel(10),
   },
   tip_hint: {
     marginBottom: heightPixel(10),
   },
   report_btn: {
-    flex: 1,
     borderColor: '#F20000',
     borderWidth: 2,
-    backgroundColor: '#1A0000', // very dark red/black like screenshot
+    backgroundColor: '#1A0000',
     borderRadius: 10,
   },
 });

@@ -290,42 +290,38 @@ const BookingDetails = () => {
 
                     <Seperator size={10} />
 
-                    {/* Review Booking */}
-                    {consultant?.type !== 'trainer' && booking?.is_rated == 0 && (
-                        <Button
-                            text="Review Booking"
-                            onPress={() => setShowRateModal(true)}
-                        />
-                    )}
-
-                    <Seperator size={15} />
-
-                    <Row justify="space-between" gap={15}>
-
-                        {consultant?.type == 'trainer' && booking?.is_rated == 0 ? (
+                    {booking?.is_rated == 0 ? (
+                        <>
                             <Button
                                 text="Review Booking"
                                 onPress={() => setShowRateModal(true)}
                             />
-                        ) : null}
+                            <Seperator size={15} />
+                        </>
+                    ) : null}
 
-                        {!booking?.tip ? (
-                            <Button
-                                text="Give Tip"
-                                type="outlined"
-                                style={styles.half_btn}
-                                onPress={onGiveTip}
-                            />
-                        ) : null}
-                        {booking?.is_reported == 1 ? null : (
-                            <Button
-                                text="Report"
-                                style={styles.report_btn}
-                                textColor="#F20000"
-                                onPress={() => setShowReportModal(true)}
-                            />
-                        )}
-                    </Row>
+                    {!booking?.tip || booking?.is_reported != 1 ? (
+                        <Row justify="space-between" gap={10} style={styles.action_row}>
+                            {!booking?.tip ? (
+                                <Button
+                                    text="Give Tip"
+                                    type="outlined"
+                                    style={styles.action_btn}
+                                    font_size={14}
+                                    onPress={onGiveTip}
+                                />
+                            ) : null}
+                            {booking?.is_reported == 1 ? null : (
+                                <Button
+                                    text="Report"
+                                    style={[styles.action_btn, styles.report_btn]}
+                                    textColor="#F20000"
+                                    font_size={14}
+                                    onPress={() => setShowReportModal(true)}
+                                />
+                            )}
+                        </Row>
+                    ) : null}
                 </>
             )}
 
