@@ -55,7 +55,13 @@ export const SpeakerIcon = ({
   on = true,
 }: IconProps & { on?: boolean }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-    <Path d="M4 10v4h4l5 4V6L8 10H4z" fill={color} />
+    <Path
+      d="M4 10v4h4l5 4V6L8 10H4z"
+      fill={on ? color : 'transparent'}
+      stroke={color}
+      strokeWidth={1.8}
+      strokeLinejoin="round"
+    />
     {on ? (
       <>
         <Path
@@ -72,7 +78,14 @@ export const SpeakerIcon = ({
         />
       </>
     ) : (
-      <Line x1={18} y1={8} x2={22} y2={16} stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <>
+        <Path
+          d="M15 8l6 8M21 8l-6 8"
+          stroke={color}
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
+      </>
     )}
   </Svg>
 );

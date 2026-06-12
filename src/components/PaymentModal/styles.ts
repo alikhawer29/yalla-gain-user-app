@@ -3,11 +3,25 @@ import { heightPixel, widthPixel } from '../../utils/helper';
 import colors from '../../utils/colors';
 
 const styles = StyleSheet.create({
-  overlay: {
+  rootOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1000,
+    elevation: 1000,
+  },
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    minHeight: '100%',
+  },
+  overlay: {
+    flexGrow: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingVertical: heightPixel(24),
+    paddingHorizontal: widthPixel(12),
   },
   modalContainer: {
     backgroundColor: colors.cardBackground,

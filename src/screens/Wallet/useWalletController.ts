@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
-import { Platform } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Keyboard } from 'react-native';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -10,11 +10,8 @@ import {
   useConfirmPaymentMutation,
 } from '../../redux/Apis/User';
 import { useStripe } from '@stripe/stripe-react-native';
-
-const waitForModalDismiss = () =>
-  new Promise<void>(resolve => {
-    setTimeout(resolve, Platform.OS === 'ios' ? 350 : 100);
-  });
+import { STRIPE_RETURN_URL } from '../../utils/stripe';
+import { waitForUiSettled } from '../../utils/waitForUiSettled';
 
 const useWalletController = () => {
   const {
@@ -26,6 +23,8 @@ const useWalletController = () => {
     useBuyYallaCoinMutation();
   const [confirmPayment] = useConfirmPaymentMutation();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isPaymentProcessing, setIsPaymentProcessing] = useState(false);
+  const isPaymentProcessingRef = useRef(false);
   const [paymentFormResetToken, setPaymentFormResetToken] = useState(0);
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
@@ -46,6 +45,7 @@ const useWalletController = () => {
           paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'YallaGain',
           allowsDelayedPaymentMethods: true,
+          returnURL: STRIPE_RETURN_URL,
           defaultBillingDetails: {
             address: {
               country: 'US',
@@ -57,7 +57,7 @@ const useWalletController = () => {
           throw new Error(error.message);
         }
       } catch (error) {
-        console.error('Error initializing payment sheet:', error);
+        console.error('[Wallet] Error initializing payment sheet:', error);
         throw error;
       }
     },
@@ -66,6 +66,7 @@ const useWalletController = () => {
 
   const openPaymentSheet = useCallback(async () => {
     try {
+      console.log('[Wallet] presenting payment sheet');
       const { error } = await presentPaymentSheet();
 
       if (error) {
@@ -74,24 +75,35 @@ const useWalletController = () => {
 
       return true;
     } catch (error) {
-      console.error('Error presenting payment sheet:', error);
+      console.error('[Wallet] Error presenting payment sheet:', error);
       throw error;
     }
   }, [presentPaymentSheet]);
 
   const proceedWithPayment = useCallback(
     async (amount: string) => {
+      if (isPaymentProcessingRef.current) {
+        return;
+      }
+
+      isPaymentProcessingRef.current = true;
+      setIsPaymentProcessing(true);
+
       try {
+        console.log('[Wallet] starting payment flow', { amount });
+
         const response = await buyCoins({ amount }).unwrap();
 
         if (!response?.client_secret) {
           throw new Error('No client secret received from server');
         }
 
-        await initializePaymentSheet(response.client_secret);
-
+        // Close overlay before Stripe — RN Modal creates RCTFabricModalHostViewController on iOS.
+        Keyboard.dismiss();
         setShowPaymentModal(false);
-        await waitForModalDismiss();
+        await waitForUiSettled();
+
+        await initializePaymentSheet(response.client_secret);
 
         const paymentSuccess = await openPaymentSheet();
 
@@ -134,6 +146,9 @@ const useWalletController = () => {
             error?.message ||
             'Failed to process payment. Please try again.',
         });
+      } finally {
+        isPaymentProcessingRef.current = false;
+        setIsPaymentProcessing(false);
       }
     },
     [
@@ -148,6 +163,10 @@ const useWalletController = () => {
 
   const handlePayment = useCallback(
     (amount: string) => {
+      if (isPaymentProcessingRef.current || isBuyCoinsLoading) {
+        return;
+      }
+
       if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
         showOkModal({
           type: 'error',
@@ -159,7 +178,7 @@ const useWalletController = () => {
 
       void proceedWithPayment(amount);
     },
-    [showOkModal, proceedWithPayment],
+    [showOkModal, proceedWithPayment, isBuyCoinsLoading],
   );
 
   const handleAddCoins = useCallback(() => {
@@ -179,7 +198,7 @@ const useWalletController = () => {
       data: data || [],
       isLoading,
       showPaymentModal,
-      isBuyCoinsLoading,
+      isBuyCoinsLoading: isBuyCoinsLoading || isPaymentProcessing,
       commissionPercentage,
       isCommissionLoading,
       paymentFormResetToken,

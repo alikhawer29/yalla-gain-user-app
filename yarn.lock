@@ -3513,17 +3513,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@stripe/stripe-react-native@npm:^0.56.0":
-  version: 0.56.0
-  resolution: "@stripe/stripe-react-native@npm:0.56.0"
+"@stripe/stripe-react-native@npm:0.61.0":
+  version: 0.61.0
+  resolution: "@stripe/stripe-react-native@npm:0.61.0"
   peerDependencies:
     expo: ">=46.0.9"
     react: "*"
     react-native: "*"
+    react-native-webview: "*"
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: 10c0/df7e9ade9e78b5e1fa0aeb17d0f8219c451aa40683ff6e869347a741b329e8e0bcc1de18a402c6c55db320bbc7a4330180258dfe3f6c2995a4e09e4ea29bc959
+    react-native-webview:
+      optional: true
+  checksum: 10c0/58e8e87e17c9cb98652f732c057928f0b6944224385ea7504ac702b54e9bc1d52d376fd0acfd11f3d94516c635246bb867a0fdfc26e306058c03e391c0f0c2f1
   languageName: node
   linkType: hard
 
@@ -3914,7 +3917,7 @@ __metadata:
     "@react-navigation/native": "npm:^7.1.14"
     "@react-navigation/stack": "npm:^7.4.2"
     "@reduxjs/toolkit": "npm:^2.8.2"
-    "@stripe/stripe-react-native": "npm:^0.56.0"
+    "@stripe/stripe-react-native": "npm:0.61.0"
     "@types/jest": "npm:^29.5.13"
     "@types/react": "npm:^19.1.0"
     "@types/react-native-snap-carousel": "npm:^3.8.11"

@@ -346,18 +346,8 @@ class ZoomVideoServiceClass {
     }
 
     const zoom = this._requireZoom();
-    const setSpeakerPromise = zoom.audioHelper.setSpeaker(target);
+    const result = await zoom.audioHelper.setSpeaker(target);
 
-    if (Platform.OS === 'ios') {
-      // Zoom iOS bridge does not always resolve this promise.
-      await Promise.race([
-        setSpeakerPromise,
-        new Promise(resolve => setTimeout(resolve, 150)),
-      ]);
-      return;
-    }
-
-    const result = await setSpeakerPromise;
     if (!this._isZoomSuccess(result)) {
       console.log(
         '[ZoomVideoService] setSpeaker returned',
@@ -375,6 +365,10 @@ class ZoomVideoServiceClass {
   async _applySpeakerRoute(enabled) {
     const target = Boolean(enabled);
 
+    if (Platform.OS === 'ios') {
+      return this._applyIosSpeakerRoute(target);
+    }
+
     try {
       const zoom = this._requireZoom();
       const canSwitch = await zoom.audioHelper.canSwitchSpeaker();
@@ -389,8 +383,7 @@ class ZoomVideoServiceClass {
       console.log('[ZoomVideoService] canSwitchSpeaker', e);
     }
 
-    const retryDelaysMs =
-      Platform.OS === 'android' ? [0, 300, 700, 1200] : [0];
+    const retryDelaysMs = [0, 300, 700, 1200];
     let actual = this._isSpeakerOn;
 
     for (const delayMs of retryDelaysMs) {
@@ -421,9 +414,59 @@ class ZoomVideoServiceClass {
     return this._isSpeakerOn;
   }
 
+  /**
+   * iOS: "Speaker" acts as a full audio ON/OFF (mute everyone you hear).
+   * Zoom Video SDK has no local-only "mute incoming" API and non-hosts cannot mute
+   * others, so the only reliable way to silence the call is to disconnect from the
+   * audio session (stopAudio) and reconnect (startAudio). We restore the mic mute
+   * state on reconnect so the separate Mute button stays consistent.
+   */
+  async _applyIosSpeakerRoute(target) {
+    const zoom = this._requireZoom();
+
+    try {
+      if (target) {
+        await zoom.audioHelper.startAudio();
+
+        // startAudio reconnects unmuted — restore the user's mic choice.
+        if (!this._isAudioOn) {
+          try {
+            const myId = await this.getMyUserId();
+            if (myId) {
+              await zoom.audioHelper.muteAudio(myId);
+            }
+          } catch (e) {
+            console.log('[ZoomVideoService] iOS restore mic mute', e);
+          }
+        }
+      } else {
+        await zoom.audioHelper.stopAudio();
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] iOS audio toggle error', e);
+    }
+
+    this._isSpeakerOn = target;
+    console.log(
+      '[ZoomVideoService] Speaker (audio)',
+      this._isSpeakerOn ? 'ON' : 'OFF',
+      '(requested',
+      target ? 'ON' : 'OFF',
+      ')',
+    );
+    return this._isSpeakerOn;
+  }
+
   /** Read native speaker route and update cached state. */
   async syncSpeakerState() {
     if (!this._zoom) {
+      return this._isSpeakerOn;
+    }
+
+    // iOS: the route read is racy while Zoom configures its audio unit, so it can
+    // briefly report speaker even right after we forced earpiece. Trust our cached
+    // preference (set by the user toggle / join default) instead of the live read.
+    if (Platform.OS === 'ios') {
       return this._isSpeakerOn;
     }
 
@@ -442,6 +485,11 @@ class ZoomVideoServiceClass {
 
   /** Re-apply current speaker preference after local audio connects (Android). */
   async refreshSpeakerAfterAudioConnect() {
+    // iOS: speaker is a full audio on/off (stopAudio/startAudio). Re-applying on
+    // every audio-status change would fight the user's toggle, so just keep cache.
+    if (Platform.OS === 'ios') {
+      return this._isSpeakerOn;
+    }
     return this._applySpeakerRoute(this._isSpeakerOn);
   }
 
@@ -498,7 +546,7 @@ class ZoomVideoServiceClass {
       audioOptions: {
         connect: true,
         mute: false,
-        autoAdjustSpeakerVolume: true,
+        autoAdjustSpeakerVolume: Platform.OS === 'android',
       },
       videoOptions: {
         localVideoOn: true,
@@ -540,7 +588,13 @@ class ZoomVideoServiceClass {
       this._isVideoOn = true;
       await this.applyPortraitVideoSettings(false, true);
       await this.syncSpeakerState();
-      await this._applySpeakerRoute(this._isSpeakerOn);
+      if (Platform.OS === 'ios') {
+        // iOS: "Speaker" is a full audio on/off. Default to ON so the user can hear
+        // the call; audio auto-connects on join, so don't re-toggle it here.
+        this._isSpeakerOn = true;
+      } else {
+        await this._applySpeakerRoute(this._isSpeakerOn);
+      }
       console.log('[ZoomVideoService] Local video prepared');
     } catch (e) {
       console.log('[ZoomVideoService] prepareLocalVideo', e);

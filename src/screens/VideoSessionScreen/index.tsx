@@ -21,6 +21,7 @@ import { StackActions, useRoute, useNavigation } from '@react-navigation/native'
 import {
   EventType,
   VideoAspect,
+  ZoomVideoSdkProvider,
   useZoom,
 } from '@zoom/react-native-videosdk';
 import SafeZoomView from '../../components/SafeZoomView';
@@ -697,11 +698,21 @@ function VideoSessionContent() {
   };
 
   const onToggleSpeaker = async () => {
+    const requested = !isSpeakerOn;
+    console.log('[VideoSession] speaker toggle pressed', {
+      platform: Platform.OS,
+      requested,
+      uiStateBefore: isSpeakerOn,
+    });
     try {
-      const on = await ZoomVideoService.toggleSpeaker();
+      const on = await ZoomVideoService.setSpeakerOn(requested);
+      console.log('[VideoSession] speaker toggle complete', {
+        requested,
+        actual: on,
+      });
       setIsSpeakerOn(on);
     } catch (e) {
-      console.log('[VideoSession] toggleSpeaker', e);
+      console.log('[VideoSession] toggleSpeaker failed', e);
       try {
         const actual = await ZoomVideoService.syncSpeakerState();
         setIsSpeakerOn(actual);
@@ -774,8 +785,14 @@ function VideoSessionContent() {
         </Text>
       </TouchableOpacity>
 
-      <ControlButton label="Speaker" onPress={onToggleSpeaker}>
-        <SpeakerIcon on={isSpeakerOn} />
+      <ControlButton
+        label={isSpeakerOn ? 'Speaker' : 'Muted'}
+        onPress={onToggleSpeaker}
+      >
+        <SpeakerIcon
+          on={isSpeakerOn}
+          color={isSpeakerOn ? colors.white : colors.icon_gray}
+        />
       </ControlButton>
     </View>
   );
@@ -929,4 +946,18 @@ function VideoSessionContent() {
   );
 }
 
-export default VideoSessionContent;
+export default function VideoSessionScreen() {
+  const zoomSdkConfig = useMemo(
+    () => ({
+      domain: 'zoom.us',
+      enableLog: __DEV__,
+    }),
+    [],
+  );
+
+  return (
+    <ZoomVideoSdkProvider config={zoomSdkConfig}>
+      <VideoSessionContent />
+    </ZoomVideoSdkProvider>
+  );
+}

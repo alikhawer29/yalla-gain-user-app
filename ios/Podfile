@@ -42,6 +42,13 @@ target 'YallaGain' do
   )
 
   post_install do |installer|
+    zoom_audio_patch_src = File.join(__dir__, 'ZoomPatches', 'RNZoomVideoSdkAudioHelper.m')
+    zoom_audio_patch_dest = File.join(__dir__, '..', 'node_modules', '@zoom', 'react-native-videosdk', 'ios', 'RNZoomVideoSdkAudioHelper.m')
+    if File.exist?(zoom_audio_patch_src) && File.exist?(File.dirname(zoom_audio_patch_dest))
+      FileUtils.cp(zoom_audio_patch_src, zoom_audio_patch_dest)
+      Pod::UI.puts 'Applied YallaGain Zoom iOS speaker audio helper patch'.green
+    end
+
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
@@ -51,11 +58,33 @@ target 'YallaGain' do
     )
 
     # Xcode 26.4 + fmt 11.0.2: Apple Clang rejects FMT_STRING consteval in format-inl.h.
-    # Compile only the fmt pod as C++17 so FMT_USE_CONSTEVAL stays disabled.
+    # 1) Compile fmt as C++17 (consteval is C++20-only).
+    # 2) Patch base.h because fmt 11.0.2 ignores -DFMT_USE_CONSTEVAL and may still enable it.
     installer.pods_project.targets.each do |target|
-      if target.name == 'fmt'
-        target.build_configurations.each do |build_config|
-          build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      next unless target.name == 'fmt'
+
+      target.build_configurations.each do |build_config|
+        build_config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      end
+    end
+
+    Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', 'fmt', 'fmt.*.xcconfig')).each do |xcconfig_path|
+      xcconfig = File.read(xcconfig_path)
+      patched = xcconfig.gsub('CLANG_CXX_LANGUAGE_STANDARD = c++20', 'CLANG_CXX_LANGUAGE_STANDARD = c++17')
+      File.write(xcconfig_path, patched) if patched != xcconfig
+    end
+
+    fmt_base = File.join(installer.sandbox.root, 'fmt', 'include', 'fmt', 'base.h')
+    if File.exist?(fmt_base)
+      content = File.read(fmt_base)
+      unless content.include?('YallaGain Xcode 26 fmt workaround')
+        patched = content.gsub(
+          '#  define FMT_USE_CONSTEVAL 1',
+          '#  define FMT_USE_CONSTEVAL 0  // YallaGain Xcode 26 fmt workaround'
+        )
+        if patched != content
+          File.chmod(0o644, fmt_base)
+          File.write(fmt_base, patched)
         end
       end
     end

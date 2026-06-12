@@ -2,7 +2,6 @@ import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { useEffect } from 'react';
 import { AppState, LogBox, StatusBar, StyleSheet } from 'react-native';
-import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import BootSplash from 'react-native-bootsplash';
 import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,6 +19,7 @@ import { ensureFirebaseMessagingReady } from './src/utils/devicePush';
 import { setupFcmForegroundHandlers } from './src/utils/fcmForegroundHandlers';
 import { ensureForegroundPushChannels } from './src/utils/foregroundFcmNotifications';
 import { navigationRef } from './src/utils/navigation';
+import { STRIPE_URL_SCHEME } from './src/utils/stripe';
 
 const STRIPE_PUBLISHABLE_KEY =
   'pk_test_51OHpI2EN9IooQZRaU3MAJ8mKTWdFhvI7vequEoOlA9qlEOP1gdLKSB01ec6GeJkfAjHgQjipR85UligbuLBs5UaI00aoghaww7';
@@ -74,7 +74,10 @@ function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+        <StripeProvider
+          publishableKey={STRIPE_PUBLISHABLE_KEY}
+          urlScheme={STRIPE_URL_SCHEME}
+        >
           <SafeAreaProvider>
             <AppWrapper>
               <StatusBar
@@ -85,14 +88,7 @@ function App() {
               <MenuProvider>
                 <ModalProvider>
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
-                    <ZoomVideoSdkProvider
-                      config={{
-                        domain: 'zoom.us',
-                        enableLog: __DEV__,
-                      }}
-                    >
-                      <AppStackNavigator />
-                    </ZoomVideoSdkProvider>
+                    <AppStackNavigator />
                     {/* <NetworkLoggerFAB /> */}
                     <Toast />
                   </NavigationContainer>

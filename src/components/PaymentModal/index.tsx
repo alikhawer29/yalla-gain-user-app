@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     Keyboard,
-    KeyboardAvoidingView,
-    Modal,
     Platform,
     Text,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
     getTransactionFeeAmountLabel,
     getTransactionFeeInlineLabel,
@@ -94,26 +93,33 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     };
 
     const handleClose = () => {
+        if (isLoading) {
+            return;
+        }
         Keyboard.dismiss();
         resetForm();
         onClose();
     };
 
+    if (!visible) {
+        return null;
+    }
+
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={handleClose}
-        >
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        <View style={styles.rootOverlay}>
+            <KeyboardAwareScrollView
+                style={styles.scrollView}
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+                enableOnAndroid
+                extraScrollHeight={Platform.OS === 'ios' ? 120 : 80}
+                showsVerticalScrollIndicator={false}
             >
                 <TouchableOpacity
                     style={styles.overlay}
                     activeOpacity={1}
                     onPress={handleClose}
+                    disabled={isLoading}
                 >
                     <TouchableOpacity
                         style={styles.modalContainer}
@@ -183,8 +189,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         </View>
                     </TouchableOpacity>
                 </TouchableOpacity>
-            </KeyboardAvoidingView>
-        </Modal>
+            </KeyboardAwareScrollView>
+        </View>
     );
 };
 
