@@ -54,9 +54,6 @@ export const writeUserIdToUnityGame = async (
       return false;
     }
 
-    console.log('📝 Writing user ID to Unity game file...');
-    console.log('📁 Target path:', filePath);
-
     // Create directory if it doesn't exist
     let dirPath: string;
     if (Platform.OS === 'android') {
@@ -66,15 +63,9 @@ export const writeUserIdToUnityGame = async (
       dirPath = `${RNFS.DocumentDirectoryPath}/${GAME_SAVES_DIR}`;
     }
 
-    console.log('📂 Directory path:', dirPath);
-
     const dirExists = await RNFS.exists(dirPath);
     if (!dirExists) {
-      console.log('📂 Creating directory:', dirPath);
       await RNFS.mkdir(dirPath);
-      console.log('✅ Directory created');
-    } else {
-      console.log('✅ Directory already exists');
     }
 
     // Prepare user data
@@ -84,9 +75,7 @@ export const writeUserIdToUnityGame = async (
     };
 
     // Write to file
-    console.log('💾 Writing file content:', JSON.stringify(userData, null, 2));
     await RNFS.writeFile(filePath, JSON.stringify(userData, null, 2), 'utf8');
-    console.log('✅ File written successfully');
 
     // Verify file was created
     const fileExists = await RNFS.exists(filePath);
@@ -94,36 +83,10 @@ export const writeUserIdToUnityGame = async (
       const fileContent = await RNFS.readFile(filePath, 'utf8');
       const fileStats = await RNFS.stat(filePath);
 
-      console.log('✅ User ID successfully written to Unity game!');
-      console.log('📁 File path:', filePath);
-      console.log('📄 File content:', fileContent);
-      console.log('📊 File size:', fileStats.size, 'bytes');
-      console.log(
-        '📅 File modified:',
-        new Date(fileStats.mtime * 1000).toISOString(),
-      );
-
-      if (Platform.OS === 'android') {
-        console.log(
-          '📱 To view on device: Use a file manager app and navigate to:',
-        );
-        console.log(
-          '   Android/data/com.blitzapp.yallagain/files/MyGameSaves/userData.json',
-        );
-      } else {
-        console.log(
-          '📱 iOS: File is stored in Documents directory (accessible by Unity)',
-        );
-        console.log(
-          '💡 Unity can access this file via Application.persistentDataPath + "/MyGameSaves/userData.json"',
-        );
-      }
-
       // Verify content matches
       try {
         const parsedContent = JSON.parse(fileContent);
         if (parsedContent.user_id === String(userId)) {
-          console.log('✅ Content verification passed!');
         } else {
           console.warn('⚠️ Content verification failed: user_id mismatch');
         }
@@ -166,7 +129,6 @@ export const deleteUnityGameUserData = async (): Promise<boolean> => {
     const fileExists = await RNFS.exists(filePath);
     if (fileExists) {
       await RNFS.unlink(filePath);
-      console.log('Unity game user data deleted');
     }
 
     return true;
@@ -307,9 +269,6 @@ export const testUnityGameDataPathIOS = async (
     error: string | null;
   };
 }> => {
-  console.log('🧪 Starting iOS Unity Game Data Path Test...');
-  console.log('📱 Platform:', Platform.OS);
-
   if (Platform.OS !== 'ios') {
     return {
       success: false,
@@ -340,7 +299,6 @@ export const testUnityGameDataPathIOS = async (
     // Step 1: Get path
     const filePath = getUnityGameDataPath();
     details.path = filePath;
-    console.log('✅ Step 1: Path constructed:', filePath);
 
     // Step 2: Create directory
     const dirPath = `${RNFS.DocumentDirectoryPath}/${GAME_SAVES_DIR}`;
@@ -348,10 +306,8 @@ export const testUnityGameDataPathIOS = async (
     if (!dirExists) {
       await RNFS.mkdir(dirPath);
       details.directoryCreated = true;
-      console.log('✅ Step 2: Directory created:', dirPath);
     } else {
       details.directoryCreated = true;
-      console.log('✅ Step 2: Directory already exists:', dirPath);
     }
 
     // Step 3: Write test file
@@ -362,7 +318,6 @@ export const testUnityGameDataPathIOS = async (
     };
     await RNFS.writeFile(filePath, JSON.stringify(testData, null, 2), 'utf8');
     details.fileWritten = true;
-    console.log('✅ Step 3: File written');
 
     // Step 4: Verify file exists and read it
     const fileExists = await RNFS.exists(filePath);
@@ -372,17 +327,14 @@ export const testUnityGameDataPathIOS = async (
 
     const fileStats = await RNFS.stat(filePath);
     details.fileSize = fileStats.size;
-    console.log('✅ Step 4: File exists, size:', fileStats.size, 'bytes');
 
     const content = await RNFS.readFile(filePath, 'utf8');
     details.fileRead = true;
-    console.log('✅ Step 5: File read successfully');
 
     // Step 5: Verify content
     const parsedContent = JSON.parse(content);
     if (parsedContent.user_id === String(testUserId)) {
       details.contentMatches = true;
-      console.log('✅ Step 6: Content verification passed!');
     } else {
       throw new Error(
         `Content mismatch: expected ${testUserId}, got ${parsedContent.user_id}`,
@@ -391,20 +343,11 @@ export const testUnityGameDataPathIOS = async (
 
     // Step 6: Verify Unity can access this path
     // Unity's Application.persistentDataPath on iOS maps to Documents directory
-    console.log('✅ Step 7: Path verification');
-    console.log('   React Native Documents:', RNFS.DocumentDirectoryPath);
-    console.log(
-      '   Unity should access via: Application.persistentDataPath + "/MyGameSaves/userData.json"',
-    );
-    console.log(
-      '   Full Unity path would be:',
-      `${RNFS.DocumentDirectoryPath}/MyGameSaves/userData.json`,
-    );
 
     return {
       success: true,
       message:
-        '✅ All tests passed! Unity game data path is working correctly on iOS.',
+        'All tests passed! Unity game data path is working correctly on iOS.',
       details,
     };
   } catch (error: any) {
