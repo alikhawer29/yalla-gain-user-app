@@ -43,8 +43,8 @@ const UserEntry = () => {
 
         return (
             <>
-                <Input key={`${selected}-1`} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
-                <Input key={`${selected}-2`} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
+                <Input key={`${selected}-1`} maxLength={20} label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
+                <Input key={`${selected}-2`} maxLength={20} label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
                 <Dropdown
                     key={`${selected}-3`}
                     label="Gender"

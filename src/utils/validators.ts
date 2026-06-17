@@ -12,7 +12,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     .trim()
     .required('First Name is required')
     .min(2, 'First Name must be at least 2 characters')
-    .max(50, 'First Name must be at most 50 characters')
+    .max(20, 'First Name must be at most 20 characters')
     .matches(
       /^[A-Za-z][A-Za-z\s.'-]*$/,
       'First Name can only contain letters, spaces, dots, hyphens and apostrophes',
@@ -31,7 +31,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     .trim()
     .required('Last Name is required')
     .min(2, 'Last Name must be at least 2 characters')
-    .max(50, 'Last Name must be at most 50 characters')
+    .max(20, 'Last Name must be at most 20 characters')
     .matches(
       /^[A-Za-z][A-Za-z\s.'-]*$/,
       'Last Name can only contain letters, spaces, dots, hyphens and apostrophes',
@@ -122,7 +122,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     .trim()
     .required('First Name is required')
     .min(2, 'First Name must be at least 2 characters')
-    .max(50, 'First Name must be at most 50 characters')
+    .max(20, 'First Name must be at most 20 characters')
     .matches(
       /^[A-Za-z][A-Za-z\s.'-]*$/,
       'First Name contains invalid characters',
@@ -131,7 +131,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     .trim()
     .required('Last Name is required')
     .min(2, 'Last Name must be at least 2 characters')
-    .max(50, 'Last Name must be at most 50 characters')
+    .max(20, 'Last Name must be at most 20 characters')
     .matches(
       /^[A-Za-z][A-Za-z\s.'-]*$/,
       'Last Name contains invalid characters',
