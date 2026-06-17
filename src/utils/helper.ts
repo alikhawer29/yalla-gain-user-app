@@ -7,6 +7,11 @@ import {
   StatusBar,
 } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
+import {
+  getExampleNumber,
+  parsePhoneNumberFromString,
+} from 'libphonenumber-js';
+import examples from 'libphonenumber-js/mobile/examples';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -78,6 +83,21 @@ export const getPhoneMaxLength = (countryCode: string): number => {
     return 15;
   } catch {
     return 15;
+  }
+};
+
+export const validatePhoneByCountry = (
+  phone: string,
+  countryCode: string,
+): string => {
+  try {
+    const parsed = parsePhoneNumberFromString(phone, countryCode as any);
+    if (!parsed || !parsed.isValid()) {
+      return `Invalid phone number for selected country`;
+    }
+    return '';
+  } catch {
+    return 'Invalid phone number';
   }
 };
 

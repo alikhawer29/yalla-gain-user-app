@@ -9,10 +9,11 @@ import Wrapper from "../../components/Wrapper";
 import colors from "../../utils/colors";
 import useAppointmentBookingController from "./useAppointmentBookingController";
 import styles from "./styles";
+import { getPhoneMaxLength } from "../../utils/helper";
 
 const AppointmentBooking = () => {
     const {
-        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing },
+        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
         functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, onRefresh, formatTime, isSlotPassed },
     } = useAppointmentBookingController();
 
@@ -31,6 +32,8 @@ const AppointmentBooking = () => {
         return { day, dayName: dayNames[date.getDay()] };
     };
 
+    console.log(fieldErrors, "fieldErrors");
+
     return (
         <Wrapper scrollable bottom_bar onRefresh={onRefresh} refreshing={isRefreshing}>
 
@@ -41,6 +44,8 @@ const AppointmentBooking = () => {
                 value={formData.first_name}
                 onChangeText={(text) => updateFormData("first_name", text)}
                 required
+                maxLength={20}
+                error={fieldErrors.first_name}
             />
             <Seperator size={15} />
             <Input
@@ -49,17 +54,21 @@ const AppointmentBooking = () => {
                 value={formData.last_name}
                 onChangeText={(text) => updateFormData("last_name", text)}
                 required
+                maxLength={20}
+                error={fieldErrors.last_name}
             />
             <Seperator size={15} />
             <Input
                 label="Mobile Number"
                 placeholder="Enter phone number"
                 type="phone"
+                maxLength={getPhoneMaxLength(formData.country_code || 'AE')}
                 value={formData.phone}
                 onChangeText={(text) => updateFormData("phone", text)}
                 onChangeCountry={onCountryChange}
                 country={formData.country_code}
                 required
+                error={fieldErrors.phone}
             />
             <Seperator size={15} />
             <Input

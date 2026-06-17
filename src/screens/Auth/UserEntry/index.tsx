@@ -13,7 +13,7 @@ import Upload from "../../../components/Upload";
 import Dropdown from "../../../components/Dropdown";
 import colors from "../../../utils/colors";
 import { GENDER_OPTIONS, TABS } from "../../../utils/data";
-import { heightPixel, withDialingCodePlus } from "../../../utils/helper";
+import { getPhoneMaxLength, heightPixel, withDialingCodePlus } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
 import useAddEntryController from "./useAddEntryController";
@@ -62,6 +62,29 @@ const UserEntry = () => {
                     type="phone"
                     required
                     value={data?.phone}
+                    maxLength={getPhoneMaxLength(data?.country_code || 'AE')}
+                    onChangeText={handleChange("phone")}
+                    error={touched?.phone ? errors?.phone : ""}
+                    country={data?.country_code}
+                    onChangeCountry={e => {
+                        setFieldValue("country_code", e?.cca2);
+                        setFieldValue("phone", ""); // ✅ country change par phone reset
+                        const raw = e?.callingCode?.[0];
+                        setFieldValue(
+                            "dialing_code",
+                            raw != null && raw !== ""
+                                ? withDialingCodePlus(String(raw))
+                                : "",
+                        );
+                    }}
+                />
+                {/* <Input
+                    key={`${selected}-4`}
+                    label="Mobile Number"
+                    placeholder="Enter Your Phone Number"
+                    type="phone"
+                    required
+                    value={data?.phone}
                     onChangeText={handleChange("phone")}
                     error={touched?.phone ? errors?.phone : ""}
                     country={data?.country_code}
@@ -75,7 +98,7 @@ const UserEntry = () => {
                                 : "",
                         )
                     }}
-                />
+                /> */}
                 <Input key={`${selected}-5`} label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
                 <Input key={`${selected}-6`} label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
                 <Input key={`${selected}-7`} label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />

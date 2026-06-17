@@ -9,6 +9,7 @@ import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import { useAppSelector } from '../../hooks';
+import { validatePhoneByCountry } from '../../utils/helper';
 
 interface FormData {
   first_name: string;
@@ -18,6 +19,91 @@ interface FormData {
   dialing_code: string;
   country_code: string;
 }
+
+interface FieldErrors {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+const validateFirstName = (value: string): string | undefined => {
+  if (!value?.trim()) return 'First name is required.';
+  if (value.trim().length < 2) return 'First name must be at least 2 characters.';
+  if (value.trim().length > 50) return 'First name must be 50 characters or less.';
+  if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+    return 'First name can only contain letters.';
+  }
+  return undefined;
+};
+
+const validateLastName = (value: string): string | undefined => {
+  if (!value?.trim()) return 'Last name is required.';
+  if (value.trim().length < 2) return 'Last name must be at least 2 characters.';
+  if (value.trim().length > 50) return 'Last name must be 50 characters or less.';
+  if (!/^[a-zA-Z\s]+$/.test(value.trim())) {
+    return 'Last name can only contain letters.';
+  }
+  return undefined;
+};
+
+const validatePhone = (data: FormData): string | undefined => {
+  const phone = data.phone?.trim() ?? '';
+
+  if (!phone) return 'Mobile Number is required';
+
+  if (!/^[0-9]+$/.test(phone)) {
+    return 'Phone number can only contain digits';
+  }
+
+  const digits = phone.replace(/\D/g, '');
+  if (/^(.)\1+$/.test(digits)) {
+    return 'Phone number cannot consist of the same digit repeated';
+  }
+
+  if (!data.country_code) {
+    return 'Please select a valid country.';
+  }
+
+  const countryError = validatePhoneByCountry(phone, data.country_code);
+  if (countryError) {
+    return countryError;
+  }
+
+  return undefined;
+};
+
+const getApiFieldErrors = (err: any): FieldErrors => {
+  const errors: FieldErrors = {};
+  const apiErrors = err?.data?.errors;
+
+  if (apiErrors && typeof apiErrors === 'object') {
+    (['first_name', 'last_name', 'phone'] as const).forEach(key => {
+      const value = apiErrors[key];
+      if (Array.isArray(value) && value[0]) {
+        errors[key] = value[0];
+      } else if (typeof value === 'string') {
+        errors[key] = value;
+      }
+    });
+  }
+
+  const message = err?.data?.message;
+  if (message && typeof message === 'string') {
+    const lower = message.toLowerCase();
+    if (!errors.first_name && lower.includes('first name')) {
+      errors.first_name = message;
+    } else if (!errors.last_name && lower.includes('last name')) {
+      errors.last_name = message;
+    } else if (
+      !errors.phone &&
+      (lower.includes('phone') || lower.includes('mobile'))
+    ) {
+      errors.phone = message;
+    }
+  }
+
+  return errors;
+};
 
 const useAppointmentBookingController = () => {
   const route = useRoute();
@@ -69,6 +155,7 @@ const useAppointmentBookingController = () => {
     end: string;
   } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   // Format date for API query (YYYY-MM-DD)
   const formattedDate = selectedDate
@@ -102,6 +189,9 @@ const useAppointmentBookingController = () => {
 
   const updateFormData = (key: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
+    if (key === 'first_name' || key === 'last_name' || key === 'phone') {
+      setFieldErrors(prev => ({ ...prev, [key]: undefined }));
+    }
   };
 
   const onCountryChange = (country: any) => {
@@ -114,7 +204,9 @@ const useAppointmentBookingController = () => {
       ...prev,
       dialing_code: `+${callingCode}`,
       country_code: country.cca2,
+      phone: '',
     }));
+    setFieldErrors(prev => ({ ...prev, phone: undefined }));
   };
 
   const onDateSelect = (date: Date) => {
@@ -207,6 +299,16 @@ const useAppointmentBookingController = () => {
         },
       );
     } catch (err: any) {
+      const apiFieldErrors = getApiFieldErrors(err);
+      if (
+        apiFieldErrors.first_name ||
+        apiFieldErrors.last_name ||
+        apiFieldErrors.phone
+      ) {
+        setFieldErrors(apiFieldErrors);
+        return;
+      }
+
       showOkModal({
         type: 'error',
         title: 'Unsuccessful',
@@ -218,70 +320,17 @@ const useAppointmentBookingController = () => {
   };
 
   const onBook = () => {
-    // Name validations
-    if (!formData.first_name?.trim()) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'First name is required.',
-      });
-      return;
-    }
-    if (formData.first_name.trim().length < 2) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'First name must be at least 2 characters.',
-      });
-      return;
-    }
-    if (formData.first_name.trim().length > 50) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'First name must be 50 characters or less.',
-      });
-      return;
-    }
-    if (!/^[a-zA-Z\s]+$/.test(formData.first_name.trim())) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'First name can only contain letters.',
-      });
-      return;
-    }
+    const firstNameError = validateFirstName(formData.first_name);
+    const lastNameError = validateLastName(formData.last_name);
+    const phoneError = validatePhone(formData);
 
-    if (!formData.last_name?.trim()) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Last name is required.',
-      });
-      return;
-    }
-    if (formData.last_name.trim().length < 2) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Last name must be at least 2 characters.',
-      });
-      return;
-    }
-    if (formData.last_name.trim().length > 50) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Last name must be 50 characters or less.',
-      });
-      return;
-    }
-    if (!/^[a-zA-Z\s]+$/.test(formData.last_name.trim())) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Last name can only contain letters.',
-      });
+    setFieldErrors({
+      first_name: firstNameError,
+      last_name: lastNameError,
+      phone: phoneError,
+    });
+
+    if (firstNameError || lastNameError || phoneError) {
       return;
     }
 
@@ -300,33 +349,6 @@ const useAppointmentBookingController = () => {
         type: 'error',
         title: 'Error',
         message: 'Please enter a valid email address.',
-      });
-      return;
-    }
-
-    // Phone validation
-    if (!formData.phone?.trim()) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Phone number is required.',
-      });
-      return;
-    }
-    if (!formData.dialing_code || formData.dialing_code === '+') {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Please select a valid country.',
-      });
-      return;
-    }
-    const phoneDigits = formData.phone.replace(/\D/g, '');
-    if (phoneDigits.length < 6 || phoneDigits.length > 15) {
-      showOkModal({
-        type: 'error',
-        title: 'Error',
-        message: 'Phone number must be 6–15 digits.',
       });
       return;
     }
@@ -373,6 +395,7 @@ const useAppointmentBookingController = () => {
       isRefreshing,
       isBooking,
       type,
+      fieldErrors,
     },
     functions: {
       updateFormData,

@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { validatePhoneByCountry } from './helper';
 
 export const LOGIN_SCHEMA = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -91,17 +92,31 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     .required('Confirm Password is required'),
   dialing_code: Yup.string(),
   country_code: Yup.string(),
+  // phone: Yup.string()
+  //   .trim()
+  //   .required('Mobile Number is required')
+  //   .test('phone-digits-length', 'Phone number must be 6–15 digits', value => {
+  //     const digits = (value || '').replace(/\D/g, '');
+  //     return digits.length >= 6 && digits.length <= 15;
+  //   })
+  //   .test(
+  //     'no-invalid-chars',
+  //     'Phone number can only contain digits, spaces, hyphens, and parentheses',
+  //     value => /^[0-9\s\-\(\)]+$/.test(value || ''),
+  //   )
+  //   .test(
+  //     'not-all-same-digits',
+  //     'Phone number cannot consist of the same digit repeated',
+  //     value => {
+  //       const digits = (value || '').replace(/\D/g, '');
+  //       return !/^(.)\1+$/.test(digits);
+  //     },
+  //   ),
   phone: Yup.string()
     .trim()
     .required('Mobile Number is required')
-    .test('phone-digits-length', 'Phone number must be 6–15 digits', value => {
-      const digits = (value || '').replace(/\D/g, '');
-      return digits.length >= 6 && digits.length <= 15;
-    })
-    .test(
-      'no-invalid-chars',
-      'Phone number can only contain digits, spaces, hyphens, and parentheses',
-      value => /^[0-9\s\-\(\)]+$/.test(value || ''),
+    .test('no-invalid-chars', 'Phone number can only contain digits', value =>
+      /^[0-9]+$/.test(value || ''),
     )
     .test(
       'not-all-same-digits',
@@ -109,6 +124,17 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
       value => {
         const digits = (value || '').replace(/\D/g, '');
         return !/^(.)\1+$/.test(digits);
+      },
+    )
+    .test(
+      'phone-country-validation',
+      'Invalid phone number for selected country',
+      function (value) {
+        const { country_code } = this.parent; // ✅ country_code se validate
+        if (!value || !country_code) return true;
+        const error = validatePhoneByCountry(value, country_code);
+        if (error) return this.createError({ message: error });
+        return true;
       },
     ),
   gender: Yup.string()
@@ -141,10 +167,28 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
   phone: Yup.string()
     .trim()
     .required('Mobile Number is required')
-    .test('phone-digits-length', 'Phone number must be 6–15 digits', value => {
-      const digits = (value || '').replace(/\D/g, '');
-      return digits.length >= 6 && digits.length <= 15;
-    }),
+    .test('no-invalid-chars', 'Phone number can only contain digits', value =>
+      /^[0-9]+$/.test(value || ''),
+    )
+    .test(
+      'not-all-same-digits',
+      'Phone number cannot consist of the same digit repeated',
+      value => {
+        const digits = (value || '').replace(/\D/g, '');
+        return !/^(.)\1+$/.test(digits);
+      },
+    )
+    .test(
+      'phone-country-validation',
+      'Invalid phone number for selected country',
+      function (value) {
+        const { country_code } = this.parent; // ✅ country_code se validate
+        if (!value || !country_code) return true;
+        const error = validatePhoneByCountry(value, country_code);
+        if (error) return this.createError({ message: error });
+        return true;
+      },
+    ),
   gender: Yup.string()
     .required('Gender is required')
     .oneOf(['male', 'female'], 'Please select a valid gender'),

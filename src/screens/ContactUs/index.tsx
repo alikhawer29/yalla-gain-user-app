@@ -48,6 +48,7 @@ const ContactUs = () => {
                         onChangeText={setName}
                         required
                         error={nameError}
+                        maxLength={30}
                     />
                 </View>
 

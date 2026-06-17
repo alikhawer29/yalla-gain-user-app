@@ -11,6 +11,7 @@ import colors from "../../utils/colors"
 import images from "../../assets/images"
 import KeyboardAvoidingWrapper from "../../components/KeyboardAvoidingWrapper"
 import { GENDER_OPTIONS } from "../../utils/data"
+import { getPhoneMaxLength } from "../../utils/helper"
 
 const EditProfile = () => {
     const {
@@ -58,6 +59,7 @@ const EditProfile = () => {
                                 type="phone"
                                 required
                                 value={data?.phone}
+                                maxLength={getPhoneMaxLength(data?.country_code || 'AE')}
                                 onChangeText={handleChange("phone")}
                                 error={touched?.phone ? errors?.phone : ""}
                                 country={data?.country_code}
