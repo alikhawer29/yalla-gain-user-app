@@ -13,6 +13,7 @@ import BasicDetails from '../../screens/BasicDetails';
 import AboutUs from '../../screens/AboutUs';
 import Faqs from '../../screens/Faqs';
 import ContactUs from '../../screens/ContactUs';
+import TransactionHistory from '../../screens/TransactionHistory';
 import { ROUTES } from '../../utils/routes';
 import Options from '../Options';
 
@@ -33,6 +34,7 @@ const HelpDeskStackNavigator = () => {
             <Stack.Screen name={ROUTES.ABOUT_US} component={AboutUs} />
             <Stack.Screen name={ROUTES.FAQS} component={Faqs} />
             <Stack.Screen name={ROUTES.CONTACT_US} component={ContactUs} />
+            <Stack.Screen name={ROUTES.TRANSACTION_HISTORY} component={TransactionHistory} />
         </Stack.Navigator>
     );
 }

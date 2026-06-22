@@ -31,14 +31,23 @@ const styles = StyleSheet.create({
         borderRadius: heightPixel(15),
         marginTop: heightPixel(10),
         backgroundColor: colors.blackish_gray,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    videoPlayer: {
+        width: '100%',
+        height: '100%',
+    },
+    videoPlayOverlay: {
+        ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden'
+        backgroundColor: 'rgba(0,0,0,0.3)',
     },
-    playIcon: {
-        position: 'absolute',
-        zIndex: 1
-    }
+    videoPlayIcon: {
+        width: heightPixel(60),
+        height: heightPixel(60),
+    },
 });
 
 export default styles;

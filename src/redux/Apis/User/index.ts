@@ -214,6 +214,19 @@ export const userApi = createApi({
       }),
       providesTags: ['Posts'],
     }),
+    getUserPostProfile: builder.query({
+      query: (userId: number) => ({
+        url: `posts/users/profile/${userId}`,
+        method: 'GET',
+      }),
+    }),
+    searchPostUsers: builder.query({
+      query: (q: string) => ({
+        url: 'posts/search',
+        method: 'GET',
+        params: { q },
+      }),
+    }),
     getFeedById: builder.query({
       query: id => ({
         url: `post/${id}`,
@@ -648,6 +661,19 @@ export const userApi = createApi({
         body,
       }),
     }),
+    getActivityLogs: builder.query({
+      query: (params?: {
+        type?: string;
+        per_page?: number;
+        page?: number;
+        from?: string;
+        to?: string;
+      }) => ({
+        url: 'activity-logs',
+        method: 'GET',
+        params,
+      }),
+    }),
     // Challenges
     getChallenges: builder.query({
       query: (params?: { search?: string; type?: string }) => ({
@@ -783,6 +809,8 @@ export const {
   useReportFeedMutation,
   useVotePollMutation,
   useGetFeedsQuery,
+  useGetUserPostProfileQuery,
+  useSearchPostUsersQuery,
   useGetFeedByIdQuery,
   useGetMyFeedsQuery,
   useGetCommentsQuery,
@@ -834,6 +862,7 @@ export const {
   useUpdateAvatarMutation,
   useGetFaqsQuery,
   useContactUsMutation,
+  useGetActivityLogsQuery,
   // Challenges
   useGetChallengesQuery,
   useGetChallengeByIdQuery,

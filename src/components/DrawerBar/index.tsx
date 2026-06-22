@@ -63,6 +63,12 @@ const DRAWER_ROUTES = [
                 route: NAVIGATORS.HELP_DESK_STACK,
                 child: ROUTES.HELP_DESK,
                 reset: true
+            },
+            {
+                title: "Transaction History",
+                icon: images.helpdesk.wallet,
+                route: NAVIGATORS.HELP_DESK_STACK,
+                child: ROUTES.TRANSACTION_HISTORY,
             }
         ]
     },

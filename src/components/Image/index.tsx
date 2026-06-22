@@ -4,7 +4,7 @@ import { IImage } from '../../interfaces';
 import images from '../../assets/images';
 import styles from './styles';
 
-const Image: FC<IImage> = ({ source, style, resize = 'contain' }) => {
+const Image: FC<IImage> = ({ source, style, resize = 'contain', fallbackSource = images.dummy }) => {
   const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const Image: FC<IImage> = ({ source, style, resize = 'contain' }) => {
   ) {
     return (
       <RNImage
-        source={images.dummy}
+        source={fallbackSource}
         style={[styles.container, style]}
         resizeMode={resize}
       />

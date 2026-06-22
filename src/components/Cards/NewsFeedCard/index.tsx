@@ -27,6 +27,30 @@ import ReportSuccessModal from "../../ReportSuccessModal";
 import Row from "../../Row";
 import Text from "../../Text";
 
+const getPollOptionId = (option: any): string | number | undefined =>
+    option?.id ?? option?.poll_option_id;
+
+const normalizePollOptions = (options: any[] | undefined) =>
+    (options ?? []).map(option => ({
+        ...option,
+        id: getPollOptionId(option),
+    }));
+
+const getPollOptionsFromProps = (pollOptions?: any[], poll?: INewsFeedCard['poll']) => {
+    if (pollOptions?.length) {
+        return normalizePollOptions(pollOptions);
+    }
+    if (poll?.options?.length) {
+        return normalizePollOptions(poll.options);
+    }
+    return [];
+};
+
+const optionIdsMatch = (
+    option: any,
+    optionId: string | number | undefined,
+) => String(getPollOptionId(option)) === String(optionId);
+
 const NewsFeedCard: FC<INewsFeedCard> = ({
     id,
     title,
@@ -84,15 +108,20 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     const [selectedMedia, setSelectedMedia] = useState({ url: '', isVideo: false });
 
     // Poll voting state - local optimistic update
-    const [localPollOptions, setLocalPollOptions] = useState(poll_options);
-    const [hasVoted, setHasVoted] = useState(false);
+    const initialPollOptions = getPollOptionsFromProps(poll_options, poll);
+    const [localPollOptions, setLocalPollOptions] = useState(initialPollOptions);
+    const [hasVoted, setHasVoted] = useState(() =>
+        initialPollOptions.some((opt: any) => opt.is_selected),
+    );
 
-    // Sync localPollOptions with poll_options when props update (after refetch)
+    // Sync local poll options when feed data refreshes
     useEffect(() => {
-        if (poll_options) {
-            setLocalPollOptions(poll_options);
+        const nextOptions = getPollOptionsFromProps(poll_options, poll);
+        if (nextOptions.length > 0) {
+            setLocalPollOptions(nextOptions);
+            setHasVoted(nextOptions.some((opt: any) => opt.is_selected));
         }
-    }, [poll_options]);
+    }, [poll_options, poll]);
 
     // Check if this is user's own post
     const isOwnPost = currentUser?.id === user?.id;
@@ -146,30 +175,31 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleVotePoll = async (optionId: string | number) => {
+        if (!localPollOptions?.length) return;
+
+        const alreadySelected = localPollOptions.find(
+            (opt: any) => opt.is_selected && optionIdsMatch(opt, optionId),
+        );
+        if (alreadySelected) return;
+
         const previousOptions = localPollOptions;
         const previousHasVoted = hasVoted;
 
         try {
-            // Optimistic update - mark the selected option
+            const updatedOptions = localPollOptions.map((opt: any) => ({
+                ...opt,
+                is_selected: optionIdsMatch(opt, optionId),
+            }));
+
             setHasVoted(true);
+            setLocalPollOptions(updatedOptions);
 
-            // Update local poll options to show the new selection
-            if (localPollOptions && localPollOptions.length > 0) {
-                const updatedOptions = localPollOptions.map((opt: any) => ({
-                    ...opt,
-                    is_selected: opt.id === optionId
-                }));
-                setLocalPollOptions(updatedOptions);
-            }
-
-            // Call API
             await votePoll({
                 post_id: id,
-                option_id: optionId
+                option_id: optionId,
             }).unwrap();
         } catch (error: any) {
             console.error('Vote poll error:', error);
-            // Revert on error
             setHasVoted(previousHasVoted);
             setLocalPollOptions(previousOptions);
         }
@@ -338,35 +368,33 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const renderPoll = () => {
-        // Check if it's a poll from API
-        if (!is_poll && !poll) return null;
+        if (!is_poll && !poll && !localPollOptions?.length) return null;
 
-        const pollData = poll || { question: title, options: localPollOptions || [] }
+        const options = localPollOptions || [];
+        if (options.length === 0) return null;
 
-        if (!pollData.options || pollData.options.length === 0) return null;
-
-        // Calculate total votes from all options
-        const totalVotes = pollData.options.reduce((sum: number, opt: any) => {
+        const totalVotes = options.reduce((sum: number, opt: any) => {
             return sum + (opt.votes || 0);
         }, 0);
 
-        // Check if user has already voted
-        const userHasVoted = pollData.options.some((opt: any) => opt.is_selected) || hasVoted;
+        const userHasVoted =
+            options.some((opt: any) => opt.is_selected) || hasVoted;
 
         return (
             <View style={{ marginTop: heightPixel(10) }}>
-                {pollData.options.map((option: any, index: number) => {
-                    // Calculate percentage
+                {options.map((option: any, index: number) => {
                     const votes = option.votes || 0;
                     const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
                     const optionText = option.option_text || option.label || option.option || '';
+                    const optionId = getPollOptionId(option);
 
                     return (
                         <TouchableOpacity
-                            key={option.id}
+                            key={optionId ?? index}
                             style={{ marginBottom: heightPixel(10) }}
-                            onPress={() => handleVotePoll(option.id)}
+                            onPress={() => optionId != null && handleVotePoll(optionId)}
                             activeOpacity={0.7}
+                            disabled={userHasVoted && option.is_selected}
                         >
                             <View style={{
                                 backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',

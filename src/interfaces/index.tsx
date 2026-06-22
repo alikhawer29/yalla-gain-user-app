@@ -105,6 +105,7 @@ export type RootStackParamList = {
     AboutUs: undefined;
     Faqs: undefined;
     ContactUs: undefined;
+    TransactionHistory: undefined;
     // Challenges & Rewards
     Challenges: undefined;
     ChallengeDetail: { id: number };
@@ -152,6 +153,7 @@ export interface IImage {
     source: ImageSourcePropType | undefined
     style?: StyleProp<ImageStyle>,
     resize?: ImageResizeMode
+    fallbackSource?: ImageSourcePropType
 }
 
 export interface IText {

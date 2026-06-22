@@ -77,6 +77,7 @@ const ROUTES = {
   ABOUT_US: 'AboutUs',
   FAQS: 'Faqs',
   CONTACT_US: 'ContactUs',
+  TRANSACTION_HISTORY: 'TransactionHistory',
   // Challenges & Rewards
   CHALLENGES: 'Challenges',
   CHALLENGE_DETAIL: 'ChallengeDetail',
@@ -439,6 +440,14 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Contact Us',
+    bottom_tab: false,
+  },
+  {
+    route_name: ROUTES.TRANSACTION_HISTORY,
+    left: 'drawer',
+    right: null,
+    logo: false,
+    title: 'Transaction History',
     bottom_tab: false,
   },
   {

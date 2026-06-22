@@ -89,7 +89,7 @@ function App() {
                 <ModalProvider>
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
                     <AppStackNavigator />
-                    {/* <NetworkLoggerFAB /> */}
+                    {__DEV__ && <NetworkLoggerFAB />}
                     <Toast />
                   </NavigationContainer>
                 </ModalProvider>

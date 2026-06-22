@@ -7,6 +7,7 @@ const images = {
   right_light: require('./right_light.png'),
   center_light: require('./center_light.png'),
   dummy: require('./dummy.png'),
+  placeholder: require('./placeholder.png'),
   service_dummy: require('./dummy2.png'),
   dumbbell: require('./dumbbell.png'),
   kabaddi: require('./kabaddi.png'),

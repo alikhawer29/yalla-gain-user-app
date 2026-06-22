@@ -1,10 +1,15 @@
 import { FlatList, View, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native"
 import { useRoute, RouteProp, useFocusEffect, useNavigation } from "@react-navigation/native"
-import React, { useState } from "react"
+import React, { useCallback, useState } from "react"
 import NewsFeedCard from "../../components/Cards/NewsFeedCard"
 import Wrapper from "../../components/Wrapper"
 import { heightPixel, widthPixel } from "../../utils/helper"
-import { useGetFeedsQuery, useCreateChatMutation, useBlockUserMutation } from "../../redux/Apis/User"
+import {
+    useGetFeedsQuery,
+    useGetUserPostProfileQuery,
+    useCreateChatMutation,
+    useBlockUserMutation,
+} from "../../redux/Apis/User"
 import colors from "../../utils/colors"
 import Text from "../../components/Text"
 import Icon from "../../components/Icon"
@@ -25,15 +30,26 @@ const UserProfile = () => {
     const [page, setPage] = useState(1)
     const [isRefreshing, setIsRefreshing] = useState(false)
 
-    const { data, isLoading, isFetching, refetch } = useGetFeedsQuery({ page, user_id: userId })
+    const {
+        data: profileResponse,
+        isLoading: isProfileLoading,
+        refetch: refetchProfile,
+    } = useGetUserPostProfileQuery(userId)
+
+    const {
+        data: postsData,
+        isLoading: isPostsLoading,
+        isFetching: isPostsFetching,
+        refetch: refetchPosts,
+    } = useGetFeedsQuery({ page, user_id: userId })
+
     const [createChat] = useCreateChatMutation();
     const [blockUser] = useBlockUserMutation();
 
-    const userData = data?.data?.[0]?.user;
+    const userData = profileResponse?.data;
 
     useFocusEffect(
-        React.useCallback(() => {
-            // Hide bottom tab bar when screen is focused
+        useCallback(() => {
             const parent = navigation.getParent()
             if (parent) {
                 parent.setOptions({
@@ -46,18 +62,18 @@ const UserProfile = () => {
     const handleRefresh = async () => {
         setIsRefreshing(true)
         setPage(1)
-        await refetch()
+        await Promise.all([refetchProfile(), refetchPosts()])
         setIsRefreshing(false)
     }
 
     const handleLoadMore = () => {
-        if (data?.meta?.current_page < data?.meta?.last_page && !isFetching) {
+        if (postsData?.meta?.current_page < postsData?.meta?.last_page && !isPostsFetching) {
             setPage(prevPage => prevPage + 1)
         }
     }
 
     const renderFooter = () => {
-        if (!isFetching) return null
+        if (!isPostsFetching || page === 1) return null
         return (
             <View style={{ paddingVertical: heightPixel(20) }}>
                 <ActivityIndicator size="large" color={colors.primary} />
@@ -66,16 +82,16 @@ const UserProfile = () => {
     }
 
     const renderEmpty = () => {
-        if (isLoading) {
+        if (isPostsLoading) {
             return (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
+                <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(60) }}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
             )
         }
         return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
-                <Text size={16} color={colors.icon_gray}>No posts yet</Text>
+            <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(60) }}>
+                <Text size={16} color={colors.icon_gray}>No Posts Yet</Text>
             </View>
         )
     }
@@ -83,10 +99,8 @@ const UserProfile = () => {
     const handleChat = async () => {
         try {
             const response = await createChat(userId).unwrap();
-            // Get chat id from response (response.id or response.data.id)
             const chatId = response?.id || response?.data?.id || 0;
 
-            // Navigate to ChatDetails with the chat response data
             navigate(ROUTES.CHAT_DETAILS, {
                 chatId: chatId,
                 name: `${userData?.first_name} ${userData?.last_name}`,
@@ -114,7 +128,6 @@ const UserProfile = () => {
             async () => {
                 try {
                     await blockUser(userId).unwrap();
-                    // Show success message and navigate to NewsFeed after user closes the modal
                     showOkModal(
                         {
                             type: "success",
@@ -122,7 +135,6 @@ const UserProfile = () => {
                             message: "User Has Been Blocked Successfully"
                         },
                         () => {
-                            // Navigate to NewsFeed after user closes the success modal
                             navigate(ROUTES.NEWSFEED);
                         }
                     );
@@ -159,9 +171,11 @@ const UserProfile = () => {
                 <Text size={20} weight="bold" style={{ marginTop: heightPixel(15) }}>
                     {userData.first_name} {userData.last_name}
                 </Text>
-                <Text size={14} color={colors.icon_gray} style={{ marginTop: heightPixel(5) }}>
-                    {userData.email}
-                </Text>
+                {userData.email ? (
+                    <Text size={14} color={colors.icon_gray} style={{ marginTop: heightPixel(5) }}>
+                        {userData.email}
+                    </Text>
+                ) : null}
 
                 <Row gap={10} style={{ marginTop: heightPixel(20), width: '100%' }}>
                     <TouchableOpacity
@@ -193,9 +207,7 @@ const UserProfile = () => {
         );
     }
 
-    // Show loader only on initial load, not when refreshing
-    const hasData = data && 'data' in data && Array.isArray(data.data) && data.data.length > 0;
-    if (isLoading && !hasData) {
+    if (isProfileLoading && !userData) {
         return (
             <Wrapper scrollable>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: heightPixel(100) }}>
@@ -208,7 +220,7 @@ const UserProfile = () => {
     return (
         <Wrapper scrollable>
             <FlatList
-                data={data?.data || []}
+                data={postsData?.data || []}
                 renderItem={({ item }) => <NewsFeedCard {...item} />}
                 keyExtractor={(item, index) => `user-post-${item.id}-${index}`}
                 ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
@@ -232,4 +244,3 @@ const UserProfile = () => {
 }
 
 export default UserProfile
-

@@ -1,75 +1,76 @@
-import { useCallback, useEffect, useRef } from "react"
-import { useModal } from "../../contexts/ModalContext"
-import { useAppSelector } from "../../hooks"
-import { useUpdateProfileMutation } from "../../redux/Apis/User"
-import { selectUser } from "../../redux/Slices/AuthSlice"
-import { formHandler } from "../../utils/helper"
-import { goBack } from "../../utils/navigation"
-import { EDIT_PROFILE_SCHEMA } from "../../utils/validators"
-import usePicker from "../../hooks/usePicker"
+import { useCallback, useState } from 'react';
+import { useGetFeedsQuery, useSearchPostUsersQuery } from '../../redux/Apis/User';
+import useDebounce from '../../hooks/useDebounce';
+import { navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 
-const useNewsFeedController = () => {
-
-    const user = useAppSelector(selectUser)
-    const formik_ref = useRef(null)
-    const { showOkModal } = useModal()
-    const { image, openGallery } = usePicker()
-
-    const [submit, { isLoading, isSuccess }] = useUpdateProfileMutation()
-
-    const initial = {
-        first_name: user?.first_name || "",
-        last_name: user?.last_name || "",
-        dialing_code: user?.dialing_code || "+971",
-        country_code: user?.country_code || "AE",
-        phone: user?.phone || "",
-        gender: user?.gender || "",
-    }
-
-    useEffect(() => {
-        if (isSuccess) {
-            showOkModal({
-                type: "success",
-                title: "Success",
-                message: "Profile has been updated successfully."
-            }, () => goBack(), () => goBack())
-        }
-    }, [isSuccess])
-
-    const onSubmit = useCallback((data: any) => {
-
-        let payload = { ...data }
-
-        if (image) {
-            payload.photo = image
-        }
-
-        payload = formHandler(payload)
-
-        submit(payload)
-
-    }, [image])
-
-    const onPressUpload = useCallback(() => {
-        openGallery()
-    }, [])
-
-    return {
-        schema: EDIT_PROFILE_SCHEMA,
-        refs: {
-            formik_ref
-        },
-        values: {
-            initial,
-            isLoading,
-            user_image: user?.photo,
-            image
-        },
-        functions: {
-            onSubmit,
-            onPressUpload
-        }
-    }
+export interface PostSearchUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  type: string;
+  photo?: string;
 }
 
-export default useNewsFeedController
+const useNewsFeedController = () => {
+  const [page, setPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const debouncedSearch = useDebounce(search.trim(), 400);
+
+  const { data, isLoading, isFetching, refetch } = useGetFeedsQuery({ page });
+  const { data: searchData, isFetching: isSearching } = useSearchPostUsersQuery(
+    debouncedSearch,
+    { skip: debouncedSearch.length === 0 },
+  );
+
+  const searchResults: PostSearchUser[] = searchData?.data ?? [];
+  const trimmedSearch = search.trim();
+  const showSearchResults = trimmedSearch.length > 0;
+  const isSearchPending = trimmedSearch !== debouncedSearch;
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    setPage(1);
+    await refetch();
+    setIsRefreshing(false);
+  }, [refetch]);
+
+  const handleLoadMore = useCallback(() => {
+    if (data?.meta?.current_page < data?.meta?.last_page && !isFetching) {
+      setPage(prevPage => prevPage + 1);
+    }
+  }, [data?.meta?.current_page, data?.meta?.last_page, isFetching]);
+
+  const onSearch = useCallback((text: string) => {
+    setSearch(text);
+  }, []);
+
+  const onUserPress = useCallback((userId: number) => {
+    setSearch('');
+    navigate(ROUTES.USER_PROFILE, { userId });
+  }, []);
+
+  return {
+    values: {
+      data,
+      isLoading,
+      isFetching,
+      isRefreshing,
+      search,
+      searchResults,
+      showSearchResults,
+      isSearching: isSearching || isSearchPending,
+    },
+    functions: {
+      handleRefresh,
+      handleLoadMore,
+      onSearch,
+      onUserPress,
+      refetch,
+    },
+  };
+};
+
+export default useNewsFeedController;
