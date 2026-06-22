@@ -1,8 +1,7 @@
 import { FC, memo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { ActivityLogItem, getActivityLogUI } from '../../../utils/activityLog';
+import { ActivityLogItem, formatAed, getActivityLogUI } from '../../../utils/activityLog';
 import colors from '../../../utils/colors';
-import { heightPixel } from '../../../utils/helper';
 import CardWrapper from '../../CardWrapper';
 import Icon from '../../Icon';
 import Row from '../../Row';
@@ -33,11 +32,20 @@ const ActivityLogCard: FC<ActivityLogCardProps> = ({ item, onPress }) => {
             <Text weight="bold" size={16} color={colors.white}>
               {item.title}
             </Text>
-            <View style={styles.typeBadge}>
-              <Text size={11} weight="semibold" color={colors.white}>
-                {ui.typeLabel}
-              </Text>
-            </View>
+            <Row align="center" gap={6} style={styles.badgeRow}>
+              <View style={styles.typeBadge}>
+                <Text size={11} weight="semibold" color={colors.white}>
+                  {ui.typeLabel}
+                </Text>
+              </View>
+              {ui.showTrialBadge ? (
+                <View style={styles.trialBadge}>
+                  <Text size={11} weight="semibold" color={colors.white}>
+                    Free Trial
+                  </Text>
+                </View>
+              ) : null}
+            </Row>
           </View>
         </Row>
         {ui.amountLabel ? (
@@ -53,8 +61,36 @@ const ActivityLogCard: FC<ActivityLogCardProps> = ({ item, onPress }) => {
         </Text>
       ) : null}
 
-      {item.commission_fee != null && item.commission_fee > 0 ? (
-        <Text size={12} color={colors.icon_gray} style={{ marginTop: heightPixel(4) }}>
+      {ui.expiresOnLabel ? (
+        <Text size={12} weight="semibold" color={colors.white} style={styles.expiresOn}>
+          {ui.expiresOnLabel}
+        </Text>
+      ) : null}
+
+      {ui.purchaseDetails ? (
+        <View style={styles.purchaseDetails}>
+          {ui.purchaseDetails.commissionFeeAed > 0 ? (
+            <Text size={12} color={colors.icon_gray}>
+              Commission fee: {formatAed(ui.purchaseDetails.commissionFeeAed)}
+            </Text>
+          ) : null}
+          {ui.purchaseDetails.commissionPercentage > 0 ? (
+            <Text size={12} color={colors.icon_gray}>
+              Commission: {ui.purchaseDetails.commissionPercentage}%
+            </Text>
+          ) : null}
+          {ui.purchaseDetails.totalChargeAed > 0 ? (
+            <Text size={12} color={colors.icon_gray}>
+              Total deducted: {formatAed(ui.purchaseDetails.totalChargeAed)}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+
+      {item.type === 'transfer_coins' &&
+      item.commission_fee != null &&
+      item.commission_fee > 0 ? (
+        <Text size={12} color={colors.icon_gray} style={styles.detailLine}>
           Fee: {item.commission_fee} coins
         </Text>
       ) : null}

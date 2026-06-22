@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-const CHAT_URL = 'https://core-model.botnest.ai/v1/';
+const CHAT_URL = 'https://core-model-v2.botnest.ai/v1/';
 const CHAT_CONFIG = {
   project_id: '6878dfb12d12632e219e5a4c',
   bot_id: '6878dfb12d12632e219e5a4e',
