@@ -5,7 +5,6 @@ import {
   ActivityLogItem,
   ActivityLogType,
 } from '../../utils/activityLog';
-import { navigateToBookingDetails } from '../../utils/navigation';
 
 const PER_PAGE = 15;
 
@@ -82,12 +81,6 @@ const useTransactionHistoryController = () => {
     setSelectedTab(value as ActivityLogType);
   };
 
-  const onLogPress = useCallback((item: ActivityLogItem) => {
-    if (item.type === 'tips' && item.meta?.appointment_id) {
-      navigateToBookingDetails(item.meta.appointment_id);
-    }
-  }, []);
-
   return {
     values: {
       logs: accumulatedLogs,
@@ -103,7 +96,6 @@ const useTransactionHistoryController = () => {
       onReload,
       onLoadMore,
       onTabChange,
-      onLogPress,
     },
   };
 };

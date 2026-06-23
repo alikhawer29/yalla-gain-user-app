@@ -192,7 +192,7 @@ export const getActivityLogUI = (item: ActivityLogItem): ActivityLogUI => {
   switch (item.type) {
     case 'tips':
       return {
-        icon: images.coin,
+        icon: images.coins,
         amountColor: getDirectionAmountColor(item.direction),
         amountLabel: buildCoinsAmountLabel(item),
         subtitle: providerName || item.description,
@@ -200,7 +200,7 @@ export const getActivityLogUI = (item: ActivityLogItem): ActivityLogUI => {
       };
     case 'transfer_coins':
       return {
-        icon: images.helpdesk.wallet,
+        icon: images.coins,
         amountColor: getDirectionAmountColor(item.direction),
         amountLabel: buildCoinsAmountLabel(item),
         subtitle: item.description,
@@ -208,7 +208,7 @@ export const getActivityLogUI = (item: ActivityLogItem): ActivityLogUI => {
       };
     case 'purchase_coins':
       return {
-        icon: images.coin,
+        icon: images.coins,
         amountColor: getDirectionAmountColor(item.direction),
         amountLabel: buildCoinsAmountLabel(item),
         subtitle:
@@ -220,7 +220,7 @@ export const getActivityLogUI = (item: ActivityLogItem): ActivityLogUI => {
       return getSubscriptionUI(item);
     default:
       return {
-        icon: images.coin,
+        icon: images.coins,
         amountColor: getDirectionAmountColor(item.direction),
         amountLabel: buildCoinsAmountLabel(item),
         subtitle: item.description,

@@ -30,6 +30,11 @@ const styles = StyleSheet.create({
     minHeight: 0,
     position: 'relative',
   },
+  tabLoadingWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   loadMoreOverlay: {
     position: 'absolute',
     left: 0,

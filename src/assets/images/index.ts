@@ -65,6 +65,7 @@ const images = {
   duration: require('./duration.png'),
   dots: require('./dots.png'),
   coin: require('./coin.png'),
+  coins: require('./coins.png'),
   spotify_logo: require('./spotify_logo.png'),
   play: require('./play.png'),
   video_play: require('./video_play.png'),

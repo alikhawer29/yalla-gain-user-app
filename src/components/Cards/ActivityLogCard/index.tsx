@@ -1,5 +1,5 @@
 import { FC, memo } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 import { ActivityLogItem, formatAed, getActivityLogUI } from '../../../utils/activityLog';
 import colors from '../../../utils/colors';
 import CardWrapper from '../../CardWrapper';
@@ -10,14 +10,12 @@ import styles from './styles';
 
 interface ActivityLogCardProps {
   item: ActivityLogItem;
-  onPress?: (item: ActivityLogItem) => void;
 }
 
-const ActivityLogCard: FC<ActivityLogCardProps> = ({ item, onPress }) => {
+const ActivityLogCard: FC<ActivityLogCardProps> = ({ item }) => {
   const ui = getActivityLogUI(item);
-  const isPressable = item.type === 'tips' && !!item.meta?.appointment_id;
 
-  const content = (
+  return (
     <CardWrapper
       color={colors.blackish_gray}
       padding={16}
@@ -27,7 +25,7 @@ const ActivityLogCard: FC<ActivityLogCardProps> = ({ item, onPress }) => {
     >
       <Row justify="space-between" align="flex-start" style={styles.headerRow}>
         <Row align="center" gap={10} style={{ flex: 1 }}>
-          <Icon source={ui.icon} size={22} tint_color={ui.amountColor} />
+          <Icon source={ui.icon} size={22} resize="contain" />
           <View style={{ flex: 1 }}>
             <Text weight="bold" size={16} color={colors.white}>
               {item.title}
@@ -95,27 +93,10 @@ const ActivityLogCard: FC<ActivityLogCardProps> = ({ item, onPress }) => {
         </Text>
       ) : null}
 
-      <Row justify="space-between" align="center" style={styles.footerRow}>
-        <Text size={12} color={colors.icon_gray}>
-          {item.created_at}
-        </Text>
-        {isPressable ? (
-          <Text size={12} color={colors.primary} weight="semibold">
-            View booking
-          </Text>
-        ) : null}
-      </Row>
+      <Text size={12} color={colors.icon_gray} style={styles.footerRow}>
+        {item.created_at}
+      </Text>
     </CardWrapper>
-  );
-
-  if (!isPressable) {
-    return content;
-  }
-
-  return (
-    <TouchableOpacity activeOpacity={0.85} onPress={() => onPress?.(item)}>
-      {content}
-    </TouchableOpacity>
   );
 };
 

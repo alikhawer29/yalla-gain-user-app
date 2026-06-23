@@ -1,5 +1,6 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import messaging from '@react-native-firebase/messaging';
 import { useEffect } from 'react';
 import { AppState, LogBox, StatusBar, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
@@ -9,6 +10,7 @@ import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
+import ForceLogoutListener from './src/components/ForceLogoutListener';
 import NetworkLoggerFAB from './src/components/NetworkLoggerFAB';
 import { ModalProvider } from './src/contexts/ModalContext';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
@@ -16,6 +18,10 @@ import { userApi } from './src/redux/Apis/User';
 import { persistor, store } from './src/redux/Store';
 import colors from './src/utils/colors';
 import { ensureFirebaseMessagingReady } from './src/utils/devicePush';
+import {
+  flushPendingForceLogoutModal,
+  handleNotificationOpenForceLogout,
+} from './src/utils/forceLogout';
 import { setupFcmForegroundHandlers } from './src/utils/fcmForegroundHandlers';
 import { ensureForegroundPushChannels } from './src/utils/foregroundFcmNotifications';
 import { navigationRef } from './src/utils/navigation';
@@ -39,10 +45,29 @@ function App() {
   useEffect(() => {
     const sub = AppState.addEventListener('change', next => {
       if (next === 'active') {
+        flushPendingForceLogoutModal();
         store.dispatch(userApi.util.invalidateTags(['Notifications']));
       }
     });
     return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
+      void handleNotificationOpenForceLogout(remoteMessage);
+    });
+
+    void messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          void handleNotificationOpenForceLogout(remoteMessage);
+        }
+      });
+
+    return () => {
+      unsubOpened();
+    };
   }, []);
 
   useEffect(() => {
@@ -87,6 +112,7 @@ function App() {
               />
               <MenuProvider>
                 <ModalProvider>
+                  <ForceLogoutListener />
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
                     <AppStackNavigator />
                     {__DEV__ && <NetworkLoggerFAB />}

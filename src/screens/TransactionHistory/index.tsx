@@ -28,16 +28,8 @@ const TransactionHistory = () => {
       isLoadingMore,
       isRefreshing,
     },
-    functions: { onReload, onLoadMore, onTabChange, onLogPress },
+    functions: { onReload, onLoadMore, onTabChange },
   } = useTransactionHistoryController();
-
-  if (isLoading) {
-    return (
-      <Wrapper scrollable={false}>
-        <Loader />
-      </Wrapper>
-    );
-  }
 
   return (
     <Wrapper scrollable={false}>
@@ -69,54 +61,58 @@ const TransactionHistory = () => {
         </ScrollView>
 
         <View style={styles.listWrap}>
-          <FlatList
-            data={logs}
-            extraData={isLoadingMore}
-            removeClippedSubviews={false}
-            renderItem={({ item }) => (
-              <ActivityLogCard item={item} onPress={onLogPress} />
-            )}
-            keyExtractor={item => `${item.type}-${item.id}`}
-            ItemSeparatorComponent={() => <Seperator size={4} />}
-            showsVerticalScrollIndicator={false}
-            style={{ flex: 1 }}
-            contentContainerStyle={
-              logs.length === 0
-                ? { flexGrow: 1 }
-                : { paddingBottom: heightPixel(8) }
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={onReload}
-                tintColor={colors.primary}
-                colors={[colors.primary]}
-              />
-            }
-            onEndReached={onLoadMore}
-            onEndReachedThreshold={Platform.OS === 'ios' ? 0.45 : 0.3}
-            ListEmptyComponent={
-              <View style={styles.emptyWrap}>
-                <Empty message="No transaction history found" />
-              </View>
-            }
-            ListFooterComponent={
-              isLoadingMore ? (
-                <View
-                  style={{
-                    minHeight: heightPixel(56),
-                    paddingVertical: heightPixel(12),
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <ActivityIndicator size="large" color={colors.primary} />
+          {isLoading ? (
+            <View style={styles.tabLoadingWrap}>
+              <Loader />
+            </View>
+          ) : (
+            <FlatList
+              data={logs}
+              extraData={isLoadingMore}
+              removeClippedSubviews={false}
+              renderItem={({ item }) => <ActivityLogCard item={item} />}
+              keyExtractor={item => `${item.type}-${item.id}`}
+              ItemSeparatorComponent={() => <Seperator size={4} />}
+              showsVerticalScrollIndicator={false}
+              style={{ flex: 1 }}
+              contentContainerStyle={
+                logs.length === 0
+                  ? { flexGrow: 1 }
+                  : { paddingBottom: heightPixel(8) }
+              }
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={onReload}
+                  tintColor={colors.primary}
+                  colors={[colors.primary]}
+                />
+              }
+              onEndReached={onLoadMore}
+              onEndReachedThreshold={Platform.OS === 'ios' ? 0.45 : 0.3}
+              ListEmptyComponent={
+                <View style={styles.emptyWrap}>
+                  <Empty message="No transaction history found" />
                 </View>
-              ) : (
-                <View style={{ height: heightPixel(4) }} />
-              )
-            }
-          />
+              }
+              ListFooterComponent={
+                isLoadingMore ? (
+                  <View
+                    style={{
+                      minHeight: heightPixel(56),
+                      paddingVertical: heightPixel(12),
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <ActivityIndicator size="large" color={colors.primary} />
+                  </View>
+                ) : (
+                  <View style={{ height: heightPixel(4) }} />
+                )
+              }
+            />
+          )}
 
           {isLoadingMore ? (
             <View style={styles.loadMoreOverlay} pointerEvents="none">
