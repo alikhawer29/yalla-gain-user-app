@@ -2158,7 +2158,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-webview (13.16.1):
+  - react-native-webview (13.16.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2186,7 +2186,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-zoom-video-sdk (2.5.0):
+  - react-native-zoom-video-sdk (2.5.10):
     - React-Core
     - ZoomVideoSDK/CptShare (= 2.5.0)
     - ZoomVideoSDK/Whiteboard (= 2.5.0)
@@ -2791,7 +2791,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNFBApp (24.0.0):
+  - RNFBApp (24.1.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2820,7 +2820,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNFBMessaging (24.0.0):
+  - RNFBMessaging (24.1.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -2853,7 +2853,7 @@ PODS:
     - Yoga
   - RNFS (2.20.0):
     - React-Core
-  - RNGestureHandler (2.31.2):
+  - RNGestureHandler (2.32.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2881,14 +2881,14 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNInAppBrowser (3.7.1):
+  - RNInAppBrowser (3.7.0):
     - React-Core
   - RNNotifee (9.1.8):
     - React-Core
     - RNNotifee/NotifeeCore (= 9.1.8)
   - RNNotifee/NotifeeCore (9.1.8):
     - React-Core
-  - RNPermissions (5.5.2):
+  - RNPermissions (5.6.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3008,7 +3008,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNScreens (4.25.2):
+  - RNScreens (4.19.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3035,10 +3035,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.25.2)
+    - RNScreens/common (= 4.19.0)
     - SocketRocket
     - Yoga
-  - RNScreens/common (4.25.2):
+  - RNScreens/common (4.19.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -3781,8 +3781,8 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 7ee594b2c2aa287757c1ba78ac70278305bc7807
   react-native-unity: cc9f40a5fc4ba5e04437859c17ef8127fd6424d2
   react-native-video: 1bd55e6f395c6342a4eee06e3f8485c5564d41e1
-  react-native-webview: 278eeb4df23d6202b559ceb21bd4088dbde30090
-  react-native-zoom-video-sdk: 4aca1eb8e923ac3e696f061732a54e4f0a4e0c70
+  react-native-webview: 8b9097e270a99ee8798449f191a7ea27c790fa1c
+  react-native-zoom-video-sdk: 90cced56125f88444cd4f66679227c5e2daeb396
   React-NativeModulesApple: 1b4d9722d8df62e881684abadf320e7a8fa1b7f6
   React-oscompat: 80ca388c4831481cd03a6b45ecfc82739ca9a95e
   React-perflogger: 2e155343fa744b02ec2eab0f134639beb8fff659
@@ -3818,15 +3818,15 @@ SPEC CHECKSUMS:
   RNAppleHealthKit: 60a6beefdd89a75811e9a8873a5e24f351dee681
   RNBootSplash: 9bcb1ea9b8a8199cf7e397200f38261424daac6f
   RNCAsyncStorage: 302f2fac014fd450046c120567ca364632da682b
-  RNFBApp: bb2b158188e3bd5161cbdcd7e9058c2edfaa8c11
-  RNFBMessaging: 994290a71d043bc0837e89514be19ce02805790c
+  RNFBApp: bd0852313b69ae78e4c45426a0a4673e0e07b429
+  RNFBMessaging: ef18abb2e477e113a4e516161e5a1774a1920773
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
-  RNGestureHandler: 6e505168ae5134d4b89afc0d724fac76acdae298
-  RNInAppBrowser: b53e6f6072c931115bc22ac9dc9510ac2cbea62d
+  RNGestureHandler: c5656a9316c21d8c63e4298ccea62935e3b79287
+  RNInAppBrowser: e36d6935517101ccba0e875bac8ad7b0cb655364
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
-  RNPermissions: 869760a56fed71e50db1d0c6bea8b9a576ea23eb
+  RNPermissions: 7dcee1135db2643b4d0c414a2cfb8cec6e9ea2f2
   RNReanimated: 6dc53ac62a5ab3cfb243c83bde19bc7008684d7c
-  RNScreens: fc76f47e82d3616284684203ebab6e952dd7f28a
+  RNScreens: 69f68c95d395bc4261d27c3aae7b4a458b947b7e
   RNSound: 900f145a7611f93db8bf802a965849a72afd222d
   RNSVG: 474ee44b95fc882944ab730286e5d9b6113685b1
   RNWorklets: 764d2984d3bc311e63b15a4e678b7739d02471d4
