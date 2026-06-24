@@ -441,6 +441,12 @@ export const userApi = createApi({
         method: 'POST',
       }),
     }),
+    zoomCheckIn: builder.mutation({
+      query: (id: number) => ({
+        url: `my-booking/${id}/zoom/check-in`,
+        method: 'POST',
+      }),
+    }),
     getDoctorReviews: builder.query({
       query: id => ({
         url: `doctor-reviews/${id}`,
@@ -834,6 +840,7 @@ export const {
   useGetMyBookingsQuery,
   useGetBookingDetailsQuery,
   useJoinZoomSessionMutation,
+  useZoomCheckInMutation,
   useGetDoctorReviewsQuery,
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,

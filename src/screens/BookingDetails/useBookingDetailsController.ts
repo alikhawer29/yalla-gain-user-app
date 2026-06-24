@@ -16,6 +16,7 @@ import {
 import {
   useGetBookingDetailsQuery,
   useJoinZoomSessionMutation,
+  useZoomCheckInMutation,
   useApproveRescheduleMutation,
   useRejectRescheduleMutation,
   useCreateChatMutation,
@@ -75,8 +76,10 @@ const useBookingDetailsController = () => {
   const [reportBooking, { isLoading: isReporting }] =
     useReportBookingMutation();
   const [giveTip, { isLoading: isGivingTip }] = useGiveTipMutation();
-  const [joinZoomSession, { isLoading: isJoiningSession }] =
+  const [zoomCheckIn, { isLoading: isCheckingIn }] = useZoomCheckInMutation();
+  const [joinZoomSession, { isLoading: isJoiningZoom }] =
     useJoinZoomSessionMutation();
+  const isJoiningSession = isCheckingIn || isJoiningZoom;
 
   const booking = data?.data;
   const service = booking?.service;
@@ -302,6 +305,7 @@ const useBookingDetailsController = () => {
     }
 
     try {
+      await zoomCheckIn(id).unwrap();
       const response = await joinZoomSession(id).unwrap();
       const session = response?.data as
         | {
