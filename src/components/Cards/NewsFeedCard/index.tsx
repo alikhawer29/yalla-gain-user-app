@@ -33,23 +33,34 @@ const getPollOptionId = (option: any): string | number | undefined =>
 
 const POLL_VOTE_KEY_PREFIX = '@poll_vote_';
 
-const getStoredPollVote = async (postId?: string | number) => {
-    if (postId == null) return null;
+// Scope the key by user so a new account on the same device never inherits
+// another user's votes.
+const getPollVoteKey = (
+    userId?: string | number,
+    postId?: string | number,
+) => `${POLL_VOTE_KEY_PREFIX}${userId ?? 'anon'}_${postId}`;
+
+const getStoredPollVote = async (
+    userId?: string | number,
+    postId?: string | number,
+) => {
+    if (postId == null || userId == null) return null;
     try {
-        return await AsyncStorage.getItem(`${POLL_VOTE_KEY_PREFIX}${postId}`);
+        return await AsyncStorage.getItem(getPollVoteKey(userId, postId));
     } catch {
         return null;
     }
 };
 
 const setStoredPollVote = async (
+    userId?: string | number,
     postId?: string | number,
     optionId?: string | number,
 ) => {
-    if (postId == null || optionId == null) return;
+    if (postId == null || optionId == null || userId == null) return;
     try {
         await AsyncStorage.setItem(
-            `${POLL_VOTE_KEY_PREFIX}${postId}`,
+            getPollVoteKey(userId, postId),
             String(optionId),
         );
     } catch {
@@ -57,10 +68,13 @@ const setStoredPollVote = async (
     }
 };
 
-const removeStoredPollVote = async (postId?: string | number) => {
-    if (postId == null) return;
+const removeStoredPollVote = async (
+    userId?: string | number,
+    postId?: string | number,
+) => {
+    if (postId == null || userId == null) return;
     try {
-        await AsyncStorage.removeItem(`${POLL_VOTE_KEY_PREFIX}${postId}`);
+        await AsyncStorage.removeItem(getPollVoteKey(userId, postId));
     } catch {
         // ignore storage errors
     }
@@ -152,7 +166,9 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
 
     useEffect(() => {
         let active = true;
-        getStoredPollVote(id).then(stored => {
+        // Reset first so switching accounts never shows the previous user's vote.
+        setSelectedOptionId(null);
+        getStoredPollVote(currentUser?.id, id).then(stored => {
             if (active && stored != null) {
                 setSelectedOptionId(stored);
             }
@@ -160,7 +176,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         return () => {
             active = false;
         };
-    }, [id]);
+    }, [id, currentUser?.id]);
 
     // Sync local poll options when feed data refreshes (counts only)
     useEffect(() => {
@@ -247,7 +263,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
 
         setSelectedOptionId(optionId);
         setLocalPollOptions(updatedOptions);
-        await setStoredPollVote(id, optionId);
+        await setStoredPollVote(currentUser?.id, id, optionId);
 
         try {
             await votePoll({
@@ -258,7 +274,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
             console.error('Vote poll error:', error);
             setSelectedOptionId(previousSelectedOptionId);
             setLocalPollOptions(previousOptions);
-            await removeStoredPollVote(id);
+            await removeStoredPollVote(currentUser?.id, id);
         } finally {
             isVotingRef.current = false;
             setIsVoting(false);
