@@ -55,6 +55,11 @@ const styles = StyleSheet.create({
     borderColor: '#555555',
     opacity: 0.7,
   },
+  slot_item_conflict: {
+    backgroundColor: '#8B4513',
+    borderColor: '#A0522D',
+    opacity: 0.85,
+  },
 });
 
 export default styles;

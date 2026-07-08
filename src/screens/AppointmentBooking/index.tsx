@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Row from "../../components/Row";
@@ -14,7 +14,7 @@ import { getPhoneMaxLength } from "../../utils/helper";
 const AppointmentBooking = () => {
     const {
         values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
-        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onBook, onRefresh, formatTime, isSlotPassed },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatTime, isSlotPassed, isSlotConflictingWithUserBooking },
     } = useAppointmentBookingController();
 
     const displayName = [user?.first_name, user?.last_name]
@@ -124,27 +124,29 @@ const AppointmentBooking = () => {
                         const isSelected = selectedSlot?.start === slot.start_time && selectedSlot?.end === slot.end_time;
                         const isBooked = slot.is_booked;
                         const isPassed = isSlotPassed(slot.start_time, selectedDate);
-                        const isDisabled = isBooked || isPassed;
+                        const isUserConflict = isSlotConflictingWithUserBooking(slot.start_time, slot.end_time);
+                        // Every slot stays tappable; onSlotPress decides whether to select or show a validation modal.
                         return (
-                            <Touchable
+                            <TouchableOpacity
                                 key={index}
+                                activeOpacity={0.7}
                                 style={[
                                     styles.slot_item,
                                     isSelected && styles.slot_item_selected,
                                     isBooked && styles.slot_item_booked,
-                                    isPassed && !isBooked && styles.slot_item_passed,
+                                    isUserConflict && !isBooked && styles.slot_item_conflict,
+                                    isPassed && !isBooked && !isUserConflict && styles.slot_item_passed,
                                 ]}
-                                onPress={() => !isDisabled && onSlotSelect(slotData)}
-                                disabled={isDisabled}
+                                onPress={() => onSlotPress(slotData, { isBooked, isPassed })}
                             >
                                 <Text
                                     size={14}
-                                    color={isPassed && !isBooked ? colors.icon_gray : colors.white}
+                                    color={isPassed && !isBooked && !isUserConflict ? colors.icon_gray : colors.white}
                                 >
                                     {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
                                 </Text>
 
-                            </Touchable>
+                            </TouchableOpacity>
                         );
                     })
                 )}

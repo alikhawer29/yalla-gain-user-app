@@ -4,12 +4,21 @@ import { useSubscriptionAccess } from '../../hooks/useSubscriptionAccess';
 import {
   useGetServiceSlotsQuery,
   useBookAppointmentMutation,
+  useGetMyBookingsQuery,
 } from '../../redux/Apis/User';
 import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import { useAppSelector } from '../../hooks';
 import { validatePhoneByCountry } from '../../utils/helper';
+import {
+  findOverlappingBooking,
+  isAppointmentOverlapApiError,
+  isSlotConflictingWithBookings,
+} from '../../utils/appointmentOverlap';
+
+const SCHEDULING_CONFLICT_MESSAGE =
+  'You already have a session booked during this time. Please choose a different slot.';
 
 interface FormData {
   first_name: string;
@@ -167,10 +176,35 @@ const useAppointmentBookingController = () => {
       { serviceId, date: formattedDate },
       { skip: !selectedDate },
     );
+  // Fetch broadly (no backend date filter) and match the date client-side to
+  // avoid missing bookings when the backend date-filter format differs.
+  const { data: doctorBookingsData } = useGetMyBookingsQuery({
+    type: 'doctor',
+    per_page: 100,
+    page: 1,
+  });
+  const { data: trainerBookingsData } = useGetMyBookingsQuery({
+    type: 'trainer',
+    per_page: 100,
+    page: 1,
+  });
   const [bookAppointment, { isLoading: isBooking }] =
     useBookAppointmentMutation();
 
   const slots = slotsData?.data || [];
+  const existingBookingsForDate = useMemo(
+    () => [
+      ...(doctorBookingsData?.data ?? []).map((b: any) => ({
+        ...b,
+        __providerType: 'doctor',
+      })),
+      ...(trainerBookingsData?.data ?? []).map((b: any) => ({
+        ...b,
+        __providerType: 'trainer',
+      })),
+    ],
+    [doctorBookingsData?.data, trainerBookingsData?.data],
+  );
 
   // Generate next 7 days for date selection
   const dates = useMemo(() => {
@@ -255,6 +289,99 @@ const useAppointmentBookingController = () => {
     return slotStart.getTime() <= Date.now();
   };
 
+  const isSlotConflictingWithUserBooking = (
+    startTime: string,
+    endTime: string,
+  ) => {
+    if (!formattedDate) {
+      return false;
+    }
+
+    return isSlotConflictingWithBookings(
+      existingBookingsForDate,
+      formattedDate,
+      startTime,
+      endTime,
+    );
+  };
+
+  const getUserConflictForSlot = (startTime: string, endTime: string) => {
+    if (!formattedDate) {
+      return undefined;
+    }
+
+    return findOverlappingBooking(
+      existingBookingsForDate,
+      formattedDate,
+      startTime,
+      endTime,
+    );
+  };
+
+  const describeBookingProvider = (booking: any) => {
+    const providerType =
+      booking?.__providerType === 'trainer' ? 'trainer' : 'doctor';
+    const name = [
+      booking?.service?.user?.first_name,
+      booking?.service?.user?.last_name,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+
+    return name
+      ? `a different ${providerType} (${name})`
+      : `a different ${providerType}`;
+  };
+
+  const onSlotPress = (
+    slot: { start: string; end: string },
+    options?: { isBooked?: boolean; isPassed?: boolean },
+  ) => {
+    const conflict = getUserConflictForSlot(slot.start, slot.end);
+    console.log('[AppointmentBooking] onSlotPress', {
+      slot,
+      isBooked: options?.isBooked,
+      isPassed: options?.isPassed,
+      formattedDate,
+      totalBookings: existingBookingsForDate.length,
+      conflictId: conflict?.id,
+    });
+
+    if (conflict) {
+      showOkModal({
+        type: 'error',
+        title: 'Already Booked',
+        message: `You already have a booking at this time with ${describeBookingProvider(
+          conflict,
+        )}. Please choose a different slot.`,
+      });
+      return;
+    }
+
+    if (options?.isBooked) {
+      showOkModal({
+        type: 'error',
+        title: 'Already Booked',
+        message:
+          'This time slot is already booked. Please choose another slot.',
+      });
+      return;
+    }
+
+    if (options?.isPassed) {
+      showOkModal({
+        type: 'error',
+        title: 'Slot Unavailable',
+        message:
+          'This time slot has already passed. Please select another slot.',
+      });
+      return;
+    }
+
+    onSlotSelect(slot);
+  };
+
   const confirmBooking = async () => {
     const appointmentDate = selectedDate!.toISOString().split('T')[0];
 
@@ -309,11 +436,21 @@ const useAppointmentBookingController = () => {
         return;
       }
 
+      const apiMessage = err?.data?.message;
+      if (isAppointmentOverlapApiError(apiMessage)) {
+        showOkModal({
+          type: 'error',
+          title: 'Scheduling Conflict',
+          message: SCHEDULING_CONFLICT_MESSAGE,
+        });
+        return;
+      }
+
       showOkModal({
         type: 'error',
         title: 'Unsuccessful',
         message:
-          err?.data?.message ||
+          apiMessage ||
           "You Don't Have Enough Coins To Purchase The Service. Please Add Funds To Your Wallet To Avail The Service",
       });
     }
@@ -372,6 +509,22 @@ const useAppointmentBookingController = () => {
       return;
     }
 
+    const appointmentDate = selectedDate.toISOString().split('T')[0];
+    const conflictingBooking = findOverlappingBooking(
+      existingBookingsForDate,
+      appointmentDate,
+      selectedSlot.start,
+      selectedSlot.end,
+    );
+    if (conflictingBooking) {
+      showOkModal({
+        type: 'error',
+        title: 'Scheduling Conflict',
+        message: SCHEDULING_CONFLICT_MESSAGE,
+      });
+      return;
+    }
+
     // Show confirmation modal
     showYesNoModal(
       {
@@ -402,10 +555,12 @@ const useAppointmentBookingController = () => {
       onCountryChange,
       onDateSelect,
       onSlotSelect,
+      onSlotPress,
       onBook,
       onRefresh,
       formatTime,
       isSlotPassed,
+      isSlotConflictingWithUserBooking,
     },
   };
 };
