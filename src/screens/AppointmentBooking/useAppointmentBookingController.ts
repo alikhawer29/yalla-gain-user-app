@@ -58,7 +58,7 @@ const validateLastName = (value: string): string | undefined => {
 const validatePhone = (data: FormData): string | undefined => {
   const phone = data.phone?.trim() ?? '';
 
-  if (!phone) return 'Mobile Number is required';
+  if (!phone) return undefined;
 
   if (!/^[0-9]+$/.test(phone)) {
     return 'Phone number can only contain digits';
@@ -386,14 +386,15 @@ const useAppointmentBookingController = () => {
     const appointmentDate = selectedDate!.toISOString().split('T')[0];
 
     try {
+      const hasPhone = !!`${formData.phone ?? ''}`.trim();
       const response = await bookAppointment({
         service_id: serviceId,
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
-        phone: formData.phone,
-        dialing_code: formData.dialing_code,
-        country_code: formData.country_code,
+        phone: hasPhone ? formData.phone : '',
+        dialing_code: hasPhone ? formData.dialing_code : '',
+        country_code: hasPhone ? formData.country_code : '',
         appointment_date: appointmentDate,
         appointment_start_time: selectedSlot!.start,
         appointment_end_time: selectedSlot!.end,

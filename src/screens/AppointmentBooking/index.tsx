@@ -67,7 +67,6 @@ const AppointmentBooking = () => {
                 onChangeText={(text) => updateFormData("phone", text)}
                 onChangeCountry={onCountryChange}
                 country={formData.country_code}
-                required
                 error={fieldErrors.phone}
             />
             <Seperator size={15} />

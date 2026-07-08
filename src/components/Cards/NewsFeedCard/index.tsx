@@ -30,11 +30,27 @@ import Text from "../../Text";
 const getPollOptionId = (option: any): string | number | undefined =>
     option?.id ?? option?.poll_option_id;
 
-const normalizePollOptions = (options: any[] | undefined) =>
-    (options ?? []).map(option => ({
-        ...option,
-        id: getPollOptionId(option),
+const enforceSinglePollSelection = (options: any[]) => {
+    const selectedIndexes = options
+        .map((opt, i) => (opt.is_selected ? i : -1))
+        .filter(i => i >= 0);
+
+    if (selectedIndexes.length <= 1) return options;
+
+    const keepIndex = selectedIndexes[selectedIndexes.length - 1];
+    return options.map((opt, i) => ({
+        ...opt,
+        is_selected: i === keepIndex,
     }));
+};
+
+const normalizePollOptions = (options: any[] | undefined) =>
+    enforceSinglePollSelection(
+        (options ?? []).map(option => ({
+            ...option,
+            id: getPollOptionId(option),
+        })),
+    );
 
 const getPollOptionsFromProps = (pollOptions?: any[], poll?: INewsFeedCard['poll']) => {
     if (pollOptions?.length) {
@@ -113,15 +129,19 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     const [hasVoted, setHasVoted] = useState(() =>
         initialPollOptions.some((opt: any) => opt.is_selected),
     );
+    const isVotingRef = useRef(false);
+    const [isVoting, setIsVoting] = useState(false);
 
     // Sync local poll options when feed data refreshes
     useEffect(() => {
+        if (isVotingRef.current) return;
+
         const nextOptions = getPollOptionsFromProps(poll_options, poll);
         if (nextOptions.length > 0) {
             setLocalPollOptions(nextOptions);
             setHasVoted(nextOptions.some((opt: any) => opt.is_selected));
         }
-    }, [poll_options, poll]);
+    }, [poll_options, poll, isVoting]);
 
     // Check if this is user's own post
     const isOwnPost = currentUser?.id === user?.id;
@@ -175,7 +195,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleVotePoll = async (optionId: string | number) => {
-        if (!localPollOptions?.length) return;
+        if (!localPollOptions?.length || isVotingRef.current || hasVoted) return;
 
         const alreadySelected = localPollOptions.find(
             (opt: any) => opt.is_selected && optionIdsMatch(opt, optionId),
@@ -185,11 +205,16 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         const previousOptions = localPollOptions;
         const previousHasVoted = hasVoted;
 
+        isVotingRef.current = true;
+        setIsVoting(true);
+
         try {
-            const updatedOptions = localPollOptions.map((opt: any) => ({
-                ...opt,
-                is_selected: optionIdsMatch(opt, optionId),
-            }));
+            const updatedOptions = enforceSinglePollSelection(
+                localPollOptions.map((opt: any) => ({
+                    ...opt,
+                    is_selected: optionIdsMatch(opt, optionId),
+                })),
+            );
 
             setHasVoted(true);
             setLocalPollOptions(updatedOptions);
@@ -202,6 +227,9 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
             console.error('Vote poll error:', error);
             setHasVoted(previousHasVoted);
             setLocalPollOptions(previousOptions);
+        } finally {
+            isVotingRef.current = false;
+            setIsVoting(false);
         }
     };
 
@@ -394,7 +422,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                             style={{ marginBottom: heightPixel(10) }}
                             onPress={() => optionId != null && handleVotePoll(optionId)}
                             activeOpacity={0.7}
-                            disabled={userHasVoted && option.is_selected}
+                            disabled={userHasVoted || isVoting}
                         >
                             <View style={{
                                 backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',

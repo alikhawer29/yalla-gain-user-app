@@ -295,47 +295,104 @@ These files were changed in the YallaGain user app:
 |------|--------|
 | `src/utils/appointmentOverlap.ts` | Shared overlap utility |
 | `src/utils/appointmentOverlap.test.ts` | Unit tests |
-| `src/screens/AppointmentBooking/useAppointmentBookingController.ts` | Fetch bookings + validate before save |
-| `src/screens/AppointmentBooking/index.tsx` | Disable conflicting slots in UI |
+| `src/screens/AppointmentBooking/useAppointmentBookingController.ts` | Fetch bookings, detect conflicts, `onSlotPress` handler, validate before save |
+| `src/screens/AppointmentBooking/index.tsx` | Tappable slots (plain `TouchableOpacity`) that surface a validation modal |
 | `src/screens/AppointmentBooking/styles.ts` | `slot_item_conflict` style |
+
+### Key lessons learned (apply these in the doctor app)
+
+These are the fixes that actually made it work — do the same in the doctor repo to avoid the same dead-ends:
+
+1. **Show a centered modal, not a toast.** The toast (`react-native-toast-message`) did not reliably render. Use the app's existing modal context (`showOkModal` from `useModal`) which is already used for other errors on the screen.
+2. **Do NOT disable the slot cube.** A disabled `Touchable`/`TouchableWithoutFeedback` swallows the tap, so no message can appear. Keep slots **tappable** and decide what to do inside the press handler.
+3. **Use a plain `TouchableOpacity`** for the slot cube. A custom `Touchable` wrapper (reanimated + `TouchableWithoutFeedback`) was unreliable for these taps.
+4. **Do NOT filter `my-bookings` by `from_date`/`to_date`.** The backend stores dates as `MM/DD/YYYY` but the query sent `YYYY-MM-DD`, so the server returned zero rows and nothing was ever detected as a conflict. Fetch broadly (`per_page: 100`) and let the overlap util match the date client-side (it already only matches same-day bookings).
 
 ### User app integration pattern
 
-1. **Fetch existing bookings for selected date** via `GET my-bookings`:
-   - `from_date` / `to_date` = selected date (`YYYY-MM-DD`)
-   - `per_page: 100`
-   - Fetch **both** `type=doctor` and `type=trainer` (merge results) so cross-type conflicts are caught
-
-2. **Before confirm modal** in `onBook()`:
+1. **Fetch existing bookings** via `GET my-bookings` (no date filter), for **both** provider types, and tag each with its type so the message can name the provider:
    ```typescript
-   const conflict = findOverlappingBooking(
-     existingBookingsForDate,
-     appointmentDate,
-     selectedSlot.start,
-     selectedSlot.end,
+   const { data: doctorBookingsData } = useGetMyBookingsQuery({
+     type: 'doctor',
+     per_page: 100,
+     page: 1,
+   });
+   const { data: trainerBookingsData } = useGetMyBookingsQuery({
+     type: 'trainer',
+     per_page: 100,
+     page: 1,
+   });
+
+   const existingBookingsForDate = useMemo(
+     () => [
+       ...(doctorBookingsData?.data ?? []).map((b: any) => ({ ...b, __providerType: 'doctor' })),
+       ...(trainerBookingsData?.data ?? []).map((b: any) => ({ ...b, __providerType: 'trainer' })),
+     ],
+     [doctorBookingsData?.data, trainerBookingsData?.data],
    );
-   if (conflict) {
-     showOkModal({
-       type: 'error',
-       title: 'Scheduling Conflict',
-       message: 'You already have a session booked during this time. Please choose a different slot.',
-     });
-     return;
-   }
    ```
 
-3. **Disable slots in UI**:
+2. **Tap handler** — every slot is tappable and this decides what happens:
    ```typescript
-   const isUserConflict = isSlotConflictingWithBookings(
-     existingBookingsForDate,
-     formattedDate,
-     slot.start_time,
-     slot.end_time,
-   );
-   const isDisabled = isBooked || isPassed || isUserConflict;
+   const getUserConflictForSlot = (startTime: string, endTime: string) =>
+     formattedDate
+       ? findOverlappingBooking(existingBookingsForDate, formattedDate, startTime, endTime)
+       : undefined;
+
+   const describeBookingProvider = (booking: any) => {
+     const providerType = booking?.__providerType === 'trainer' ? 'trainer' : 'doctor';
+     const name = [booking?.service?.user?.first_name, booking?.service?.user?.last_name]
+       .filter(Boolean)
+       .join(' ')
+       .trim();
+     return name ? `a different ${providerType} (${name})` : `a different ${providerType}`;
+   };
+
+   const onSlotPress = (
+     slot: { start: string; end: string },
+     options?: { isBooked?: boolean; isPassed?: boolean },
+   ) => {
+     const conflict = getUserConflictForSlot(slot.start, slot.end);
+     if (conflict) {
+       showOkModal({
+         type: 'error',
+         title: 'Already Booked',
+         message: `You already have a booking at this time with ${describeBookingProvider(conflict)}. Please choose a different slot.`,
+       });
+       return;
+     }
+     if (options?.isBooked) {
+       showOkModal({ type: 'error', title: 'Already Booked', message: 'This time slot is already booked. Please choose another slot.' });
+       return;
+     }
+     if (options?.isPassed) {
+       showOkModal({ type: 'error', title: 'Slot Unavailable', message: 'This time slot has already passed. Please select another slot.' });
+       return;
+     }
+     onSlotSelect(slot);
+   };
    ```
 
-4. **Handle backend overlap errors** in the `book/appointment` catch block using `isAppointmentOverlapApiError()`.
+3. **Slot UI** — plain `TouchableOpacity`, no `disabled`, always routes through `onSlotPress`:
+   ```tsx
+   <TouchableOpacity
+     activeOpacity={0.7}
+     style={[
+       styles.slot_item,
+       isSelected && styles.slot_item_selected,
+       isBooked && styles.slot_item_booked,
+       isUserConflict && !isBooked && styles.slot_item_conflict,
+       isPassed && !isBooked && !isUserConflict && styles.slot_item_passed,
+     ]}
+     onPress={() => onSlotPress(slotData, { isBooked, isPassed })}
+   >
+     <Text>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</Text>
+   </TouchableOpacity>
+   ```
+
+4. **Still validate on the primary submit button** (`onBook`) with `findOverlappingBooking` before showing the confirm modal — the tap handler is UX, this is the guard.
+
+5. **Handle backend overlap errors** in the `book/appointment` catch block using `isAppointmentOverlapApiError()`.
 
 ### User app API endpoints
 
@@ -343,7 +400,7 @@ Base URL: `https://custom-dev.onlinetestingserver.com/yalla-backend/api/user/`
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
-| GET | `my-bookings?from_date=&to_date=&type=&per_page=100` | Existing user bookings |
+| GET | `my-bookings?type=&per_page=100` | Existing user bookings (filter date client-side) |
 | GET | `service-slots/{serviceId}?date=YYYY-MM-DD` | Available slots |
 | POST | `book/appointment` | Create booking |
 
@@ -382,6 +439,8 @@ Look for endpoints such as (names may differ):
 | `GET service-slots/{serviceId}?date=` | Slots for a service on a date |
 
 **Important:** Overlap check must be scoped to the **same doctor** — compare against all of that doctor's services/slots on the date, not just the current service.
+
+**Do NOT rely on a backend `from_date`/`to_date` filter.** In the user app the backend stored dates as `MM/DD/YYYY` while the query sent `YYYY-MM-DD`, so the server returned zero rows and detection silently failed. Fetch broadly (e.g. `per_page: 100`) and let `findOverlappingBooking` match the date client-side (it only matches same-day windows anyway).
 
 If the API returns slot objects instead of bookings, map them to `BookingLike`:
 
@@ -428,11 +487,29 @@ if (conflict) {
 }
 ```
 
-### Step 5 — Disable overlapping slots in the picker UI
+### Step 5 — Make slots tappable and show a validation modal (do NOT disable)
 
-In the slot selection screen:
+In the slot selection screen, keep every slot **tappable** and decide inside the press handler. A disabled cube swallows the tap and no message can appear.
+
+```tsx
+// UI: plain TouchableOpacity, no `disabled` prop
+<TouchableOpacity
+  activeOpacity={0.7}
+  style={[
+    styles.slot_item,
+    isSelected && styles.slot_item_selected,
+    isBooked && styles.slot_item_booked,
+    isDoctorConflict && !isBooked && styles.slot_item_conflict,
+    isPassed && !isBooked && !isDoctorConflict && styles.slot_item_passed,
+  ]}
+  onPress={() => onSlotPress(slotData, { isBooked, isPassed })}
+>
+  <Text>{formatTime(slot.start_time)} - {formatTime(slot.end_time)}</Text>
+</TouchableOpacity>
+```
 
 ```typescript
+// Controller
 const isDoctorConflict = isSlotConflictingWithBookings(
   existingDoctorSlotsForDate,
   formattedDate,
@@ -440,10 +517,32 @@ const isDoctorConflict = isSlotConflictingWithBookings(
   slot.end_time,
 );
 
-const isDisabled = isBooked || isPassed || isDoctorConflict;
+const onSlotPress = (slot, options) => {
+  const conflict = findOverlappingBooking(
+    existingDoctorSlotsForDate,
+    formattedDate,
+    slot.start,
+    slot.end,
+  );
+  if (conflict) {
+    showOkModal({ type: 'error', title: 'Scheduling Conflict', message: DOCTOR_SCHEDULING_CONFLICT_MESSAGE });
+    return;
+  }
+  if (options?.isBooked) {
+    showOkModal({ type: 'error', title: 'Already Booked', message: 'This time slot is already booked.' });
+    return;
+  }
+  if (options?.isPassed) {
+    showOkModal({ type: 'error', title: 'Slot Unavailable', message: 'This time slot has already passed.' });
+    return;
+  }
+  onSlotSelect(slot);
+};
 ```
 
-Add a visual style (e.g. `slot_item_conflict`) so doctors see unavailable slots before submitting.
+Add a visual style (e.g. `slot_item_conflict`) so doctors also see conflicting slots highlighted before tapping.
+
+**Reminder:** use the doctor app's own modal context (`showOkModal` / equivalent), NOT a toast. Toasts were unreliable in the user app.
 
 ### Step 6 — Handle API overlap errors
 
@@ -540,7 +639,7 @@ Optionally add a flag like `is_user_conflict` when the authenticated user alread
 ## Limitations
 
 - Client-side validation is a **first line of defense** for UX; backend validation is required for data integrity.
-- `my-bookings` pagination: mitigated by filtering `from_date`/`to_date` to the selected day with `per_page: 100`.
+- `my-bookings` pagination: fetch broadly with `per_page: 100` and match the date client-side (do not rely on backend date filtering — it silently returned nothing).
 - Concurrent requests from two devices can still race until backend transactions enforce uniqueness.
 
 ---
@@ -549,8 +648,15 @@ Optionally add a flag like `is_user_conflict` when the authenticated user alread
 
 1. Copy `src/utils/appointmentOverlap.ts` into the doctor app.
 2. Find the service/slot creation controller and screen.
-3. Fetch the doctor's existing slots for the selected date before save.
+3. Fetch the doctor's existing slots **without a backend date filter** (`per_page: 100`), match the date client-side.
 4. Call `findOverlappingBooking()` before confirm/create.
-5. Disable conflicting slots in the slot picker with `isSlotConflictingWithBookings()`.
+5. Keep slot cubes **tappable** (plain `TouchableOpacity`, no `disabled`); in `onSlotPress`, show a centered modal (`showOkModal`, NOT a toast) when there is a conflict / booked / passed slot, otherwise select.
 6. Map API overlap errors with `isAppointmentOverlapApiError()`.
 7. Add backend overlap validation in `yalla-backend` (see above).
+
+### Pitfalls that wasted time in the user app (avoid these)
+
+- Toast messages did not render — use the modal context (`showOkModal`).
+- `disabled` slot cubes swallow taps — never disable; handle inside `onSlotPress`.
+- The custom `Touchable` (reanimated wrapper) was unreliable — use plain `TouchableOpacity`.
+- Backend `from_date`/`to_date` filter returned nothing due to `MM/DD/YYYY` vs `YYYY-MM-DD` — filter client-side.
