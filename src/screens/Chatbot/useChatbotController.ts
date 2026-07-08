@@ -11,6 +11,7 @@ import { TMessage } from '../../interfaces';
 import {
   CHATBOT_INITIAL_MESSAGE,
   getValidChatbotSession,
+  loadChatbotSessionFromStorage,
   registerChatbotEndSession,
   saveChatbotSession,
   touchChatbotSession,
@@ -21,6 +22,7 @@ const useChatbotController = () => {
   const user = useSelector(selectUser);
   const sessionIdRef = useRef<string | null>(null);
   const isCreatingSessionRef = useRef(false);
+  const messagesRef = useRef<TMessage[]>([CHATBOT_INITIAL_MESSAGE]);
 
   const [createConversation] = useCreateConversationMutation();
   const [send, { data: sendData, isLoading: isSendLoading, isSuccess: isSendSuccess }] =
@@ -29,6 +31,10 @@ const useChatbotController = () => {
 
   const [messages, setMessages] = useState<TMessage[]>([CHATBOT_INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     registerChatbotEndSession(args => {
@@ -50,39 +56,67 @@ const useChatbotController = () => {
     [user?.id],
   );
 
-  const startNewConversation = useCallback(async () => {
-    if (!user?.id || isCreatingSessionRef.current) return;
+  const createSessionOnly = useCallback(async (): Promise<string | null> => {
+    if (!user?.id || isCreatingSessionRef.current) return null;
 
     isCreatingSessionRef.current = true;
     try {
       const result = await createConversation({ visitor_id: user.id }).unwrap();
       const sessionId = result?.session_id;
-      if (!sessionId) return;
+      if (!sessionId) return null;
 
       sessionIdRef.current = sessionId;
-      const initialMessages = [CHATBOT_INITIAL_MESSAGE];
-      setMessages(initialMessages);
-      persistSession(initialMessages, sessionId);
+      persistSession(messagesRef.current, sessionId);
+      return sessionId;
     } catch (error) {
       console.error('Chatbot createConversation error:', error);
+      return null;
     } finally {
       isCreatingSessionRef.current = false;
     }
   }, [createConversation, persistSession, user?.id]);
 
+  const startNewConversation = useCallback(async () => {
+    const sessionId = await createSessionOnly();
+    if (!sessionId) return;
+
+    const initialMessages = [CHATBOT_INITIAL_MESSAGE];
+    setMessages(initialMessages);
+    persistSession(initialMessages, sessionId);
+  }, [createSessionOnly, persistSession]);
+
   useEffect(() => {
     if (!user?.id) return;
 
-    const cached = getValidChatbotSession(user.id);
-    if (cached) {
-      sessionIdRef.current = cached.sessionId;
-      setMessages(cached.messages);
-      return;
-    }
+    let cancelled = false;
 
-    sessionIdRef.current = null;
-    setMessages([CHATBOT_INITIAL_MESSAGE]);
-    startNewConversation();
+    const hydrateSession = async () => {
+      const inMemory = getValidChatbotSession(user.id);
+      if (inMemory) {
+        sessionIdRef.current = inMemory.sessionId;
+        setMessages(inMemory.messages);
+        return;
+      }
+
+      const stored = await loadChatbotSessionFromStorage(user.id);
+      if (cancelled) return;
+
+      if (stored) {
+        sessionIdRef.current = stored.sessionId;
+        setMessages(stored.messages);
+        return;
+      }
+
+      sessionIdRef.current = null;
+      setMessages([CHATBOT_INITIAL_MESSAGE]);
+      startNewConversation();
+    };
+
+    void hydrateSession();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id, startNewConversation]);
 
   useEffect(() => {
@@ -132,6 +166,16 @@ const useChatbotController = () => {
     return () => clearTimeout(timeout);
   }, [isSendLoading]);
 
+  const sendQuestion = useCallback(
+    async (question: string, sessionId: string) => {
+      await send({
+        session_id: sessionId,
+        question,
+      }).unwrap();
+    },
+    [send],
+  );
+
   const onSendMessage = async () => {
     const question = input.trim();
     if (question === '') return;
@@ -142,7 +186,13 @@ const useChatbotController = () => {
         sessionIdRef.current = cached.sessionId;
         setMessages(cached.messages);
       } else {
-        await startNewConversation();
+        const stored = await loadChatbotSessionFromStorage(user.id);
+        if (stored) {
+          sessionIdRef.current = stored.sessionId;
+          setMessages(stored.messages);
+        } else {
+          await startNewConversation();
+        }
       }
     }
 
@@ -162,10 +212,18 @@ const useChatbotController = () => {
       return nextMessages;
     });
 
-    send({
-      session_id: sessionIdRef.current,
-      question,
-    });
+    try {
+      await sendQuestion(question, sessionIdRef.current);
+    } catch {
+      const newSessionId = await createSessionOnly();
+      if (!newSessionId) return;
+
+      try {
+        await sendQuestion(question, newSessionId);
+      } catch (retryError) {
+        console.error('Chatbot sendQuestion retry error:', retryError);
+      }
+    }
   };
 
   return {
