@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FC, memo, useEffect, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Video from 'react-native-video';
@@ -30,27 +31,46 @@ import Text from "../../Text";
 const getPollOptionId = (option: any): string | number | undefined =>
     option?.id ?? option?.poll_option_id;
 
-const enforceSinglePollSelection = (options: any[]) => {
-    const selectedIndexes = options
-        .map((opt, i) => (opt.is_selected ? i : -1))
-        .filter(i => i >= 0);
+const POLL_VOTE_KEY_PREFIX = '@poll_vote_';
 
-    if (selectedIndexes.length <= 1) return options;
+const getStoredPollVote = async (postId?: string | number) => {
+    if (postId == null) return null;
+    try {
+        return await AsyncStorage.getItem(`${POLL_VOTE_KEY_PREFIX}${postId}`);
+    } catch {
+        return null;
+    }
+};
 
-    const keepIndex = selectedIndexes[selectedIndexes.length - 1];
-    return options.map((opt, i) => ({
-        ...opt,
-        is_selected: i === keepIndex,
-    }));
+const setStoredPollVote = async (
+    postId?: string | number,
+    optionId?: string | number,
+) => {
+    if (postId == null || optionId == null) return;
+    try {
+        await AsyncStorage.setItem(
+            `${POLL_VOTE_KEY_PREFIX}${postId}`,
+            String(optionId),
+        );
+    } catch {
+        // ignore storage errors
+    }
+};
+
+const removeStoredPollVote = async (postId?: string | number) => {
+    if (postId == null) return;
+    try {
+        await AsyncStorage.removeItem(`${POLL_VOTE_KEY_PREFIX}${postId}`);
+    } catch {
+        // ignore storage errors
+    }
 };
 
 const normalizePollOptions = (options: any[] | undefined) =>
-    enforceSinglePollSelection(
-        (options ?? []).map(option => ({
-            ...option,
-            id: getPollOptionId(option),
-        })),
-    );
+    (options ?? []).map(option => ({
+        ...option,
+        id: getPollOptionId(option),
+    }));
 
 const getPollOptionsFromProps = (pollOptions?: any[], poll?: INewsFeedCard['poll']) => {
     if (pollOptions?.length) {
@@ -123,23 +143,32 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     const [showMediaViewer, setShowMediaViewer] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState({ url: '', isVideo: false });
 
-    // Poll voting state - local optimistic update
+    // Poll voting state - track user's own vote locally (API is_selected is not per-user)
     const initialPollOptions = getPollOptionsFromProps(poll_options, poll);
     const [localPollOptions, setLocalPollOptions] = useState(initialPollOptions);
-    const [hasVoted, setHasVoted] = useState(() =>
-        initialPollOptions.some((opt: any) => opt.is_selected),
-    );
+    const [selectedOptionId, setSelectedOptionId] = useState<string | number | null>(null);
     const isVotingRef = useRef(false);
     const [isVoting, setIsVoting] = useState(false);
 
-    // Sync local poll options when feed data refreshes
+    useEffect(() => {
+        let active = true;
+        getStoredPollVote(id).then(stored => {
+            if (active && stored != null) {
+                setSelectedOptionId(stored);
+            }
+        });
+        return () => {
+            active = false;
+        };
+    }, [id]);
+
+    // Sync local poll options when feed data refreshes (counts only)
     useEffect(() => {
         if (isVotingRef.current) return;
 
         const nextOptions = getPollOptionsFromProps(poll_options, poll);
         if (nextOptions.length > 0) {
             setLocalPollOptions(nextOptions);
-            setHasVoted(nextOptions.some((opt: any) => opt.is_selected));
         }
     }, [poll_options, poll, isVoting]);
 
@@ -195,38 +224,41 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     };
 
     const handleVotePoll = async (optionId: string | number) => {
-        if (!localPollOptions?.length || isVotingRef.current || hasVoted) return;
-
-        const alreadySelected = localPollOptions.find(
-            (opt: any) => opt.is_selected && optionIdsMatch(opt, optionId),
-        );
-        if (alreadySelected) return;
+        if (
+            !localPollOptions?.length ||
+            isVotingRef.current ||
+            selectedOptionId != null
+        ) {
+            return;
+        }
 
         const previousOptions = localPollOptions;
-        const previousHasVoted = hasVoted;
+        const previousSelectedOptionId = selectedOptionId;
 
         isVotingRef.current = true;
         setIsVoting(true);
 
+        const updatedOptions = localPollOptions.map((opt: any) => ({
+            ...opt,
+            votes: optionIdsMatch(opt, optionId)
+                ? (opt.votes || 0) + 1
+                : (opt.votes || 0),
+        }));
+
+        setSelectedOptionId(optionId);
+        setLocalPollOptions(updatedOptions);
+        await setStoredPollVote(id, optionId);
+
         try {
-            const updatedOptions = enforceSinglePollSelection(
-                localPollOptions.map((opt: any) => ({
-                    ...opt,
-                    is_selected: optionIdsMatch(opt, optionId),
-                })),
-            );
-
-            setHasVoted(true);
-            setLocalPollOptions(updatedOptions);
-
             await votePoll({
                 post_id: id,
                 option_id: optionId,
             }).unwrap();
         } catch (error: any) {
             console.error('Vote poll error:', error);
-            setHasVoted(previousHasVoted);
+            setSelectedOptionId(previousSelectedOptionId);
             setLocalPollOptions(previousOptions);
+            await removeStoredPollVote(id);
         } finally {
             isVotingRef.current = false;
             setIsVoting(false);
@@ -405,8 +437,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
             return sum + (opt.votes || 0);
         }, 0);
 
-        const userHasVoted =
-            options.some((opt: any) => opt.is_selected) || hasVoted;
+        const userHasVoted = selectedOptionId != null;
 
         return (
             <View style={{ marginTop: heightPixel(10) }}>
@@ -415,6 +446,9 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                     const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
                     const optionText = option.option_text || option.label || option.option || '';
                     const optionId = getPollOptionId(option);
+                    const isSelected =
+                        selectedOptionId != null &&
+                        optionIdsMatch(option, selectedOptionId);
 
                     return (
                         <TouchableOpacity
@@ -425,19 +459,19 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                             disabled={userHasVoted || isVoting}
                         >
                             <View style={{
-                                backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',
+                                backgroundColor: isSelected ? 'rgba(0, 128, 128, 0.2)' : 'rgba(60, 60, 60, 0.5)',
                                 borderRadius: heightPixel(2),
                                 overflow: 'hidden',
                                 height: heightPixel(26.59),
                                 justifyContent: 'center',
-                                borderWidth: option.is_selected ? 1 : 0,
-                                borderColor: option.is_selected ? colors.primary : 'transparent',
+                                borderWidth: isSelected ? 1 : 0,
+                                borderColor: isSelected ? colors.primary : 'transparent',
                                 position: 'relative'
                             }}>
                                 {/* Progress bar background - fills from left */}
                                 <View style={{
                                     width: `${percentage}%`,
-                                    backgroundColor: option.is_selected ? 'rgba(0, 128, 128, 0.4)' : 'rgba(80, 80, 80, 0.6)',
+                                    backgroundColor: isSelected ? 'rgba(0, 128, 128, 0.4)' : 'rgba(80, 80, 80, 0.6)',
                                     height: '100%',
                                     position: 'absolute',
                                     left: 0,
@@ -449,17 +483,17 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                     <Row justify="space-between" align="center">
                                         <Row align="center" gap={10}>
                                             {/* Number */}
-                                            <Text size={14} weight="semibold" color={option.is_selected ? colors.primary : colors.icon_gray}>
+                                            <Text size={14} weight="semibold" color={isSelected ? colors.primary : colors.icon_gray}>
                                                 {index + 1}.
                                             </Text>
 
                                             {/* Checkmark for selected */}
-                                            {option.is_selected && (
+                                            {isSelected && (
                                                 <Icon source={images.check} size={18} />
                                             )}
 
                                             {/* Option text */}
-                                            <Text size={14} weight={option.is_selected ? "semibold" : "regular"} color={colors.white}>
+                                            <Text size={14} weight={isSelected ? "semibold" : "regular"} color={colors.white}>
                                                 {optionText}
                                             </Text>
                                         </Row>
