@@ -90,9 +90,12 @@ const useAddEntryController = () => {
                     }
                 });
         } else {
+            const hasPhone = !!`${data?.phone ?? ""}`.trim();
             const payload = formHandler({
                 ...data,
-                dialing_code: withDialingCodePlus(data?.dialing_code),
+                phone: hasPhone ? data?.phone : "",
+                dialing_code: hasPhone ? withDialingCodePlus(data?.dialing_code) : "",
+                country_code: hasPhone ? data?.country_code : "",
             });
             signup(payload)
         }

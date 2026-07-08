@@ -45,7 +45,13 @@ const useEditProfileController = () => {
     (data: any) => {
       let payload = { ...data };
 
-      if (payload?.dialing_code) {
+      const hasPhone = !!`${payload?.phone ?? ''}`.trim();
+
+      if (!hasPhone) {
+        payload.phone = '';
+        payload.dialing_code = '';
+        payload.country_code = '';
+      } else if (payload?.dialing_code) {
         payload.dialing_code = `${payload.dialing_code}`.startsWith('+')
           ? `${payload.dialing_code}`
           : `+${payload.dialing_code}`;

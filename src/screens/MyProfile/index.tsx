@@ -39,12 +39,15 @@ const MyProfile = () => {
           <Text color={colors.icon_gray}>Last Name</Text>
           <Text weight="bold">{user?.last_name}</Text>
         </View>
-        <View style={[styles.item, styles.item_width]}>
-          <Text color={colors.icon_gray}>Phone Number</Text>
-          <Text weight="bold">
-            ({user?.dialing_code}) {user?.phone}
-          </Text>
-        </View>
+        {user?.phone ? (
+          <View style={[styles.item, styles.item_width]}>
+            <Text color={colors.icon_gray}>Phone Number</Text>
+            <Text weight="bold">
+              {user?.dialing_code ? `(${user?.dialing_code}) ` : ''}
+              {user?.phone}
+            </Text>
+          </View>
+        ) : null}
         {user?.gender ? (
           <View style={[styles.item, styles.item_width]}>
             <Text color={colors.icon_gray}>Gender</Text>

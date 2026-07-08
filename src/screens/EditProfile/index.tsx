@@ -57,7 +57,6 @@ const EditProfile = () => {
                                 label="Mobile Number"
                                 placeholder="Enter Your Phone Number"
                                 type="phone"
-                                required
                                 value={data?.phone}
                                 maxLength={getPhoneMaxLength(data?.country_code || 'AE')}
                                 onChangeText={handleChange("phone")}

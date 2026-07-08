@@ -114,15 +114,15 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
   //   ),
   phone: Yup.string()
     .trim()
-    .required('Mobile Number is required')
     .test('no-invalid-chars', 'Phone number can only contain digits', value =>
-      /^[0-9]+$/.test(value || ''),
+      !value ? true : /^[0-9]+$/.test(value),
     )
     .test(
       'not-all-same-digits',
       'Phone number cannot consist of the same digit repeated',
       value => {
-        const digits = (value || '').replace(/\D/g, '');
+        if (!value) return true;
+        const digits = value.replace(/\D/g, '');
         return !/^(.)\1+$/.test(digits);
       },
     )
@@ -166,15 +166,15 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
   country_code: Yup.string(),
   phone: Yup.string()
     .trim()
-    .required('Mobile Number is required')
     .test('no-invalid-chars', 'Phone number can only contain digits', value =>
-      /^[0-9]+$/.test(value || ''),
+      !value ? true : /^[0-9]+$/.test(value),
     )
     .test(
       'not-all-same-digits',
       'Phone number cannot consist of the same digit repeated',
       value => {
-        const digits = (value || '').replace(/\D/g, '');
+        if (!value) return true;
+        const digits = value.replace(/\D/g, '');
         return !/^(.)\1+$/.test(digits);
       },
     )
