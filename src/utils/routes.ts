@@ -40,6 +40,7 @@ const ROUTES = {
   SUBSCRIPTION: 'Subscription',
   SUBSCRIPTION_LOGS: 'SubscriptionLogs',
   CHATBOT: 'Chatbot',
+  CHATBOT_HISTORY: 'ChatbotHistory',
   MOVEMENT_CORRECTION: 'MovementCorrection',
   MOVEMENT_CORRECTION_CAMERA: 'MovementCorrectionCamera',
   WORKOUT: 'Workout',
@@ -195,9 +196,16 @@ const ROUTES_OPTIONS = [
   {
     route_name: ROUTES.CHATBOT,
     left: 'back',
-    right: null,
+    right: 'clock',
     logo: false,
     title: 'Yalla Chatbot',
+  },
+  {
+    route_name: ROUTES.CHATBOT_HISTORY,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Chatbot History',
   },
   {
     route_name: ROUTES.MOVEMENT_CORRECTION,

@@ -72,6 +72,10 @@ function OptionsHeader(props: OptionsProps) {
   }
 
   const handleRightPress = () => {
+    if (routeName === ROUTES.CHATBOT) {
+      navigate(ROUTES.CHATBOT_HISTORY)
+      return
+    }
     if (route?.right === "notifications") {
       navigate(ROUTES.NOTIFICATIONS)
     }

@@ -74,6 +74,18 @@ export const chatbotApi = createApi({
         },
       }),
     }),
+    listConversations: builder.query({
+      query: (params: { visitor_id: string | number }) => ({
+        url: 'list_conversations',
+        method: 'POST',
+        params: { ...CHAT_CONFIG, ...params },
+        body: {},
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }),
+    }),
   }),
 });
 
@@ -81,4 +93,5 @@ export const {
   useCreateConversationMutation,
   useEndSessionMutation,
   useSendQuestionMutation,
+  useListConversationsQuery,
 } = chatbotApi;

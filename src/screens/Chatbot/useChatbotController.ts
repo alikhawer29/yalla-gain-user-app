@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import {
   useCreateConversationMutation,
@@ -7,21 +8,25 @@ import {
   useSendQuestionMutation,
 } from '../../redux/Apis/Chatbot';
 import { selectUser } from '../../redux/Slices/AuthSlice';
-import { TMessage } from '../../interfaces';
+import { ChatbotApiSession, TMessage } from '../../interfaces';
 import {
   CHATBOT_INITIAL_MESSAGE,
+  clearChatbotSession,
   getValidChatbotSession,
   loadChatbotSessionFromStorage,
   registerChatbotEndSession,
   saveChatbotSession,
   touchChatbotSession,
 } from '../../services/chatbot/chatbotSessionCache';
+import { sessionToMessages } from '../../services/chatbot/chatbotHistory';
+import { consumePendingHistorySession } from '../../services/chatbot/chatbotHistoryStore';
 
 const useChatbotController = () => {
   const flatlist_ref = useRef<FlatList>(null);
   const user = useSelector(selectUser);
   const sessionIdRef = useRef<string | null>(null);
   const isCreatingSessionRef = useRef(false);
+  const hasInitializedRef = useRef(false);
   const messagesRef = useRef<TMessage[]>([CHATBOT_INITIAL_MESSAGE]);
 
   const [createConversation] = useCreateConversationMutation();
@@ -31,6 +36,7 @@ const useChatbotController = () => {
 
   const [messages, setMessages] = useState<TMessage[]>([CHATBOT_INITIAL_MESSAGE]);
   const [input, setInput] = useState('');
+  const [isStartingNewChat, setIsStartingNewChat] = useState(false);
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -85,39 +91,93 @@ const useChatbotController = () => {
     persistSession(initialMessages, sessionId);
   }, [createSessionOnly, persistSession]);
 
+  const onStartNewChat = useCallback(async () => {
+    if (isCreatingSessionRef.current || isStartingNewChat) return;
+
+    setIsStartingNewChat(true);
+    setInput('');
+    clearChatbotSession();
+    sessionIdRef.current = null;
+    hasInitializedRef.current = true;
+
+    const initialMessages = [CHATBOT_INITIAL_MESSAGE];
+    setMessages(initialMessages);
+
+    try {
+      await startNewConversation();
+    } finally {
+      setIsStartingNewChat(false);
+    }
+  }, [isStartingNewChat, startNewConversation]);
+
+  const loadHistoricalSession = useCallback(
+    (session: ChatbotApiSession) => {
+      const nextMessages = sessionToMessages(session);
+      sessionIdRef.current = session.session_id;
+      hasInitializedRef.current = true;
+      setInput('');
+      setMessages(nextMessages);
+
+      if (user?.id) {
+        saveChatbotSession({
+          visitorId: user.id,
+          sessionId: session.session_id,
+          messages: nextMessages,
+          lastActivityAt: Date.now(),
+        });
+      }
+    },
+    [user?.id],
+  );
+
   useEffect(() => {
-    if (!user?.id) return;
+    hasInitializedRef.current = false;
+  }, [user?.id]);
 
-    let cancelled = false;
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
 
-    const hydrateSession = async () => {
-      const inMemory = getValidChatbotSession(user.id);
-      if (inMemory) {
-        sessionIdRef.current = inMemory.sessionId;
-        setMessages(inMemory.messages);
-        return;
-      }
+      const initSession = async () => {
+        const pendingSession = consumePendingHistorySession();
+        if (pendingSession?.session_id) {
+          loadHistoricalSession(pendingSession);
+          return;
+        }
 
-      const stored = await loadChatbotSessionFromStorage(user.id);
-      if (cancelled) return;
+        if (hasInitializedRef.current) return;
+        hasInitializedRef.current = true;
 
-      if (stored) {
-        sessionIdRef.current = stored.sessionId;
-        setMessages(stored.messages);
-        return;
-      }
+        if (!user?.id) return;
 
-      sessionIdRef.current = null;
-      setMessages([CHATBOT_INITIAL_MESSAGE]);
-      startNewConversation();
-    };
+        const inMemory = getValidChatbotSession(user.id);
+        if (inMemory) {
+          sessionIdRef.current = inMemory.sessionId;
+          setMessages(inMemory.messages);
+          return;
+        }
 
-    void hydrateSession();
+        const stored = await loadChatbotSessionFromStorage(user.id);
+        if (cancelled) return;
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id, startNewConversation]);
+        if (stored) {
+          sessionIdRef.current = stored.sessionId;
+          setMessages(stored.messages);
+          return;
+        }
+
+        sessionIdRef.current = null;
+        setMessages([CHATBOT_INITIAL_MESSAGE]);
+        startNewConversation();
+      };
+
+      void initSession();
+
+      return () => {
+        cancelled = true;
+      };
+    }, [user?.id, loadHistoricalSession, startNewConversation]),
+  );
 
   useEffect(() => {
     if (flatlist_ref.current) {
@@ -233,10 +293,12 @@ const useChatbotController = () => {
     values: {
       data: messages,
       input,
+      isStartingNewChat,
     },
     functions: {
       onSendMessage,
       onChangeInput: setInput,
+      onStartNewChat,
     },
   };
 };

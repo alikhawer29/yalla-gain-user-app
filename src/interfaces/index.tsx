@@ -2,6 +2,13 @@ import { ReactNode } from "react";
 import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, NativeScrollEvent, NativeSyntheticEvent, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IndicatorName } from "react-native-loader-kit";
 
+export type ChatbotApiSession = {
+    session_id: string;
+    questions?: Array<{ text: string; voice_path?: string | null; timestamp: string }>;
+    answers?: Array<{ text: string; timestamp: string }>;
+    started_at?: string;
+};
+
 export type TMessage = {
     id: string;
     text: string;
@@ -15,7 +22,8 @@ export type InputType = 'email' | 'text' | 'password' | 'number' | 'textarea' | 
 export type AppStackParamList = {
     AuthStackNavigator: undefined
     DrawerNavigator: undefined
-    Chatbot: undefined
+    Chatbot: { historySession?: ChatbotApiSession } | undefined
+    ChatbotHistory: undefined
     WalletStackNavigator: undefined
     GoGuide: undefined
 };
@@ -44,7 +52,8 @@ export type RootStackParamList = {
     HelpDesk: undefined,
     Subscription: undefined,
     SubscriptionLogs: undefined,
-    Chatbot: undefined
+    Chatbot: { historySession?: ChatbotApiSession } | undefined
+    ChatbotHistory: undefined
     CreateNewsFeed: undefined
     Workout: undefined
     WorkoutDetails: { id: number; muscle_id?: number }

@@ -78,6 +78,7 @@ const images = {
   warning: require('./warning.png'),
   empty: require('./empty.png'),
   send: require('./send.png'),
+  chat_bubble: require('./chat-bubble.png'),
   chatbot: require('./chatbot.png'),
   fitness_content: require('./fitness_content.png'),
   linkedin: require('./linkedin.png'),

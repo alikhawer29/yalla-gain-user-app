@@ -22,6 +22,8 @@ import { useAppSelector } from "../../hooks"
 import { selectUser } from "../../redux/Slices/AuthSlice"
 import { useScanAvatarMutation } from "../../redux/Apis/User"
 import { optimizePhoto } from "../../utils/optimizePhoto"
+import Bodyoutlineoverlay from "../../components/Bodyoutlineoverlay"
+
 
 const Scan = () => {
     const route = useRoute()
@@ -277,15 +279,19 @@ const Scan = () => {
                     <>
                         {
                             device && format &&
-                            <Camera
-                                ref={cameraRef}
-                                device={device}
-                                format={format}
-                                style={StyleSheet.absoluteFill}
-                                isActive={true}
-                                photo={true}
-                                preview={true}
-                            />
+                            <>
+                                <Camera
+                                    ref={cameraRef}
+                                    device={device}
+                                    format={format}
+                                    style={StyleSheet.absoluteFill}
+                                    isActive={true}
+                                    photo={true}
+                                    preview={true}
+                                />
+                                {/* <Bodyoutlineoverlay step={currentStep === 'front' ? 'front' : 'right'} /> */}
+                            </>
+
                         }
                         <Touchable onPress={goBack} style={{ position: "absolute", top: 50, left: widthPixel(20), zIndex: 10 }}>
                             <Icon source={images.back} size={28} tint_color={colors.white} />
