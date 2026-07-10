@@ -170,7 +170,7 @@ const nowIso = () => new Date().toISOString();
 const WORKOUT_LOOKBACK_DAYS = 14;
 const WORKOUT_DEBUG_PROBE_DAYS = 30;
 
-/** Dev: logs to Metro. Set `HEALTH_LOG_IN_RELEASE` to `true` to also log in release/TestFlight. */
+/** Dev: verbose trace logs in Metro. Set `true` to also log in release/TestFlight APKs. */
 const HEALTH_LOG_IN_RELEASE = false;
 const HEALTH_LOG_VERBOSE =
   (typeof __DEV__ !== 'undefined' && __DEV__) || HEALTH_LOG_IN_RELEASE;
@@ -178,6 +178,38 @@ const HEALTH_LOG_VERBOSE =
 function healthLog(...args: unknown[]) {
   if (!HEALTH_LOG_VERBOSE) return;
   console.log('[YallaGain Health]', ...args);
+}
+
+let androidHcInitialized = false;
+
+/**
+ * Health Connect requires `initialize()` before every read session. Connect screen calls it
+ * once during permission grant, but `getMetrics` runs again after cold start — without this,
+ * reads fail silently and the Connected dashboard shows dashes.
+ */
+async function ensureAndroidHealthConnectInitialized(): Promise<boolean> {
+  if (Platform.OS !== 'android') {
+    return false;
+  }
+  try {
+    const sdkStatus = await hcGetSdkStatus();
+    if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+      healthLog('Health Connect SDK not available', { sdkStatus });
+      return false;
+    }
+    if (!androidHcInitialized) {
+      const ok = await hcInitialize();
+      androidHcInitialized = Boolean(ok);
+      healthLog('hcInitialize', { ok });
+      if (!ok) {
+        return false;
+      }
+    }
+    return true;
+  } catch (e: unknown) {
+    healthLog('ensureAndroidHealthConnectInitialized failed', e);
+    return false;
+  }
 }
 
 export async function getHealthPermissionState(): Promise<HealthPermissionState> {
@@ -235,7 +267,7 @@ export async function requestPermissions(): Promise<boolean> {
   }
 
   if (Platform.OS === 'android') {
-    const ok = await hcInitialize();
+    const ok = await ensureAndroidHealthConnectInitialized();
     if (!ok) return false;
 
     const granted = await hcRequestPermission([
@@ -381,6 +413,11 @@ export async function getMetrics(): Promise<WatchMetrics> {
   }
 
   if (Platform.OS === 'android') {
+    const ready = await ensureAndroidHealthConnectInitialized();
+    if (!ready) {
+      return {};
+    }
+
     const [steps, caloriesKcal, heartRate, workout] = await Promise.all([
       getTodaySteps_android(todayStart, endTime),
       getTodayActiveCalories_android(todayStart, endTime),
@@ -533,8 +570,8 @@ async function getTodaySteps_android(
     );
     healthLog('Android Steps', { recordCount: items.length, sum, dataOrigins });
     return sum > 0 ? sum : null;
-  } catch (e: any) {
-    healthLog('Android Steps error', { error: e?.message || String(e) });
+  } catch (e: unknown) {
+    healthLog('Android Steps error', { error: e instanceof Error ? e.message : String(e) });
     return null;
   }
 }
@@ -645,8 +682,8 @@ async function getLatestHeartRate_android(
     }
     healthLog('Android HeartRate', { bpm, at, dataOrigin });
     return { bpm, at };
-  } catch (e: any) {
-    healthLog('Android HeartRate error', { error: e?.message || String(e) });
+  } catch (e: unknown) {
+    healthLog('Android HeartRate error', { error: e instanceof Error ? e.message : String(e) });
     return null;
   }
 }
