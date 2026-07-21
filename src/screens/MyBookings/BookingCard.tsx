@@ -7,6 +7,7 @@ import Row from "../../components/Row";
 import Text from "../../components/Text";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel } from "../../utils/helper";
+import { formatUtcIsoLocalRange } from "../../utils/timezone";
 
 interface IBookingCard {
     booking: any;
@@ -39,12 +40,15 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
         return `${monthName} ${date.getDate()}, ${date.getFullYear()}`;
     };
 
-    // Test: formatDate("12/02/2025") returns "Dec 2, 2025"
-
     const formatStatus = (status: string) => {
         if (!status) return "";
         return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
     };
+
+    const localTimeRange = formatUtcIsoLocalRange(
+        booking?.scheduled_start_at,
+        booking?.scheduled_end_at,
+    );
 
     return (
         <CardWrapper
@@ -52,7 +56,7 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
             border_radius={10}
             padding={15}
             onPress={onPress}
-            height={120}
+            height={localTimeRange ? 140 : 120}
         >
             {/* Date and Status Row */}
             <Row justify="space-between" align="center" style={styles.header_row}>
@@ -75,6 +79,13 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
                 <Text size={15} color={colors.icon_gray}>#{booking.id}</Text>
             </Row>
 
+            {localTimeRange ? (
+                <Row style={styles.detail_row}>
+                    <Text size={14} weight="semibold" color={colors.white}>Time : </Text>
+                    <Text size={14} color={colors.icon_gray}>{localTimeRange}</Text>
+                </Row>
+            ) : null}
+
             {/* Amount */}
             <Row align="center" style={styles.detail_row}>
                 <Text size={14} weight="semibold" color={colors.white}>Amount : </Text>
@@ -86,8 +97,6 @@ const BookingCard: FC<IBookingCard> = ({ booking, onPress, getStatusColor }) => 
                         <Icon source={images.coin} size={18} style={styles.coin_icon} />
                     </>
                 )}
-                {/* <Text size={14} color={colors.icon_gray}>{booking.amount_paid || 0} Yalla Coins {" "}</Text> */}
-                {/* <Icon source={images.coin} size={18} style={styles.coin_icon} /> */}
             </Row>
         </CardWrapper>
     );
@@ -111,4 +120,3 @@ const styles = StyleSheet.create({
 });
 
 export default memo(BookingCard);
-

@@ -14,7 +14,7 @@ import { getPhoneMaxLength } from "../../utils/helper";
 const AppointmentBooking = () => {
     const {
         values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
-        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatTime, isSlotPassed, isSlotConflictingWithUserBooking },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatSlotLocalTime, isSlotPassed, isSlotConflictingWithUserBooking },
     } = useAppointmentBookingController();
 
     const displayName = [user?.first_name, user?.last_name]
@@ -119,10 +119,15 @@ const AppointmentBooking = () => {
                     </Text>
                 ) : (
                     availableSlots.map((slot: any, index: number) => {
-                        const slotData = { start: slot.start_time, end: slot.end_time };
+                        const slotData = {
+                            start: slot.start_time,
+                            end: slot.end_time,
+                            start_at_utc: slot.start_at_utc,
+                            end_at_utc: slot.end_at_utc,
+                        };
                         const isSelected = selectedSlot?.start === slot.start_time && selectedSlot?.end === slot.end_time;
                         const isBooked = slot.is_booked;
-                        const isPassed = isSlotPassed(slot.start_time, selectedDate);
+                        const isPassed = isSlotPassed(slot.start_time, selectedDate, slot.start_at_utc);
                         const isUserConflict = isSlotConflictingWithUserBooking(slot.start_time, slot.end_time);
                         // Every slot stays tappable; onSlotPress decides whether to select or show a validation modal.
                         return (
@@ -142,7 +147,7 @@ const AppointmentBooking = () => {
                                     size={14}
                                     color={isPassed && !isBooked && !isUserConflict ? colors.icon_gray : colors.white}
                                 >
-                                    {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
+                                    {formatSlotLocalTime(slot.start_at_utc)} - {formatSlotLocalTime(slot.end_at_utc)}
                                 </Text>
 
                             </TouchableOpacity>

@@ -28,6 +28,7 @@ import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
 import { clearZoomSessionActive } from '../../utils/zoomSessionStorage';
+import { formatUtcIsoLocalRange } from '../../utils/timezone';
 import {
   MIN_TIP_YALLA_POINTS,
   MIN_TIP_YALLA_POINTS_MESSAGE,
@@ -89,14 +90,11 @@ const useBookingDetailsController = () => {
     refetch();
   };
 
-  const formatTime = (time: string) => {
-    if (!time) return '';
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  };
+  /** Prefer scheduled_* UTC ISO → device local; never treat raw HH:mm as local. */
+  const formatScheduledLocalTime = (
+    startAt?: string | null,
+    endAt?: string | null,
+  ) => formatUtcIsoLocalRange(startAt, endAt);
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return '';
@@ -578,7 +576,7 @@ const useBookingDetailsController = () => {
     },
     functions: {
       onReload,
-      formatTime,
+      formatScheduledLocalTime,
       formatDate,
       getStatusColor,
       onApprove,

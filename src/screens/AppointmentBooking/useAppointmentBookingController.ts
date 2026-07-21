@@ -16,6 +16,7 @@ import {
   isAppointmentOverlapApiError,
   isSlotConflictingWithBookings,
 } from '../../utils/appointmentOverlap';
+import { formatUtcIsoToLocalTime, formatLocalDateYmd } from '../../utils/timezone';
 
 const SCHEDULING_CONFLICT_MESSAGE =
   'You already have a session booked during this time. Please choose a different slot.';
@@ -162,13 +163,15 @@ const useAppointmentBookingController = () => {
   const [selectedSlot, setSelectedSlot] = useState<{
     start: string;
     end: string;
+    start_at_utc?: string | null;
+    end_at_utc?: string | null;
   } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  // Format date for API query (YYYY-MM-DD)
+  // Format date for API query (YYYY-MM-DD) in device local calendar
   const formattedDate = selectedDate
-    ? selectedDate.toISOString().split('T')[0]
+    ? formatLocalDateYmd(selectedDate)
     : undefined;
 
   const { data: slotsData, isFetching: isLoadingSlots, refetch } =
@@ -248,7 +251,12 @@ const useAppointmentBookingController = () => {
     setSelectedSlot(null);
   };
 
-  const onSlotSelect = (slot: { start: string; end: string }) => {
+  const onSlotSelect = (slot: {
+    start: string;
+    end: string;
+    start_at_utc?: string | null;
+    end_at_utc?: string | null;
+  }) => {
     setSelectedSlot(slot);
   };
 
@@ -266,15 +274,21 @@ const useAppointmentBookingController = () => {
     }
   }, [selectedDate, refetch]);
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  };
+  const formatSlotLocalTime = (startAtUtc?: string | null) =>
+    formatUtcIsoToLocalTime(startAtUtc);
 
-  const isSlotPassed = (startTime: string, date: Date | null) => {
+  const isSlotPassed = (
+    startTime: string,
+    date: Date | null,
+    startAtUtc?: string | null,
+  ) => {
+    if (startAtUtc) {
+      const utcStart = new Date(startAtUtc);
+      if (!Number.isNaN(utcStart.getTime())) {
+        return utcStart.getTime() <= Date.now();
+      }
+    }
+
     if (!date || !startTime) return false;
 
     const [hours, minutes, seconds = '0'] = startTime.split(':');
@@ -335,7 +349,12 @@ const useAppointmentBookingController = () => {
   };
 
   const onSlotPress = (
-    slot: { start: string; end: string },
+    slot: {
+      start: string;
+      end: string;
+      start_at_utc?: string | null;
+      end_at_utc?: string | null;
+    },
     options?: { isBooked?: boolean; isPassed?: boolean },
   ) => {
     const conflict = getUserConflictForSlot(slot.start, slot.end);
@@ -383,7 +402,7 @@ const useAppointmentBookingController = () => {
   };
 
   const confirmBooking = async () => {
-    const appointmentDate = selectedDate!.toISOString().split('T')[0];
+    const appointmentDate = formatLocalDateYmd(selectedDate!);
 
     try {
       const hasPhone = !!`${formData.phone ?? ''}`.trim();
@@ -396,6 +415,7 @@ const useAppointmentBookingController = () => {
         dialing_code: hasPhone ? formData.dialing_code : '',
         country_code: hasPhone ? formData.country_code : '',
         appointment_date: appointmentDate,
+        // Raw provider slot times — backend converts using device timezone
         appointment_start_time: selectedSlot!.start,
         appointment_end_time: selectedSlot!.end,
         amount_paid: charges,
@@ -501,7 +521,7 @@ const useAppointmentBookingController = () => {
       return;
     }
 
-    if (isSlotPassed(selectedSlot.start, selectedDate)) {
+    if (isSlotPassed(selectedSlot.start, selectedDate, selectedSlot.start_at_utc)) {
       showOkModal({
         type: 'error',
         title: 'Error',
@@ -510,7 +530,7 @@ const useAppointmentBookingController = () => {
       return;
     }
 
-    const appointmentDate = selectedDate.toISOString().split('T')[0];
+    const appointmentDate = formatLocalDateYmd(selectedDate);
     const conflictingBooking = findOverlappingBooking(
       existingBookingsForDate,
       appointmentDate,
@@ -559,7 +579,7 @@ const useAppointmentBookingController = () => {
       onSlotPress,
       onBook,
       onRefresh,
-      formatTime,
+      formatSlotLocalTime,
       isSlotPassed,
       isSlotConflictingWithUserBooking,
     },

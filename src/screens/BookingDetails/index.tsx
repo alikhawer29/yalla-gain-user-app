@@ -22,7 +22,7 @@ const BookingDetails = () => {
             showRateModal, showReportModal, showTipModal
         },
         functions: {
-            formatTime, formatDate, getStatusColor, onApprove, onReject,
+            formatScheduledLocalTime, formatDate, getStatusColor, onApprove, onReject,
             onStartChat, onJoinSession, onRateBooking, onReportBooking, onGiveTip, onSubmitTip,
             setShowRateModal, setShowReportModal, setShowTipModal, onDownloadPrescription,
             onReload,
@@ -93,7 +93,7 @@ const BookingDetails = () => {
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>Appointment Time:</Text>
                     <Text size={14} color={colors.icon_gray}>
-                        {formatTime(booking?.is_rescheduled ? booking?.rescheduled_appointment_start_time : booking?.appointment_start_time)} - {formatTime(booking?.is_rescheduled ? booking?.rescheduled_appointment_end_time : booking?.appointment_end_time)}
+                        {formatScheduledLocalTime(booking?.scheduled_start_at, booking?.scheduled_end_at) || '-'}
                     </Text>
                 </View>
                 <View style={styles.column}>
@@ -172,7 +172,7 @@ const BookingDetails = () => {
                         <View style={styles.column}>
                             <Text size={14} weight="bold" color={colors.white}>Session Time:</Text>
                             <Text size={14} color={colors.icon_gray}>
-                                {formatTime(booking?.rescheduled_appointment_start_time)} To {formatTime(booking?.rescheduled_appointment_end_time)}
+                                {formatScheduledLocalTime(booking?.scheduled_start_at, booking?.scheduled_end_at) || '-'}
                             </Text>
                         </View>
                     </Row>
