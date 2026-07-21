@@ -1,7 +1,8 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StripeProvider } from '@stripe/stripe-react-native';
+import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import messaging from '@react-native-firebase/messaging';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { AppState, LogBox, StatusBar, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
 import { MenuProvider } from 'react-native-popup-menu';
@@ -36,6 +37,14 @@ LogBox.ignoreLogs([
 ]);
 
 function App() {
+  const zoomSdkConfig = useMemo(
+    () => ({
+      domain: 'zoom.us',
+      enableLog: __DEV__,
+    }),
+    [],
+  );
+
   useEffect(() => {
     setTimeout(() => {
       BootSplash.hide();
@@ -104,23 +113,25 @@ function App() {
           urlScheme={STRIPE_URL_SCHEME}
         >
           <SafeAreaProvider>
-            <AppWrapper>
-              <StatusBar
-                barStyle="light-content"
-                translucent={false}
-                backgroundColor={colors.primary}
-              />
-              <MenuProvider>
-                <ModalProvider>
-                  <ForceLogoutListener />
-                  <NavigationContainer ref={navigationRef} theme={navTheme}>
-                    <AppStackNavigator />
-                    {__DEV__ && <NetworkLoggerFAB />}
-                    <Toast />
-                  </NavigationContainer>
-                </ModalProvider>
-              </MenuProvider>
-            </AppWrapper>
+            <ZoomVideoSdkProvider config={zoomSdkConfig}>
+              <AppWrapper>
+                <StatusBar
+                  barStyle="light-content"
+                  translucent={false}
+                  backgroundColor={colors.primary}
+                />
+                <MenuProvider>
+                  <ModalProvider>
+                    <ForceLogoutListener />
+                    <NavigationContainer ref={navigationRef} theme={navTheme}>
+                      <AppStackNavigator />
+                      {__DEV__ && <NetworkLoggerFAB />}
+                      <Toast />
+                    </NavigationContainer>
+                  </ModalProvider>
+                </MenuProvider>
+              </AppWrapper>
+            </ZoomVideoSdkProvider>
           </SafeAreaProvider>
         </StripeProvider>
       </PersistGate>

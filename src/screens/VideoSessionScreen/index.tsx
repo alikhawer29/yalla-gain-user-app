@@ -21,7 +21,6 @@ import { StackActions, useRoute, useNavigation } from '@react-navigation/native'
 import {
   EventType,
   VideoAspect,
-  ZoomVideoSdkProvider,
   useZoom,
 } from '@zoom/react-native-videosdk';
 import SafeZoomView from '../../components/SafeZoomView';
@@ -397,8 +396,17 @@ function VideoSessionContent() {
         console.log('[VideoSession] leaveSession', e);
       }
       setIsConnecting(false);
-      void clearZoomSessionActive();
-      navigateBackToBooking();
+      // Give Android camera/audio a beat to release before navigating away.
+      // Immediate remount + rejoin was racing teardown (see CameraDeviceClient errors).
+      const goBack = () => {
+        void clearZoomSessionActive();
+        navigateBackToBooking();
+      };
+      if (Platform.OS === 'android') {
+        setTimeout(goBack, 500);
+      } else {
+        goBack();
+      }
     },
     [stopTimer, tearDownSession, navigateBackToBooking],
   );
@@ -947,17 +955,5 @@ function VideoSessionContent() {
 }
 
 export default function VideoSessionScreen() {
-  const zoomSdkConfig = useMemo(
-    () => ({
-      domain: 'zoom.us',
-      enableLog: __DEV__,
-    }),
-    [],
-  );
-
-  return (
-    <ZoomVideoSdkProvider config={zoomSdkConfig}>
-      <VideoSessionContent />
-    </ZoomVideoSdkProvider>
-  );
+  return <VideoSessionContent />;
 }

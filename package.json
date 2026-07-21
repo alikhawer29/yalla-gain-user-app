@@ -25,7 +25,7 @@
     "@react-navigation/stack": "^7.4.2",
     "@reduxjs/toolkit": "^2.8.2",
     "@stripe/stripe-react-native": "0.61.0",
-    "@zoom/react-native-videosdk": "^2.5.0",
+    "@zoom/react-native-videosdk": "2.5.10",
     "add": "^2.0.6",
     "dayjs": "^1.11.13",
     "formik": "^2.4.6",
