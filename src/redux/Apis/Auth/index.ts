@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { API_BASE_API_PREFIX, API_USER_BASE_URL } from '../../../utils/data'
+import { withTimezone } from '../../../utils/timezone'
 
 export const authApi = createApi({
     reducerPath: 'authApi',
@@ -15,7 +16,7 @@ export const authApi = createApi({
             query: (body) => ({
                 url: `signup`,
                 method: "POST",
-                body,
+                body: withTimezone(body),
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Accept': 'application/json'
@@ -27,7 +28,7 @@ export const authApi = createApi({
             query: (body) => ({
                 url: `login`,
                 method: "POST",
-                body
+                body: withTimezone(body),
             }),
         }),
         forgotPassword: builder.mutation({

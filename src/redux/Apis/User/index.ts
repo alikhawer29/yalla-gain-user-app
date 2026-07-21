@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_USER_BASE_URL } from '../../../utils/data';
+import { withTimezone } from '../../../utils/timezone';
 import { RootState } from '../../Store';
 
 export interface WeeklyCaloriesDataPoint {
@@ -97,7 +98,7 @@ export const userApi = createApi({
       query: body => ({
         url: `profile/update`,
         method: 'POST',
-        body,
+        body: withTimezone(body),
       }),
     }),
     getSubscriptionPlans: builder.query({
@@ -412,7 +413,7 @@ export const userApi = createApi({
       query: body => ({
         url: `book/appointment`,
         method: 'POST',
-        body,
+        body: withTimezone(body),
       }),
       invalidatesTags: ['Bookings', 'Wallet'],
     }),
