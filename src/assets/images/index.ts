@@ -90,6 +90,10 @@ const images = {
   camera: require('./camera.png'),
   male_scan: require('./male_scan.png'),
   female_scan: require('./female_scan.png'),
+  male_front: require('./male_front.png'),
+  male_right: require('./male_right.png'),
+  female_front: require('./female_front.png'),
+  female_right: require('./female_right.png'),
   unity_splash: require('./unity_splash.png'),
   vr_connect_hero: require('./vr.png'),
   recommended_videos: {

@@ -1,28 +1,26 @@
+import { useRoute } from "@react-navigation/native"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Platform, StyleSheet, View } from "react-native"
 import { Camera, useCameraDevice, useCameraFormat } from "react-native-vision-camera"
-import { useRoute } from "@react-navigation/native"
+import images from "../../assets/images"
+import Button from "../../components/Button"
+import Icon from "../../components/Icon"
+import Image from "../../components/Image"
+import NoPermission from "../../components/NoPermission"
+import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
+import { useModal } from "../../contexts/ModalContext"
+import { useAppSelector } from "../../hooks"
 import usePermissions from "../../hooks/usePermissions"
+import { useScanAvatarMutation } from "../../redux/Apis/User"
+import { selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
 import { goBack, navigate } from "../../utils/navigation"
-import { ROUTES } from "../../utils/routes"
-import images from "../../assets/images"
-import NoPermission from "../../components/NoPermission"
-import Icon from "../../components/Icon"
-import Image from "../../components/Image"
-import Row from "../../components/Row"
-import Button from "../../components/Button"
-import { useModal } from "../../contexts/ModalContext"
-import { validatePhoto } from "../../utils/photoValidation"
-import RNFS from "react-native-fs"
-import { useAppSelector } from "../../hooks"
-import { selectUser } from "../../redux/Slices/AuthSlice"
-import { useScanAvatarMutation } from "../../redux/Apis/User"
 import { optimizePhoto } from "../../utils/optimizePhoto"
-import Bodyoutlineoverlay from "../../components/Bodyoutlineoverlay"
+import { validatePhoto } from "../../utils/photoValidation"
+import { ROUTES } from "../../utils/routes"
 
 
 const Scan = () => {
@@ -251,6 +249,15 @@ const Scan = () => {
     if (!device) return null
 
     const currentPhoto = currentStep === 'front' ? frontPhoto : rightPhoto
+    const gender = formData?.gender === 'female' ? 'female' : 'male'
+    const postureGuideSource =
+        gender === 'female'
+            ? currentStep === 'front'
+                ? images.female_front
+                : images.female_right
+            : currentStep === 'front'
+                ? images.male_front
+                : images.male_right
 
     return (
         <>
@@ -289,7 +296,15 @@ const Scan = () => {
                                     photo={true}
                                     preview={true}
                                 />
-                                {/* <Bodyoutlineoverlay step={currentStep === 'front' ? 'front' : 'right'} /> */}
+                                {postureGuideSource ? (
+                                    <View style={styles.postureGuide} pointerEvents="none">
+                                        <Image
+                                            source={postureGuideSource}
+                                            style={styles.postureGuideImage}
+                                            resize="contain"
+                                        />
+                                    </View>
+                                ) : null}
                             </>
 
                         }
@@ -321,5 +336,23 @@ const Scan = () => {
         </>
     )
 }
+
+const styles = StyleSheet.create({
+    postureGuide: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: 5,
+        justifyContent: 'center',
+        alignItems: 'center',
+        // Keep screen-fit size; leave room under title + above Scan button
+        paddingTop: heightPixel(72),
+        paddingBottom: heightPixel(110),
+    },
+    postureGuideImage: {
+        width: '100%',
+        height: '100%',
+        // Nudge slightly down from title (was too tight at top)
+        transform: [{ translateY: heightPixel(12) }],
+    },
+})
 
 export default Scan
