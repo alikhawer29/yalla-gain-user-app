@@ -60,7 +60,12 @@ export type RootStackParamList = {
     VideoDetails: { id: number }
     VideoPlayer: { video: string }
     MovementCorrection: undefined
-    MovementCorrectionCamera: { session_id: string; exercise: string }
+    MovementCorrectionCamera: {
+        session_id: string
+        exercise: string
+        mode?: string
+        selected_side?: string
+    }
     SavedWorkoutContent: undefined
     CreateAvatar: undefined
     Scan: undefined

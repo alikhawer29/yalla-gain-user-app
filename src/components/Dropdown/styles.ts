@@ -7,6 +7,10 @@ const styles = StyleSheet.create({
     container: {
         marginVertical: heightPixel(7.5),
         width: "100%",
+        zIndex: 1,
+    },
+    containerOpen: {
+        zIndex: 1000,
     },
     label: {
         marginBottom: heightPixel(10),
@@ -33,7 +37,8 @@ const styles = StyleSheet.create({
     dropdown: {
         borderColor: colors.icon_gray,
         borderRadius: heightPixel(8),
-        backgroundColor: colors.black
+        backgroundColor: colors.black,
+        position: 'absolute',
     },
     placeholder: {
         fontFamily: fonts.sfpro.regular,

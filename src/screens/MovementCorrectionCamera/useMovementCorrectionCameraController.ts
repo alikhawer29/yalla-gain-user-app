@@ -178,7 +178,10 @@ const useMovementCorrectionCameraController = () => {
             checking,
             isStopLoading,
             exercise: capitalize(params?.exercise) || "-",
+            exerciseKey: params?.exercise || "",
             session_id: params?.session_id || "-",
+            mode: params?.mode || null,
+            selected_side: params?.selected_side || null,
         },
         functions: {
             captureAndSendFrame,
@@ -187,5 +190,4 @@ const useMovementCorrectionCameraController = () => {
         },
     }
 }
-
 export default useMovementCorrectionCameraController

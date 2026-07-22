@@ -310,7 +310,10 @@ const MovementCorrectionCamera = () => {
             checking,
             isStopLoading,
             exercise,
-            session_id
+            exerciseKey,
+            session_id,
+            mode,
+            selected_side,
         },
         functions: {
             onLandmark,
@@ -355,12 +358,25 @@ const MovementCorrectionCamera = () => {
 
     if (!device) return null
 
+    const queryParts = [
+        `session_id=${encodeURIComponent(String(session_id ?? ''))}`,
+        `exercise=${encodeURIComponent(String(exerciseKey || ''))}`,
+    ]
+    if (mode) {
+        queryParts.push(`mode=${encodeURIComponent(String(mode))}`)
+    }
+    if (selected_side) {
+        queryParts.push(
+            `selected_side=${encodeURIComponent(String(selected_side))}`,
+        )
+    }
+
     return (
         <Wrapper no_padding>
             <WebView
                 ref={webViewRef}
                 source={{
-                    uri: `https://yalla-movement-correction-file.vercel.app/?session_id=${session_id}&exercise=${exercise}`,
+                    uri: `https://yalla-movement-correction-file.vercel.app/?${queryParts.join('&')}`,
                 }}
                 style={{ flex: 1, backgroundColor: "transparent" }}
                 javaScriptEnabled={true}

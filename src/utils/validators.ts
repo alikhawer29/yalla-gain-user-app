@@ -294,4 +294,6 @@ export const MOVEMENT_EXERCISE_SCHEMA = Yup.object().shape({
   exercise_id: Yup.number()
     .typeError('Exercise is required')
     .required('Exercise is required'),
+  mode: Yup.string().nullable().notRequired(),
+  selected_side: Yup.string().nullable().notRequired(),
 });
