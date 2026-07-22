@@ -4169,7 +4169,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zoom/react-native-videosdk@npm:^2.5.0":
+"@zoom/react-native-videosdk@npm:2.5.10":
   version: 2.5.10
   resolution: "@zoom/react-native-videosdk@npm:2.5.10"
   dependencies:
@@ -4213,7 +4213,7 @@ __metadata:
     "@types/react": "npm:^19.1.0"
     "@types/react-native-snap-carousel": "npm:^3.8.11"
     "@types/react-test-renderer": "npm:^19.1.0"
-    "@zoom/react-native-videosdk": "npm:^2.5.0"
+    "@zoom/react-native-videosdk": "npm:2.5.10"
     add: "npm:^2.0.6"
     dayjs: "npm:^1.11.13"
     eslint: "npm:^8.19.0"
