@@ -10,6 +10,7 @@ import colors from "../../utils/colors"
 import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import { navigate } from "../../utils/navigation"
 import { ROUTES, NAVIGATORS } from "../../utils/routes"
+import { SUBSCRIPTIONS_PURCHASE_ENABLED } from "../../utils/subscription"
 import { useDeleteAccountMutation } from "../../redux/Apis/User"
 import { logout } from "../../redux/Slices/AuthSlice"
 import { setWatchHealthLinked } from "../../services/health/healthProvider"
@@ -48,7 +49,9 @@ const HelpDesk = () => {
         { icon: images.helpdesk.rate, title: "Rate App", onPress: () => setShowRateModal(true) },
         { icon: images.helpdesk.myposts, title: "My Posts", onPress: () => guardAccess('messaging', () => navigate(ROUTES.MY_POSTS)) },
         { icon: images.helpdesk.blocked_user, title: "Blocked User", onPress: () => navigate(ROUTES.BLOCKED_USERS) },
-        { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
+        ...(SUBSCRIPTIONS_PURCHASE_ENABLED
+            ? [{ icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) }]
+            : []),
         { icon: images.helpdesk.aboutus, title: "About Us", onPress: () => navigate(ROUTES.ABOUT_US) },
         { icon: images.helpdesk.contact, title: "Contact Us", onPress: () => navigate(ROUTES.CONTACT_US) },
         { icon: images.helpdesk.trash, title: "Delete Account", color: colors.danger, onPress: () => setShowConfirmModal(true) }

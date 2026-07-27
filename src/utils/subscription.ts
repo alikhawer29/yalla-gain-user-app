@@ -1,5 +1,13 @@
 import dayjs from 'dayjs';
 
+/**
+ * Temporary App Store review gate.
+ * Coin-funded subscription purchases violate Apple IAP rules — hide all
+ * subscription purchase entry points until IAP is in place.
+ * Wallet / Stripe coin top-ups stay available.
+ */
+export const SUBSCRIPTIONS_PURCHASE_ENABLED = false;
+
 export const SUBSCRIPTION_UPGRADE_MESSAGE =
   'This feature is not available in your current plan.\nPlease upgrade your subscription to continue.';
 

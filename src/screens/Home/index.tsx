@@ -38,6 +38,7 @@ import {
     getUserSubscription,
     hasPaidSubscriptionPlan,
     isActiveTrialSubscription,
+    SUBSCRIPTIONS_PURCHASE_ENABLED,
 } from "../../utils/subscription"
 import HomeScreen from "../HomeScreen";
 
@@ -94,7 +95,8 @@ const Home = () => {
     const showCompleteProfileCard = user?.gender == null || user?.gender === ""
     const showConsultationSessionCards = hasPaidSubscriptionPlan(user)
     const subscription = getUserSubscription(user)
-    const showTrialBanner = isActiveTrialSubscription(user)
+    const showTrialBanner =
+        SUBSCRIPTIONS_PURCHASE_ENABLED && isActiveTrialSubscription(user)
 
     const {
         data: workoutData,
