@@ -33,6 +33,23 @@ export interface MonthlyBmiGraphResponse {
   data: MonthlyBmiGraphPoint[];
 }
 
+/**
+ * Bodygram Scanner contract (backend-owned credentials):
+ * - POST scan/token → mint Bodygram JWT via platform.bodygram.com (API key server-side only)
+ * - POST scan with bodygram_scan_id (no photos) → backend GETs measurements from Bodygram
+ */
+export interface BodygramScanTokenResponse {
+  status?: boolean;
+  token: string;
+  org_id: string;
+  expires_at?: number;
+  data?: {
+    token: string;
+    org_id: string;
+    expires_at?: number;
+  };
+}
+
 export interface ConsultationSessionInfo {
   provider_type: 'doctor' | 'trainer';
   qualifies_for_plan_sessions: boolean;
@@ -616,6 +633,17 @@ export const userApi = createApi({
         formData: true,
       }),
     }),
+    /** Server mints a Bodygram scan token; never call Bodygram with the API key from the app. */
+    getBodygramScanToken: builder.mutation<
+      BodygramScanTokenResponse,
+      { user_id: number | string }
+    >({
+      query: body => ({
+        url: 'scan/token',
+        method: 'POST',
+        body,
+      }),
+    }),
     updateAvatar: builder.mutation({
       query: (body: {
         avatar: 'initial' | 'future';
@@ -867,6 +895,7 @@ export const {
   useMarkNotificationUnreadMutation,
   useConfirmPaymentMutation,
   useScanAvatarMutation,
+  useGetBodygramScanTokenMutation,
   useUpdateAvatarMutation,
   useGetFaqsQuery,
   useContactUsMutation,
