@@ -1,4 +1,4 @@
-package com.blitzapp.yallagain
+package com.yallagainapp
 
 import android.app.Application
 import android.app.NotificationChannel

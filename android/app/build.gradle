@@ -83,9 +83,9 @@ android {
         }
     }
 
-    namespace "com.blitzapp.yallagain"
+    namespace "com.yallagainapp"
     defaultConfig {
-        applicationId "com.blitzapp.yallagain"
+        applicationId "com.yallagainapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 40  

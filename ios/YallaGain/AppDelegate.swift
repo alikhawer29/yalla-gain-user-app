@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "YallaGain",
+      withModuleName: "Yalla Gain",
       in: window,
       launchOptions: launchOptions
     )
