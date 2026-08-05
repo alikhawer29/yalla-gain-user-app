@@ -162,7 +162,7 @@ const useAvatarScanFormController = () => {
           type: 'success',
           title: '',
           message:
-            'Before scanning, carefully review the precautions to understand how to properly take the pictures.',
+            'Before scanning, carefully review the precautions to understand how to complete the Bodygram body scan.',
           illustrationSource,
         },
         () => {

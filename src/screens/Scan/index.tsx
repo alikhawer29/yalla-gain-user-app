@@ -1,358 +1,511 @@
-import { useRoute } from "@react-navigation/native"
-import { useCallback, useEffect, useRef, useState } from "react"
-import { Platform, StyleSheet, View } from "react-native"
-import { Camera, useCameraDevice, useCameraFormat } from "react-native-vision-camera"
-import images from "../../assets/images"
-import Button from "../../components/Button"
-import Icon from "../../components/Icon"
-import Image from "../../components/Image"
-import NoPermission from "../../components/NoPermission"
-import Row from "../../components/Row"
-import Text from "../../components/Text"
-import Touchable from "../../components/Touchable"
-import { useModal } from "../../contexts/ModalContext"
-import { useAppSelector } from "../../hooks"
-import usePermissions from "../../hooks/usePermissions"
-import { useScanAvatarMutation } from "../../redux/Apis/User"
-import { selectUser } from "../../redux/Slices/AuthSlice"
-import colors from "../../utils/colors"
-import { heightPixel, widthPixel } from "../../utils/helper"
-import { goBack, navigate } from "../../utils/navigation"
-import { optimizePhoto } from "../../utils/optimizePhoto"
-import { validatePhoto } from "../../utils/photoValidation"
-import { ROUTES } from "../../utils/routes"
+import { useRoute } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
+import WebView, { WebViewMessageEvent } from 'react-native-webview';
+import images from '../../assets/images';
+import Button from '../../components/Button';
+import Icon from '../../components/Icon';
+import NoPermission from '../../components/NoPermission';
+import Row from '../../components/Row';
+import Text from '../../components/Text';
+import Touchable from '../../components/Touchable';
+import { useModal } from '../../contexts/ModalContext';
+import { useAppSelector } from '../../hooks';
+import usePermissions from '../../hooks/usePermissions';
+import {
+  useGetBodygramScanTokenMutation,
+  useScanAvatarMutation,
+} from '../../redux/Apis/User';
+import { selectUser } from '../../redux/Slices/AuthSlice';
+import colors from '../../utils/colors';
+import { heightPixel, widthPixel } from '../../utils/helper';
+import { goBack, navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 
+const friendlyBodygramError = (code?: string) => {
+  switch (code) {
+    case 'personNotDetected':
+      return 'We could not detect a person in the photos. Stand fully in frame and try again.';
+    case 'rightPhotoFacingWrongDirection':
+      return 'The side photo facing looks incorrect. Please retake the scan.';
+    default:
+      return code
+        ? `Scan failed (${code}). Please try again.`
+        : 'Bodygram scan failed. Please try again.';
+  }
+};
 
-const Scan = () => {
-    const route = useRoute()
-    const { formData } = (route.params as any) || {}
-    const cameraRef = useRef<Camera>(null)
-    const user = useAppSelector(selectUser)
-    const { showOkModal, showYesNoModal } = useModal()
-    const [submitScan, { isLoading: isSubmitting }] = useScanAvatarMutation()
+type FacingMode = 'environment' | 'user';
 
-    const [granted, setGranted] = useState(false)
-    const [checking, setChecking] = useState(true)
-    const [frontPhoto, setFrontPhoto] = useState<any>(null)
-    const [rightPhoto, setRightPhoto] = useState<any>(null)
-    const [currentStep, setCurrentStep] = useState<'front' | 'right'>('front')
-    const [validating, setValidating] = useState(false)
+const BODYGRAM_BRIDGE_SCRIPT = `
+(function () {
+  window.BGScanflowJSWebviewInterface = function (fnName, args) {
+    try {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ fnName: fnName, args: args })
+      );
+    } catch (e) {}
+  };
+  true;
+})();
+`;
 
-    const device = useCameraDevice("back")
+/**
+ * Bodygram how-to-scan is authored for a light page. Dark app WebViews
+ * (esp. Android algorithmic darkening) invert the canvas and leave copy unreadable.
+ * Force light color-scheme only — do not blanket-override text colors (scan UI needs them).
+ */
+const BODYGRAM_LIGHT_THEME_SCRIPT = `
+(function () {
+  try {
+    var meta = document.querySelector('meta[name="color-scheme"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'color-scheme');
+      (document.head || document.documentElement).appendChild(meta);
+    }
+    meta.setAttribute('content', 'only light');
 
-    // Configure camera format to capture at required resolutions: 1080×1920 or 720×1280
-    const format = useCameraFormat(device, [
-        { photoResolution: { width: 1080, height: 1920 } },
-        { photoResolution: { width: 720, height: 1280 } },
-    ])
-
-    const { ensurePermissions, PERMISSIONS } = usePermissions()
-
-    useEffect(() => {
-
-        const ask = async () => {
-
-            const required = Platform.select({
-                ios: [PERMISSIONS.IOS.CAMERA],
-                android: [PERMISSIONS.ANDROID.CAMERA],
-            }) || []
-
-            const has_access = await ensurePermissions(required)
-            setChecking(false)
-            setGranted(has_access)
-
-        }
-
-        setTimeout(() => {
-            ask()
-        }, 500)
-
-    }, [])
-
-    const onScan = useCallback(async () => {
-        try {
-            setValidating(true)
-            let res = await cameraRef?.current?.takePhoto({
-                flash: 'off',
-            })
-
-            // Validate the photo (with tolerance for resolution and size)
-            const validation = await validatePhoto(res)
-
-            // Check for different types of errors
-            const hasResolutionError = validation.errors.some(err => err.includes('resolution'))
-            const hasFormatError = validation.errors.some(err => err.includes('JPEG') || err.includes('format'))
-            const hasSizeError = validation.errors.some(err => err.includes('size') || err.includes('MB'))
-            const hasExtremeSizeError = validation.errors.some(err => err.includes('too large') || err.includes('20 MB'))
-
-            // Only reject if:
-            // 1. Format is wrong (must be JPEG)
-            // 2. File is extremely large (>20MB - might be corrupted)
-            // 3. Photo is missing/invalid
-            if (hasFormatError || hasExtremeSizeError || validation.errors.some(err => err.includes('missing') || err.includes('invalid'))) {
-                showOkModal({
-                    type: "error",
-                    title: "Photo Requirements Not Met",
-                    message: validation.errors.join("\n\n") + "\n\nPlease retake the photo."
-                })
-                setValidating(false)
-                return
-            }
-
-            // Allow size errors (will be optimized before submission)
-            if (hasSizeError) {
-                console.log("📸 Camera photo is larger than 3MB - will be optimized before submission")
-            }
-
-            // Allow resolution errors if aspect ratio is correct (will be resized during optimization)
-            if (hasResolutionError) {
-                console.log("📸 Photo resolution doesn't match exactly but will be processed and resized")
-            }
-
-            // Note: Original captured images are NOT saved - only optimized images sent to API will be saved
-
-            // Photo is valid or acceptable, set it
-            if (currentStep === 'front') {
-                setFrontPhoto(res)
-            } else {
-                setRightPhoto(res)
-            }
-            setValidating(false)
-        } catch (error: any) {
-            setValidating(false)
-            showOkModal({
-                type: "error",
-                title: "Error",
-                message: "Failed to capture photo. Please try again."
-            })
-        }
-    }, [cameraRef, currentStep, showOkModal])
-
-    const onRetake = useCallback(() => {
-        if (currentStep === 'right' && rightPhoto) {
-            setRightPhoto(null)
-        } else if (currentStep === 'front' && frontPhoto) {
-            setFrontPhoto(null)
-        }
-    }, [currentStep, frontPhoto, rightPhoto])
-
-    const onNext = useCallback(() => {
-        if (currentStep === 'front' && frontPhoto) {
-            setCurrentStep('right')
-        }
-    }, [currentStep, frontPhoto])
-
-    const submitScanAndNavigate = useCallback(async () => {
-        if (frontPhoto && rightPhoto && formData) {
-            try {
-                const frontValidation = await validatePhoto(frontPhoto);
-                const rightValidation = await validatePhoto(rightPhoto);
-
-                const frontCriticalErrors = frontValidation.errors.filter(
-                    err => !err.includes('resolution') && !err.includes('Resolution'),
-                );
-                const rightCriticalErrors = rightValidation.errors.filter(
-                    err => !err.includes('resolution') && !err.includes('Resolution'),
-                );
-
-                if (frontCriticalErrors.length > 0 || rightCriticalErrors.length > 0) {
-                    const allErrors = [
-                        ...(frontCriticalErrors.length > 0
-                            ? ['Front Photo: ' + frontCriticalErrors.join(', ')]
-                            : []),
-                        ...(rightCriticalErrors.length > 0
-                            ? ['Right Photo: ' + rightCriticalErrors.join(', ')]
-                            : []),
-                    ];
-                    showOkModal({
-                        type: 'error',
-                        title: 'Photo Validation Failed',
-                        message:
-                            'One or more photos have critical issues:\n\n' +
-                            allErrors.join('\n\n') +
-                            '\n\nPlease retake the photos.',
-                    });
-                    return;
-                }
-
-                const optimizedFrontPhoto = await optimizePhoto(frontPhoto, 'front');
-                const optimizedRightPhoto = await optimizePhoto(rightPhoto, 'right');
-
-                const submitFormData = new FormData();
-                submitFormData.append('user_id', String(user?.id));
-                submitFormData.append('age', String(formData.age));
-                submitFormData.append('gender', formData.gender);
-                submitFormData.append('height', String(formData.height));
-                submitFormData.append('weight', String(formData.weight));
-                submitFormData.append('scan', 'true');
-
-                const frontPhotoPath = optimizedFrontPhoto.savedPath || optimizedFrontPhoto.path;
-                const rightPhotoPath = optimizedRightPhoto.savedPath || optimizedRightPhoto.path;
-                const frontPhotoUri = frontPhotoPath?.startsWith('file://') ? frontPhotoPath : `file://${frontPhotoPath}`;
-                const rightPhotoUri = rightPhotoPath?.startsWith('file://') ? rightPhotoPath : `file://${rightPhotoPath}`;
-
-                submitFormData.append('frontPhoto', {
-                    uri: frontPhotoUri,
-                    type: 'image/jpeg',
-                    name: 'front_photo.jpg',
-                } as any);
-                submitFormData.append('rightPhoto', {
-                    uri: rightPhotoUri,
-                    type: 'image/jpeg',
-                    name: 'right_photo.jpg',
-                } as any);
-
-                await submitScan(submitFormData).unwrap();
-                navigate(ROUTES.CREATE_AVATAR);
-            } catch (error: any) {
-                showOkModal({
-                    type: 'error',
-                    title: 'Error',
-                    message:
-                        error?.data?.message ||
-                        'Failed to submit scan data. Please try again.',
-                });
-            }
-        }
-    }, [frontPhoto, rightPhoto, formData, user, submitScan, showOkModal]);
-
-    const onProceed = useCallback(() => {
-        if (!frontPhoto || !rightPhoto) {
-            return;
-        }
-        showYesNoModal(
-            {
-                type: 'warning',
-                title: 'Precautions',
-                message:
-                    'Before proceeding, make sure the pictures are captured correctly, as you will not be able to make any changes for the next one week after proceeding.',
-                yesText: 'Next',
-                noText: 'Cancel',
-            },
-            () => {
-                submitScanAndNavigate();
-            },
-            () => {
-                setFrontPhoto(null);
-                setRightPhoto(null);
-                setCurrentStep('front');
-            },
-        );
-    }, [frontPhoto, rightPhoto, showYesNoModal, submitScanAndNavigate]);
-
-    if (checking) return null
-
-    if (!granted) {
-        return <NoPermission message={"Camera Permission is required"} />
+    var root = document.documentElement;
+    root.style.setProperty('color-scheme', 'only light');
+    if (document.body) {
+      document.body.style.setProperty('color-scheme', 'only light');
+      document.body.style.backgroundColor = '#ffffff';
     }
 
-    if (!device) return null
+    if (!document.getElementById('yg-bodygram-light-theme')) {
+      var style = document.createElement('style');
+      style.id = 'yg-bodygram-light-theme';
+      style.textContent = [
+        'html { color-scheme: only light !important; }',
+        'body { color-scheme: only light !important; background-color: #ffffff !important; }',
+        '@media (prefers-color-scheme: dark) {',
+        '  html, body { color-scheme: only light !important; background-color: #ffffff !important; }',
+        '}',
+      ].join('\\n');
+      (document.head || document.documentElement).appendChild(style);
+    }
+  } catch (e) {}
+  true;
+})();
+`;
 
-    const currentPhoto = currentStep === 'front' ? frontPhoto : rightPhoto
-    const gender = formData?.gender === 'female' ? 'female' : 'male'
-    const postureGuideSource =
-        gender === 'female'
-            ? currentStep === 'front'
-                ? images.female_front
-                : images.female_right
-            : currentStep === 'front'
-                ? images.male_front
-                : images.male_right
+const BODYGRAM_INJECTED_SCRIPT = `
+${BODYGRAM_BRIDGE_SCRIPT}
+${BODYGRAM_LIGHT_THEME_SCRIPT}
+`;
 
-    return (
-        <>
-            {
-                currentPhoto ? (
-                    <>
-                        <Image source={{ uri: "file://" + currentPhoto?.path }} style={{ flex: 1 }} resize="cover" />
-                        <Touchable onPress={goBack} style={{ position: "absolute", top: 50, left: widthPixel(20), zIndex: 10 }}>
-                            <Icon source={images.back} size={28} tint_color={colors.white} />
-                        </Touchable>
-                        <View style={{ position: "absolute", top: 50, left: widthPixel(20), right: widthPixel(20), alignItems: "center" }}>
-                            <Text color={colors.white} weight="bold" size={18}>
-                                {currentStep === 'front' ? 'Front Picture' : 'Right Picture'}
-                            </Text>
-                        </View>
-                        <Row style={{ position: "absolute", bottom: 80, left: widthPixel(20), right: widthPixel(20) }} justify="space-between">
-                            <Button text="Retake" style={{ width: "49%" }} type="secondary" onPress={onRetake} disabled={isSubmitting} />
-                            {currentStep === 'right' && rightPhoto ? (
-                                <Button text="Proceed" style={{ width: "49%" }} onPress={onProceed} loading={isSubmitting} />
-                            ) : (
-                                <Button text="Next" style={{ width: "49%" }} onPress={onNext} />
-                            )}
-                        </Row>
-                    </>
-                ) :
-                    <>
-                        {
-                            device && format &&
-                            <>
-                                <Camera
-                                    ref={cameraRef}
-                                    device={device}
-                                    format={format}
-                                    style={StyleSheet.absoluteFill}
-                                    isActive={true}
-                                    photo={true}
-                                    preview={true}
-                                />
-                                {postureGuideSource ? (
-                                    <View style={styles.postureGuide} pointerEvents="none">
-                                        <Image
-                                            source={postureGuideSource}
-                                            style={styles.postureGuideImage}
-                                            resize="contain"
-                                        />
-                                    </View>
-                                ) : null}
-                            </>
+type ScanToken = {
+  token: string;
+  orgId: string;
+};
 
-                        }
-                        <Touchable onPress={goBack} style={{ position: "absolute", top: 50, left: widthPixel(20), zIndex: 10 }}>
-                            <Icon source={images.back} size={28} tint_color={colors.white} />
-                        </Touchable>
-                        <View style={{ position: "absolute", top: 50, left: widthPixel(20), right: widthPixel(20), alignItems: "center" }}>
-                            <Text color={colors.white} weight="bold" size={18}>
-                                {currentStep === 'front' ? 'Take Front Picture' : 'Take Right Picture'}
-                            </Text>
-                        </View>
-                        <Touchable
-                            onPress={onScan}
-                            disabled={validating}
-                            style={{ position: "absolute", bottom: 80, justifyContent: "center", alignItems: "center", gap: heightPixel(5), alignSelf: "center", opacity: validating ? 0.5 : 1 }}
-                        >
-                            <View style={{ height: heightPixel(75), width: heightPixel(75), borderRadius: heightPixel(40), borderWidth: heightPixel(1.5), borderColor: colors.white, padding: heightPixel(3) }}>
-                                <View style={{ height: "100%", width: "100%", backgroundColor: colors.danger, borderRadius: heightPixel(40) }} />
-                            </View>
-                            <View style={{ backgroundColor: "yellow", paddingHorizontal: widthPixel(10), borderRadius: heightPixel(6) }}>
-                                <Text color={colors.black} weight="bold" size={18}>
-                                    {validating ? "Validating..." : "Scan"}
-                                </Text>
-                            </View>
-                        </Touchable>
-                    </>
+const Scan = () => {
+  const route = useRoute();
+  const { formData } = (route.params as any) || {};
+  const user = useAppSelector(selectUser);
+  const { showOkModal, showYesNoModal } = useModal();
+  const webViewRef = useRef<WebView>(null);
+  const submittingRef = useRef(false);
+
+  const [submitScan, { isLoading: isSubmitting }] = useScanAvatarMutation();
+  const [fetchToken, { isLoading: isFetchingToken }] =
+    useGetBodygramScanTokenMutation();
+
+  const [granted, setGranted] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [scanToken, setScanToken] = useState<ScanToken | null>(null);
+  const [facingMode, setFacingMode] = useState<FacingMode>('environment');
+  const [webViewKey, setWebViewKey] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+
+  const { ensurePermissions, PERMISSIONS } = usePermissions();
+
+  useEffect(() => {
+    const ask = async () => {
+      const required =
+        Platform.select({
+          ios: [PERMISSIONS.IOS.CAMERA],
+          android: [PERMISSIONS.ANDROID.CAMERA],
+        }) || [];
+      const hasAccess = await ensurePermissions(required);
+      setChecking(false);
+      setGranted(hasAccess);
+    };
+    setTimeout(() => {
+      ask();
+    }, 500);
+  }, [ensurePermissions, PERMISSIONS]);
+
+  const loadToken = useCallback(async () => {
+    if (!user?.id) {
+      showOkModal({
+        type: 'error',
+        title: 'Error',
+        message: 'User not found. Please sign in again.',
+      });
+      return;
+    }
+    try {
+      setScanError(null);
+      setIsProcessing(false);
+      submittingRef.current = false;
+      const res = await fetchToken({ user_id: user.id }).unwrap();
+      const token = res?.token ?? res?.data?.token;
+      const orgId = res?.org_id ?? res?.data?.org_id;
+      if (!token || !orgId) {
+        throw new Error('Invalid scan token response');
+      }
+      setScanToken({ token, orgId });
+      setWebViewKey(k => k + 1);
+    } catch (error: any) {
+      setScanToken(null);
+      setScanError(
+        error?.data?.message ||
+          error?.message ||
+          'Failed to start Bodygram scanner. Please try again.',
+      );
+    }
+  }, [user?.id, fetchToken, showOkModal]);
+
+  const restartScanner = useCallback(() => {
+    setScanError(null);
+    setIsProcessing(false);
+    submittingRef.current = false;
+    setScanToken(null);
+    loadToken();
+  }, [loadToken]);
+
+  const handleScanFailure = useCallback(
+    (message: string) => {
+      setIsProcessing(false);
+      submittingRef.current = false;
+      // Unmount WebView so the user is not stuck on Bodygram's error page.
+      setScanToken(null);
+      setScanError(message);
+      showYesNoModal(
+        {
+          type: 'error',
+          title: 'Scan Failed',
+          message,
+          yesText: 'Retry',
+          noText: 'Go Back',
+        },
+        () => {
+          restartScanner();
+        },
+        () => {
+          goBack();
+        },
+      );
+    },
+    [showYesNoModal, restartScanner],
+  );
+
+  useEffect(() => {
+    if (!granted || !formData || !user?.id) return;
+    loadToken();
+    // Intentionally once when camera is granted and form is present.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [granted, user?.id]);
+
+  const scannerUrl = useMemo(() => {
+    if (!scanToken || !formData) return null;
+
+    const query: Record<string, string> = {
+      token: scanToken.token,
+      system: 'metric',
+      height: String(formData.height),
+      weight: String(formData.weight),
+      age: String(formData.age),
+      gender: String(formData.gender),
+      screens: 'how-to-scan,scan',
+      tap: 'true',
+      'remove-header': 'true',
+      'camera-constraints': JSON.stringify({ facingMode }),
+    };
+    if (facingMode === 'environment') {
+      query['no-mirror'] = 'true';
+    }
+
+    const qs = Object.entries(query)
+      .map(
+        ([key, value]) =>
+          `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
+      )
+      .join('&');
+
+    return `https://platform.bodygram.com/en/${scanToken.orgId}/scan?${qs}`;
+  }, [scanToken, formData, facingMode]);
+
+  const submitBodygramScan = useCallback(
+    async (bodygramScanId: string) => {
+      if (submittingRef.current || !formData || !user?.id) return;
+      submittingRef.current = true;
+      try {
+        const submitFormData = new FormData();
+        submitFormData.append('user_id', String(user.id));
+        submitFormData.append('age', String(formData.age));
+        submitFormData.append('gender', formData.gender);
+        submitFormData.append('height', String(formData.height));
+        submitFormData.append('weight', String(formData.weight));
+        submitFormData.append('scan', 'true');
+        submitFormData.append('bodygram_scan_id', bodygramScanId);
+
+        await submitScan(submitFormData).unwrap();
+        navigate(ROUTES.CREATE_AVATAR);
+      } catch (error: any) {
+        handleScanFailure(
+          error?.data?.message ||
+            'Failed to submit scan data. Please try again.',
+        );
+      }
+    },
+    [formData, user?.id, submitScan, handleScanFailure],
+  );
+
+  const onMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      try {
+        const data = JSON.parse(event?.nativeEvent?.data || '{}');
+        const fnName = data?.fnName as string | undefined;
+        let args = data?.args;
+
+        if (typeof args === 'string') {
+          try {
+            args = JSON.parse(args);
+          } catch {
+            // keep string
+          }
+        }
+
+        switch (fnName) {
+          case 'onRequestClose':
+            goBack();
+            break;
+          case 'onStartProcessingScannedImages':
+            setIsProcessing(true);
+            break;
+          case 'onModelLoadStatusChange':
+            break;
+          case 'onSuccess': {
+            const scanId = args?.id;
+            if (!scanId) {
+              handleScanFailure('Scan completed but no scan id was returned.');
+              return;
             }
+            setIsProcessing(true);
+            submitBodygramScan(String(scanId));
+            break;
+          }
+          case 'onError': {
+            const code = args?.entry?.error?.code || args?.error?.code;
+            handleScanFailure(friendlyBodygramError(code));
+            break;
+          }
+          default:
+            break;
+        }
+      } catch {
+        // Ignore non-JSON / unexpected messages
+      }
+    },
+    [handleScanFailure, submitBodygramScan],
+  );
 
-        </>
-    )
-}
+  const onFlipCamera = useCallback(() => {
+    if (isProcessing || isSubmitting || scanError) return;
+    setFacingMode(prev => (prev === 'environment' ? 'user' : 'environment'));
+    setWebViewKey(k => k + 1);
+  }, [isProcessing, isSubmitting, scanError]);
+
+  if (checking) return null;
+
+  if (!granted) {
+    return <NoPermission message={'Camera Permission is required'} />;
+  }
+
+  if (!formData) {
+    return (
+      <View style={styles.centered}>
+        <Text color={colors.white} weight="bold" size={16}>
+          Missing scan form data.
+        </Text>
+        <Button text="Go Back" onPress={goBack} style={styles.backBtn} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.root}>
+      {scannerUrl && !scanError ? (
+        <WebView
+          key={webViewKey}
+          ref={webViewRef}
+          source={{ uri: scannerUrl }}
+          style={styles.webview}
+          javaScriptEnabled
+          domStorageEnabled
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
+          originWhitelist={['*']}
+          allowsFullscreenVideo
+          setSupportMultipleWindows={false}
+          forceDarkOn={false}
+          onMessage={onMessage}
+          injectedJavaScriptBeforeContentLoaded={BODYGRAM_INJECTED_SCRIPT}
+          injectedJavaScript={BODYGRAM_INJECTED_SCRIPT}
+          onLoadStart={() => {
+            webViewRef.current?.injectJavaScript(BODYGRAM_INJECTED_SCRIPT);
+          }}
+          onLoadEnd={() => {
+            webViewRef.current?.injectJavaScript(BODYGRAM_LIGHT_THEME_SCRIPT);
+          }}
+        />
+      ) : (
+        <View style={styles.centered}>
+          {isFetchingToken ? (
+            <>
+              <ActivityIndicator color={colors.white} size="large" />
+              <Text
+                color={colors.white}
+                weight="semibold"
+                size={16}
+                style={styles.loadingText}
+              >
+                Preparing scanner...
+              </Text>
+            </>
+          ) : null}
+
+          {scanError && !isFetchingToken ? (
+            <>
+              <Text
+                color={colors.white}
+                weight="bold"
+                size={18}
+                position="center"
+              >
+                Scan Failed
+              </Text>
+              <Text
+                color={colors.white}
+                size={14}
+                position="center"
+                style={styles.errorMessage}
+              >
+                {scanError}
+              </Text>
+              <Row gap={12} justify="center" style={styles.errorActions}>
+                <Button
+                  text="Go Back"
+                  type="secondary"
+                  onPress={goBack}
+                  style={styles.errorBtn}
+                />
+                <Button
+                  text="Retry"
+                  onPress={restartScanner}
+                  style={styles.errorBtn}
+                />
+              </Row>
+            </>
+          ) : null}
+        </View>
+      )}
+
+      <Touchable onPress={goBack} style={styles.chromeBtn}>
+        <Icon source={images.back} size={22} tint_color={colors.white} />
+      </Touchable>
+
+      {scannerUrl && !scanError && !isProcessing && !isSubmitting ? (
+        <Touchable onPress={onFlipCamera} style={[styles.chromeBtn, styles.flipBtn]}>
+          <Icon source={images.flip} size={22} tint_color={colors.white} />
+        </Touchable>
+      ) : null}
+
+      {(isProcessing || isSubmitting) && (
+        <View style={styles.processingOverlay}>
+          <ActivityIndicator color={colors.white} size="large" />
+          <Text
+            color={colors.white}
+            weight="semibold"
+            size={16}
+            style={styles.loadingText}
+          >
+            Processing scan...
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-    postureGuide: {
-        ...StyleSheet.absoluteFillObject,
-        zIndex: 5,
-        justifyContent: 'center',
-        alignItems: 'center',
-        // Keep screen-fit size; leave room under title + above Scan button
-        paddingTop: heightPixel(72),
-        paddingBottom: heightPixel(110),
-    },
-    postureGuideImage: {
-        width: '100%',
-        height: '100%',
-        // Nudge slightly down from title (was too tight at top)
-        transform: [{ translateY: heightPixel(12) }],
-    },
-})
+  root: {
+    flex: 1,
+    backgroundColor: colors.black,
+  },
+  webview: {
+    flex: 1,
+    // Light canvas so Bodygram how-to-scan copy stays readable in dark app theme.
+    backgroundColor: colors.white,
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: colors.black,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: widthPixel(24),
+    gap: heightPixel(16),
+  },
+  backBtn: {
+    width: widthPixel(160),
+  },
+  chromeBtn: {
+    position: 'absolute',
+    top: heightPixel(50),
+    left: widthPixel(20),
+    zIndex: 40,
+    height: heightPixel(44),
+    width: heightPixel(44),
+    borderRadius: heightPixel(22),
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  flipBtn: {
+    left: undefined,
+    right: widthPixel(20),
+  },
+  processingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    zIndex: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: heightPixel(12),
+  },
+  errorMessage: {
+    marginTop: heightPixel(10),
+    marginBottom: heightPixel(24),
+    opacity: 0.9,
+  },
+  errorActions: {
+    width: '100%',
+  },
+  errorBtn: {
+    flex: 1,
+  },
+});
 
-export default Scan
+export default Scan;
