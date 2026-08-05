@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
  * subscription purchase entry points until IAP is in place.
  * Wallet / Stripe coin top-ups stay available.
  */
-export const SUBSCRIPTIONS_PURCHASE_ENABLED = false;
+export const SUBSCRIPTIONS_PURCHASE_ENABLED = true;
 
 export const SUBSCRIPTION_UPGRADE_MESSAGE =
   'This feature is not available in your current plan.\nPlease upgrade your subscription to continue.';
