@@ -1,28 +1,20 @@
 import { useRoute } from "@react-navigation/native"
 import { useEffect, useRef, useState } from "react"
 import { Platform } from "react-native"
-import RNFS from "react-native-fs"
-import { Camera, useCameraDevice } from "react-native-vision-camera"
 import usePermissions from "../../hooks/usePermissions"
 import { useStopExerciseMutation } from "../../redux/Apis/MovementCorrection"
 import { capitalize } from "../../utils/helper"
 import { goBack } from "../../utils/navigation"
 
-const API_BASE_URL = "https://yalla-ai.onlinetestingserver.com"
-
 const useMovementCorrectionCameraController = () => {
 
     const { params } = useRoute<any>()
-    const cameraRef = useRef<Camera>(null)
     const wsRef = useRef<WebSocket | null>(null)
 
     const [stop, { isLoading: isStopLoading, isSuccess: isStopSuccess }] = useStopExerciseMutation()
 
-    const device = useCameraDevice("front")
-
     const [granted, setGranted] = useState(false)
     const [checking, setChecking] = useState(true)
-    const [isProcessing, setIsProcessing] = useState(false)
     const [feedback, setFeedback] = useState<string>("")
     const [reps, setReps] = useState<number>(0)
     const [formOk, setFormOk] = useState<boolean | null>(null)
@@ -90,50 +82,6 @@ const useMovementCorrectionCameraController = () => {
         }
     }, [params?.session_id, granted])
 
-    useEffect(() => {
-
-        let interval: NodeJS.Timeout | null = null
-
-        if (params?.session_id) {
-            interval = setInterval(captureAndSendFrame, 1000)
-        }
-
-        return () => {
-            if (interval) clearInterval(interval)
-        }
-
-    }, [params, granted])
-
-    const captureAndSendFrame = async () => {
-        if (isProcessing || !cameraRef.current) return
-        setIsProcessing(true)
-
-        try {
-            const photo = await cameraRef.current.takePhoto({ flash: "off", enableShutterSound: false });
-
-            const base64 = await RNFS.readFile(photo.path, "base64");
-
-            const binary = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
-
-            const arrayBuffer = binary.buffer;
-
-            let res = await fetch(`${API_BASE_URL}/v1/exercise/upload_frame?session_id=${params?.session_id}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "image/jpeg",
-                },
-                body: arrayBuffer,
-            });
-
-            console.log("Upload success", await res.text(), params?.session_id);
-
-        } catch (err) {
-            console.error("Upload failed:", err)
-        } finally {
-            setIsProcessing(false)
-        }
-    }
-
     const onLandmark = (data: any) => {
 
         if (wsRef?.current && wsRef?.current?.readyState === WebSocket.OPEN) {
@@ -166,14 +114,10 @@ const useMovementCorrectionCameraController = () => {
     }
 
     return {
-        refs: {
-            cameraRef
-        },
         values: {
             feedback,
             reps,
             formOk,
-            device,
             permission_granted: granted,
             checking,
             isStopLoading,
@@ -184,7 +128,6 @@ const useMovementCorrectionCameraController = () => {
             selected_side: params?.selected_side || null,
         },
         functions: {
-            captureAndSendFrame,
             onLandmark,
             onEnd
         },
