@@ -29,8 +29,9 @@ static void YGApplySpeakerRoute(BOOL isOn, NSError **outError)
         isOn ? AVAudioSessionModeVideoChat : AVAudioSessionModeVoiceChat;
 
     AVAudioSessionCategoryOptions options =
-        AVAudioSessionCategoryOptionAllowBluetooth |
-        AVAudioSessionCategoryOptionAllowBluetoothA2DP;
+        AVAudioSessionCategoryOptionAllowBluetooth;
+    // NOTE: Do NOT add AllowBluetoothA2DP — A2DP is output-only and can disable
+    // microphone capture when PlayAndRecord is active (breaks Zoom mic on iOS).
     if (isOn) {
         options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
     }

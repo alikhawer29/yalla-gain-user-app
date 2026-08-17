@@ -3,7 +3,6 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import RNBootSplash
-import AVFoundation
 import FirebaseCore
 
 @main
@@ -41,14 +40,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
     // Unity is started lazily when the user opens the Unity screen (RNUnityView).
     // Do NOT start Unity here — it crashes (EXC_BAD_ACCESS in UnityInitApplicationNoGraphics)
     // until the game team fixes the embedded player. This lets the app and bundling finish.
-    
-    do {
-        let session = AVAudioSession.sharedInstance()
-        try session.setCategory(.playback, mode: .default, options: [])
-        try session.setActive(true)
-    } catch {
-        print("Failed to set AVAudioSession category: \(error)")
-    }
+    //
+    // Do NOT force AVAudioSession.playback here — that blocks mic capture for Zoom live
+    // sessions on iOS. Zoom Video SDK owns PlayAndRecord via setSDKAudioSessionEnv.
 
     return true
   }

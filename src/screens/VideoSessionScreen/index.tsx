@@ -521,6 +521,11 @@ function VideoSessionContent() {
         await new Promise<void>(resolve => {
           setTimeout(resolve, 500);
         });
+        try {
+          await ZoomVideoService.ensureSessionAudio();
+        } catch (e) {
+          console.log('[VideoSession] ensureSessionAudio onUserJoin', e);
+        }
         await handlersRef.current.refreshRemoteUsers();
         handlersRef.current.pollForRemoteUsers();
       }),
