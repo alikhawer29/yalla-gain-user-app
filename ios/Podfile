@@ -49,6 +49,13 @@ target 'YallaGain' do
       Pod::UI.puts 'Applied YallaGain Zoom iOS speaker audio helper patch'.green
     end
 
+    video_audio_patch_src = File.join(__dir__, 'VideoPatches', 'AudioSessionManager.swift')
+    video_audio_patch_dest = File.join(__dir__, '..', 'node_modules', 'react-native-video', 'ios', 'Video', 'AudioSessionManager.swift')
+    if File.exist?(video_audio_patch_src) && File.exist?(File.dirname(video_audio_patch_dest))
+      FileUtils.cp(video_audio_patch_src, video_audio_patch_dest)
+      Pod::UI.puts 'Applied YallaGain react-native-video Zoom mic session guard'.green
+    end
+
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,

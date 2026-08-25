@@ -6,14 +6,14 @@
  */
 
 import { NativeModules, Platform } from 'react-native';
-import Sound from 'react-native-sound';
 import {
   forceAndroidEarpieceRoute,
   isAndroidSpeakerphoneOn,
   setAndroidSpeakerphoneOn,
 } from '../utils/androidAudioRoute';
 
-const { RNZoomVideoSdk, RNZoomVideoSdkVideoHelper } = NativeModules;
+const { RNZoomVideoSdk, RNZoomVideoSdkVideoHelper, RNZoomVideoSdkAudioHelper } =
+  NativeModules;
 
 const SESSION_IDLE_TIMEOUT_MINS = 40;
 
@@ -91,6 +91,9 @@ class ZoomVideoServiceClass {
     this._lastMirrorEnabled = null;
     this._intentionalLeave = false;
     this._isSpeakerOn = true;
+    if (Platform.OS === 'ios') {
+      RNZoomVideoSdkAudioHelper?.restoreOtherAudioSessions?.().catch(() => {});
+    }
     console.log('[ZoomVideoService] SDK instance detached');
   }
 
@@ -416,51 +419,21 @@ class ZoomVideoServiceClass {
   }
 
   /**
-   * iOS: "Speaker" acts as a full audio ON/OFF (mute everyone you hear).
-   * Zoom Video SDK has no local-only "mute incoming" API and non-hosts cannot mute
-   * others, so the only reliable way to silence the call is to disconnect from the
-   * audio session (stopAudio) and reconnect (startAudio). We restore the mic mute
-   * state on reconnect so the separate Mute button stays consistent.
+   * iOS speakerphone vs earpiece. Never stopAudio — that destroys Zoom's
+   * RemoteIO and drops the mic (input goes to 0 channels).
    */
   async _applyIosSpeakerRoute(target) {
     const zoom = this._requireZoom();
 
     try {
-      if (target) {
-        try {
-          await zoom.audioHelper.setSDKAudioSessionEnv();
-        } catch (e) {
-          console.log('[ZoomVideoService] iOS setSDKAudioSessionEnv', e);
-        }
-        await zoom.audioHelper.startAudio();
-        // Native patched setSpeaker applies PlayAndRecord (mic-capable) routing.
-        try {
-          await zoom.audioHelper.setSpeaker(true);
-        } catch (e) {
-          console.log('[ZoomVideoService] iOS native setSpeaker', e);
-        }
-
-        // startAudio reconnects unmuted — restore the user's mic choice.
-        if (!this._isAudioOn) {
-          try {
-            const myId = await this.resolveMyUserId();
-            if (myId) {
-              await zoom.audioHelper.muteAudio(myId);
-            }
-          } catch (e) {
-            console.log('[ZoomVideoService] iOS restore mic mute', e);
-          }
-        }
-      } else {
-        await zoom.audioHelper.stopAudio();
-      }
+      await zoom.audioHelper.setSpeaker(Boolean(target));
     } catch (e) {
-      console.log('[ZoomVideoService] iOS audio toggle error', e);
+      console.log('[ZoomVideoService] iOS setSpeaker', e);
     }
 
-    this._isSpeakerOn = target;
+    this._isSpeakerOn = Boolean(target);
     console.log(
-      '[ZoomVideoService] Speaker (audio)',
+      '[ZoomVideoService] Speaker',
       this._isSpeakerOn ? 'ON' : 'OFF',
       '(requested',
       target ? 'ON' : 'OFF',
@@ -497,8 +470,6 @@ class ZoomVideoServiceClass {
 
   /** Re-apply current speaker preference after local audio connects (Android). */
   async refreshSpeakerAfterAudioConnect() {
-    // iOS: speaker is a full audio on/off (stopAudio/startAudio). Re-applying on
-    // every audio-status change would fight the user's toggle, so just keep cache.
     if (Platform.OS === 'ios') {
       return this._isSpeakerOn;
     }
@@ -521,26 +492,23 @@ class ZoomVideoServiceClass {
   }
 
   /**
-   * Switch iOS to PlayAndRecord + VideoChat so Zoom can capture the mic.
-   * A leftover Playback category (Spotify / launch audio) silently blocks input.
+   * Steal the mic from react-native-video (Playback+MoviePlayback) before Zoom
+   * creates its audio unit. Must run before join, not after.
    */
-  _prepareIosMicSession() {
+  async _prepareIosMicSession() {
     if (Platform.OS !== 'ios') {
       return;
     }
     try {
-      Sound.setCategory('PlayAndRecord', false);
-      Sound.setMode('VideoChat');
-      Sound.setActive(true);
+      await RNZoomVideoSdkAudioHelper?.prepareMicSession?.();
     } catch (e) {
       console.log('[ZoomVideoService] prepareIosMicSession', e);
     }
   }
 
   /**
-   * Ensure VOIP audio is running and iOS AVAudioSession is Zoom's PlayAndRecord env.
-   * Mirrors doctor app configureSessionAudio — required because App launch must not
-   * leave the session stuck in a playback-only category.
+   * Keep Zoom VOIP connected. Do not reset/setCategory after join — that
+   * retriggers AudioCategoryDidChange and Zoom's RemoteIO drops mic input to 0 ch.
    */
   async ensureSessionAudio() {
     const zoom = this._requireZoom();
@@ -549,19 +517,11 @@ class ZoomVideoServiceClass {
       return;
     }
 
-    this._prepareIosMicSession();
-
     if (Platform.OS === 'ios') {
       try {
-        // Prefer reset + SDK env so a prior Playback category cannot stick.
-        try {
-          await audioHelper.resetAudioSession();
-        } catch (e) {
-          console.log('[ZoomVideoService] resetAudioSession', e);
-        }
-        await audioHelper.setSDKAudioSessionEnv();
+        await RNZoomVideoSdkAudioHelper?.prepareMicSession?.();
       } catch (e) {
-        console.log('[ZoomVideoService] setSDKAudioSessionEnv', e);
+        console.log('[ZoomVideoService] prepareMicSession before startAudio', e);
       }
     }
 
@@ -569,17 +529,6 @@ class ZoomVideoServiceClass {
       await audioHelper.startAudio();
     } catch (e) {
       console.log('[ZoomVideoService] startAudio', e);
-    }
-
-    // Native setSpeaker applies PlayAndRecord routing. Do not use
-    // _applyIosSpeakerRoute here — that maps speaker to stopAudio/startAudio.
-    if (Platform.OS === 'ios') {
-      try {
-        await audioHelper.setSpeaker(true);
-        this._isSpeakerOn = true;
-      } catch (e) {
-        console.log('[ZoomVideoService] native setSpeaker', e);
-      }
     }
 
     try {
@@ -634,7 +583,7 @@ class ZoomVideoServiceClass {
     }
 
     console.log('[ZoomVideoService] Joining session', sessionName);
-    this._prepareIosMicSession();
+    await this._prepareIosMicSession();
 
     const session = await zoom.joinSession({
       sessionName: sessionName.trim(),
@@ -642,7 +591,7 @@ class ZoomVideoServiceClass {
       token,
       userName: userName.trim(),
       audioOptions: {
-        connect: true,
+        connect: false,
         mute: false,
         autoAdjustSpeakerVolume: true,
       },
@@ -689,7 +638,7 @@ class ZoomVideoServiceClass {
       await this.syncSpeakerState();
       if (Platform.OS === 'ios') {
         // iOS: "Speaker" is a full audio on/off. Default to ON so the user can hear
-        // the call; ensureSessionAudio already started VOIP + SDK audio env.
+        // the call. Do not re-toggle category/speaker here — that drops RemoteIO input.
         this._isSpeakerOn = true;
       } else {
         await this._applySpeakerRoute(this._isSpeakerOn);

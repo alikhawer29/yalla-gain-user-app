@@ -40,7 +40,7 @@ PODS:
     - nanopb (~> 3.30910.0)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - GoogleDataTransport (10.1.0):
+  - GoogleDataTransport (10.1.1):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
   - GoogleUtilities (8.1.2):
@@ -3725,7 +3725,7 @@ SPEC CHECKSUMS:
   FirebaseMessaging: ed18fb50634e6e85b5d3e77e628c21e2c928cc53
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
-  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleDataTransport: a24e58982ab3ba2f64d79613e027fe7f57e88539
   GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: 4d0214b010100d399c0e34bd3f82c7d2d32c253a
@@ -3835,6 +3835,6 @@ SPEC CHECKSUMS:
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
   ZoomVideoSDK: 85c1f052264f7c54fb03ddd67c331be0c4eb6a6a
 
-PODFILE CHECKSUM: efd347907820bbc46ac38f8c85a66d04dbddf26c
+PODFILE CHECKSUM: 08f6b903717d446d663cf61e801fdabb6dbbf952
 
 COCOAPODS: 1.16.2

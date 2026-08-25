@@ -2,6 +2,10 @@
 #import "RNZoomVideoSdkUser.h"
 #import "RCTConvert+RNZoomVideoSdk.h"
 #import <AVFAudio/AVFAudio.h>
+#import <objc/message.h>
+#import <objc/runtime.h>
+
+static NSString *const kYGZoomMicSessionActive = @"YGZoomMicSessionActive";
 
 static BOOL YGIsSpeakerRouteActive(void)
 {
@@ -14,44 +18,40 @@ static BOOL YGIsSpeakerRouteActive(void)
     return NO;
 }
 
+static void YGSetRnVideoAudioSessionDisabled(BOOL disabled)
+{
+    [[NSUserDefaults standardUserDefaults] setBool:disabled forKey:kYGZoomMicSessionActive];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+
+    SEL sel = NSSelectorFromString(@"setIsAudioSessionManagementDisabled:");
+    int count = objc_getClassList(NULL, 0);
+    Class *classes = (Class *)malloc(sizeof(Class) * (NSUInteger)count);
+    count = objc_getClassList(classes, count);
+    for (int i = 0; i < count; i++) {
+        NSString *name = NSStringFromClass(classes[i]);
+        if ([name containsString:@"PublicAudioSessionManager"] &&
+            [classes[i] respondsToSelector:sel]) {
+            ((void (*)(id, SEL, BOOL))objc_msgSend)(classes[i], sel, disabled);
+            break;
+        }
+    }
+    free(classes);
+}
+
 static void YGApplySpeakerRoute(BOOL isOn, NSError **outError)
 {
     AVAudioSession *session = [AVAudioSession sharedInstance];
     NSError *error = nil;
 
-    // Zoom runs the session in VideoChat mode, which DEFAULTS to speaker. So
-    // overrideOutputAudioPort:None alone cannot reach the earpiece — it just reverts to
-    // the speaker default. The lever that actually moves audio to the earpiece is the
-    // session MODE: VoiceChat defaults to the receiver (earpiece), VideoChat to speaker.
-    // The atomic setCategory:mode:options: call changes routing even while Zoom's audio
-    // unit is active (separate setMode/setCategory return paramErr -50).
-    AVAudioSessionMode mode =
-        isOn ? AVAudioSessionModeVideoChat : AVAudioSessionModeVoiceChat;
-
-    AVAudioSessionCategoryOptions options =
-        AVAudioSessionCategoryOptionAllowBluetooth;
-    // NOTE: Do NOT add AllowBluetoothA2DP — A2DP is output-only and can disable
-    // microphone capture when PlayAndRecord is active (breaks Zoom mic on iOS).
-    if (isOn) {
-        options |= AVAudioSessionCategoryOptionDefaultToSpeaker;
-    }
-
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord
-                    mode:mode
-                 options:options
-                   error:&error];
-    if (error != nil) {
-        NSLog(@"[YallaGain] setCategory:mode failed: %@", error);
-        error = nil;
-    }
-
+    // Port override only. setCategory/setMode while RemoteIO is running drops
+    // mic input to 0 channels.
     AVAudioSessionPortOverride override =
         isOn ? AVAudioSessionPortOverrideSpeaker : AVAudioSessionPortOverrideNone;
-
     [session overrideOutputAudioPort:override error:&error];
     if (error != nil) {
         NSLog(@"[YallaGain] overrideOutputAudioPort failed: %@", error);
     }
+    [session setActive:YES error:nil];
 
     if (outError != nil) {
         *outError = error;
@@ -101,8 +101,7 @@ RCT_EXPORT_METHOD(setSpeaker:(BOOL)isOn
         NSError *error = nil;
 
         // NOTE: Do NOT call setSDKAudioSessionEnv here — it re-applies Zoom's preferred
-        // (speaker) route and flips earpiece back ON. Routing is driven by the session
-        // mode/override inside YGApplySpeakerRoute.
+        // speaker route. Routing is a port override only (YGApplySpeakerRoute).
         YGApplySpeakerRoute(isOn, &error);
 
         // Best-effort: overrideOutputAudioPort:Speaker can return -50 even though the mode
@@ -116,6 +115,43 @@ RCT_EXPORT_METHOD(startAudio:(RCTPromiseResolveBlock)resolve
 {
     dispatch_async(dispatch_get_main_queue(), ^{
         resolve([[RCTConvert ZoomVideoSDKErrorValuesReversed] objectForKey: @([[self getAudioHelper] startAudio])]);
+    });
+}
+
+RCT_EXPORT_METHOD(prepareMicSession:(RCTPromiseResolveBlock)resolve
+        withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        YGSetRnVideoAudioSessionDisabled(YES);
+
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSError *error = nil;
+        [session setActive:NO
+               withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation
+                     error:nil];
+        [session setCategory:AVAudioSessionCategoryPlayAndRecord
+                        mode:AVAudioSessionModeVideoChat
+                     options:(AVAudioSessionCategoryOptionAllowBluetooth |
+                              AVAudioSessionCategoryOptionDefaultToSpeaker)
+                       error:&error];
+        if (error != nil) {
+            NSLog(@"[YallaGain] prepareMicSession setCategory failed: %@", error);
+            error = nil;
+        }
+        [session setActive:YES error:&error];
+        if (error != nil) {
+            NSLog(@"[YallaGain] prepareMicSession setActive failed: %@", error);
+        }
+        resolve(@YES);
+    });
+}
+
+RCT_EXPORT_METHOD(restoreOtherAudioSessions:(RCTPromiseResolveBlock)resolve
+        withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        YGSetRnVideoAudioSessionDisabled(NO);
+        resolve(@YES);
     });
 }
 

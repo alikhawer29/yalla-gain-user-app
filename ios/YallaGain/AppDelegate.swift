@@ -40,9 +40,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, RNAppAuthAuthorizationFlo
     // Unity is started lazily when the user opens the Unity screen (RNUnityView).
     // Do NOT start Unity here — it crashes (EXC_BAD_ACCESS in UnityInitApplicationNoGraphics)
     // until the game team fixes the embedded player. This lets the app and bundling finish.
-    //
-    // Do NOT force AVAudioSession.playback here — that blocks mic capture for Zoom live
-    // sessions on iOS. Zoom Video SDK owns PlayAndRecord via setSDKAudioSessionEnv.
+
+    // Do not pre-configure AVAudioSession. Forcing Playback blocked the mic;
+    // forcing PlayAndRecord+VideoChat at launch still left Zoom RemoteIO with
+    // 0-channel input. Let Zoom own the session when the call starts.
 
     return true
   }

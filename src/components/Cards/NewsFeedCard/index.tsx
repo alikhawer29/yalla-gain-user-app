@@ -387,6 +387,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                 style={{ width: '100%', height: '100%' }}
                                 controls
                                 paused={true}
+                                disableAudioSessionManagement
                             />
                         </View>
                     )}
@@ -433,6 +434,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                         style={{ width: '100%', height: '100%' }}
                                         controls
                                         paused={true}
+                                        disableAudioSessionManagement
                                     />
                                 </View>
                             )}
