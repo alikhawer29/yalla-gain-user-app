@@ -14,6 +14,8 @@ import com.facebook.react.ReactNativeHost
 import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
+import com.blitzapp.yallagain.AndroidAudioRoutePackage
+import com.blitzapp.yallagain.UnityLogcatPackage
 
 class MainApplication : Application(), ReactApplication {
 

@@ -2,13 +2,15 @@ import {
   ActivityIndicator,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Text as RNText,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import images from '../../assets/images';
@@ -16,10 +18,12 @@ import Icon from '../../components/Icon';
 import Row from '../../components/Row';
 import Seperator from '../../components/Seperator';
 import Text from '../../components/Text';
+import EmojiPicker from '../../components/EmojiPicker';
 import Wrapper from '../../components/Wrapper';
 import useKeyboard from '../../hooks/useKeyboard';
 import colors from '../../utils/colors';
-import { heightPixel } from '../../utils/helper';
+import { EMOJI_FONT_FAMILY, insertEmojiAt, TextSelection } from '../../utils/emoji';
+import { font, heightPixel } from '../../utils/helper';
 import ChatMessageCard from '../../components/Cards/ChatMessageCard';
 import { IChatMessage } from '../../interfaces';
 import useChatDetailsController from './useChatDetailsController';
@@ -64,6 +68,23 @@ const ChatDetails = () => {
   const insets = useSafeAreaInsets();
   const headerHeight = useHeaderHeight();
   const keyboardHeight = useKeyboard();
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
+
+  const handleSelectEmoji = (emoji: string) => {
+    const result = insertEmojiAt(message, emoji, selectionRef.current);
+    onChangeMessage(result.text);
+    selectionRef.current = result.selection;
+  };
+
+  const toggleEmojiPicker = () => {
+    if (showEmojiPicker) {
+      setShowEmojiPicker(false);
+      return;
+    }
+    Keyboard.dismiss();
+    setShowEmojiPicker(true);
+  };
 
   const renderHeader = () => (
     <View style={styles.header}>
@@ -189,11 +210,29 @@ const ChatDetails = () => {
                 ]}
                 placeholder="Type a message..."
                 value={message}
-                onChangeText={onChangeMessage}
+                onChangeText={(text) => {
+                  onChangeMessage(text);
+                  selectionRef.current = { start: text.length, end: text.length };
+                }}
+                onSelectionChange={(event) => {
+                  selectionRef.current = event.nativeEvent.selection;
+                }}
+                onFocus={() => setShowEmojiPicker(false)}
                 placeholderTextColor={colors.icon_gray}
                 multiline
               />
-              <Row gap={10}>
+              <Row gap={10} align="center">
+                <TouchableOpacity onPress={toggleEmojiPicker}>
+                  <RNText
+                    allowFontScaling={false}
+                    style={{
+                      fontSize: font(20),
+                      fontFamily: EMOJI_FONT_FAMILY,
+                    }}
+                  >
+                    😊
+                  </RNText>
+                </TouchableOpacity>
                 <Icon
                   source={images.gallery}
                   size={20}
@@ -202,10 +241,14 @@ const ChatDetails = () => {
                 />
               </Row>
             </View>
+            <EmojiPicker visible={showEmojiPicker} onSelect={handleSelectEmoji} />
           </View>
           <TouchableOpacity
             style={styles.send_button}
-            onPress={onSendMessage}
+            onPress={() => {
+              setShowEmojiPicker(false);
+              onSendMessage();
+            }}
             disabled={isSending}
           >
             {isSending ? (

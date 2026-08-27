@@ -4,6 +4,7 @@ import { View } from "react-native"
 import LoaderKit from "react-native-loader-kit"
 import Video from "react-native-video"
 import Wrapper from "../../components/Wrapper"
+import useLockedOrientation from "../../hooks/useLockedOrientation"
 import colors from "../../utils/colors"
 import styles from "./styles"
 
@@ -11,9 +12,10 @@ const VideoPlayer = () => {
 
     const { params } = useRoute()
     const [buffering, setBuffering] = useState(false)
+    useLockedOrientation("landscape")
 
     return (
-        <Wrapper>
+        <Wrapper no_padding hide_bottom_bar>
             {buffering && (
                 <View style={styles.buffering_overlay}>
                     <View style={styles.loader_container}>

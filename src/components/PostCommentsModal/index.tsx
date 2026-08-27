@@ -1,11 +1,13 @@
 import { FC, useState, useRef, useMemo, useEffect } from "react";
-import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { Modal, View, FlatList, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Keyboard, Text as RNText } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
 import Text from "../Text";
 import images from "../../assets/images";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel, font } from "../../utils/helper";
+import { EMOJI_FONT_FAMILY, insertEmojiAt, TextSelection } from "../../utils/emoji";
+import EmojiPicker from "../EmojiPicker";
 import ReactionPicker from "../ReactionPicker";
 import { useGetCommentsQuery, usePostCommentMutation, useReactCommentMutation, useDeleteCommentMutation } from "../../redux/Apis/User";
 import { useAppSelector } from "../../hooks";
@@ -29,6 +31,8 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
     const [commentText, setCommentText] = useState("");
     const [commentReactions, setCommentReactions] = useState<CommentReaction>({});
     const [isUpdatingReaction, setIsUpdatingReaction] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
     const currentUser = useAppSelector(selectUser);
     const currentUserId = currentUser?.id;
 
@@ -79,6 +83,12 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
         }
     }, [data, currentUserId]);
 
+    useEffect(() => {
+        if (!visible) {
+            setShowEmojiPicker(false);
+        }
+    }, [visible]);
+
     const handleSendComment = async () => {
         if (commentText.trim() && post_id) {
             try {
@@ -87,12 +97,29 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                     body: { comment: commentText }
                 }).unwrap();
                 setCommentText("");
+                selectionRef.current = { start: 0, end: 0 };
+                setShowEmojiPicker(false);
                 refetch(); // Refresh comments list
                 onCommentAdded?.(); // Notify parent to increment count
             } catch (error) {
                 console.error('Post comment error:', error);
             }
         }
+    };
+
+    const handleSelectEmoji = (emoji: string) => {
+        const result = insertEmojiAt(commentText, emoji, selectionRef.current);
+        setCommentText(result.text);
+        selectionRef.current = result.selection;
+    };
+
+    const toggleEmojiPicker = () => {
+        if (showEmojiPicker) {
+            setShowEmojiPicker(false);
+            return;
+        }
+        Keyboard.dismiss();
+        setShowEmojiPicker(true);
     };
 
     const handleReaction = async (commentId: number, reaction: 'like' | 'heart') => {
@@ -421,10 +448,38 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                         placeholder="Write Comment"
                                         placeholderTextColor={colors.white}
                                         value={commentText}
-                                        onChangeText={setCommentText}
+                                        onChangeText={(text) => {
+                                            setCommentText(text);
+                                            selectionRef.current = { start: text.length, end: text.length };
+                                        }}
+                                        onSelectionChange={(event) => {
+                                            selectionRef.current = event.nativeEvent.selection;
+                                        }}
+                                        onFocus={() => setShowEmojiPicker(false)}
                                         multiline
                                     />
                                 </View>
+                                <TouchableOpacity
+                                    onPress={toggleEmojiPicker}
+                                    style={{
+                                        width: 45,
+                                        height: 45,
+                                        borderRadius: 25,
+                                        backgroundColor: colors.dark_gray,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <RNText
+                                        allowFontScaling={false}
+                                        style={{
+                                            fontSize: font(20),
+                                            fontFamily: EMOJI_FONT_FAMILY,
+                                        }}
+                                    >
+                                        😊
+                                    </RNText>
+                                </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={handleSendComment}
                                     disabled={isPostingComment || !commentText.trim()}
@@ -445,6 +500,7 @@ const PostCommentsModal: FC<IPostCommentsModal> = ({ visible, onClose, post_id, 
                                     )}
                                 </TouchableOpacity>
                             </Row>
+                            <EmojiPicker visible={showEmojiPicker} onSelect={handleSelectEmoji} />
                         </View>
                     </TouchableOpacity>
                 </KeyboardAvoidingView>

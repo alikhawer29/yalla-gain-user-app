@@ -10,7 +10,7 @@ import { useModal } from '../../contexts/ModalContext';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import { useAppSelector } from '../../hooks';
-import { validatePhoneByCountry } from '../../utils/helper';
+import { validatePhoneByCountry, withDialingCodePlus } from '../../utils/helper';
 import {
   findOverlappingBooking,
   isAppointmentOverlapApiError,
@@ -29,6 +29,42 @@ interface FormData {
   dialing_code: string;
   country_code: string;
 }
+
+type BookingUserPrefill = {
+  first_name?: string | null;
+  last_name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  dialing_code?: string | null;
+  country_code?: string | null;
+} | null;
+
+const DEFAULT_BOOKING_FORM: FormData = {
+  first_name: '',
+  last_name: '',
+  email: '',
+  phone: '',
+  dialing_code: '+971',
+  country_code: 'AE',
+};
+
+export const buildAppointmentBookingForm = (
+  user?: BookingUserPrefill,
+): FormData => {
+  if (!user) {
+    return { ...DEFAULT_BOOKING_FORM };
+  }
+
+  return {
+    first_name: user.first_name ?? '',
+    last_name: user.last_name ?? '',
+    email: user.email ?? '',
+    phone: `${user.phone ?? ''}`.trim(),
+    dialing_code:
+      withDialingCodePlus(user.dialing_code) || DEFAULT_BOOKING_FORM.dialing_code,
+    country_code: user.country_code || DEFAULT_BOOKING_FORM.country_code,
+  };
+};
 
 interface FieldErrors {
   first_name?: string;
@@ -138,25 +174,17 @@ const useAppointmentBookingController = () => {
   const { showOkModal, showYesNoModal } = useModal();
   const user = useAppSelector(state => state.auth.user);
   const prefillFromUserOnce = useRef(false);
+  const [phoneInputKey, setPhoneInputKey] = useState(0);
 
-  const [formData, setFormData] = useState<FormData>({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
-    dialing_code: '+971',
-    country_code: 'AE',
-  });
+  const [formData, setFormData] = useState<FormData>(() =>
+    buildAppointmentBookingForm(user),
+  );
 
   useEffect(() => {
     if (!user || prefillFromUserOnce.current) return;
     prefillFromUserOnce.current = true;
-    setFormData(prev => ({
-      ...prev,
-      first_name: user.first_name ?? '',
-      last_name: user.last_name ?? '',
-      email: user.email ?? '',
-    }));
+    setFormData(buildAppointmentBookingForm(user));
+    setPhoneInputKey(key => key + 1);
   }, [user]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -560,6 +588,7 @@ const useAppointmentBookingController = () => {
   return {
     values: {
       formData,
+      phoneInputKey,
       user,
       dates,
       availableSlots,

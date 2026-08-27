@@ -176,7 +176,7 @@ export const userApi = createApi({
     deleteFeed: builder.mutation({
       query: id => ({
         url: `post/${id}/delete`,
-        method: 'POST',
+        method: 'DELETE',
       }),
       invalidatesTags: ['Posts'],
     }),
@@ -206,7 +206,7 @@ export const userApi = createApi({
     deleteComment: builder.mutation({
       query: id => ({
         url: `comment/${id}/remove`,
-        method: 'POST',
+        method: 'DELETE',
       }),
       invalidatesTags: ['Posts'],
     }),

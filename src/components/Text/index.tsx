@@ -1,9 +1,37 @@
-import { FC, memo } from "react"
+import { Children, FC, memo, ReactNode } from "react"
 import { Text as RNText, TextStyle } from "react-native"
 import { IText } from "../../interfaces"
 import colors from "../../utils/colors"
+import { EMOJI_FONT_FAMILY, splitByEmoji } from "../../utils/emoji"
 import { font } from "../../utils/helper"
 import styles from "./styles"
+
+const renderWithEmoji = (node: ReactNode): ReactNode => {
+    return Children.map(node, (child, childIndex) => {
+        if (typeof child !== "string") {
+            return child
+        }
+
+        const parts = splitByEmoji(child)
+        if (parts.every(part => !part.isEmoji)) {
+            return child
+        }
+
+        return parts.map((part, partIndex) =>
+            part.isEmoji ? (
+                <RNText
+                    key={`${childIndex}-${partIndex}`}
+                    allowFontScaling={false}
+                    style={{ fontFamily: EMOJI_FONT_FAMILY }}
+                >
+                    {part.value}
+                </RNText>
+            ) : (
+                part.value
+            )
+        )
+    })
+}
 
 const Text: FC<IText> = ({
     children,
@@ -35,7 +63,7 @@ const Text: FC<IText> = ({
             onPress={onPress}
             numberOfLines={lines}
         >
-            {children}
+            {renderWithEmoji(children)}
         </RNText>
     )
 }

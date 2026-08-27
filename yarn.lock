@@ -10098,6 +10098,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-orientation-turbo@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "react-native-orientation-turbo@npm:2.2.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/408e61b4378e8f8f7002ad8f5f361e1c8a6e9a13f8b5d7dc7f14eb8735ee4a214a805844b674f527157cefc2af6fcf37b78015ae545e4d1841ad3cc60ca91aed
+  languageName: node
+  linkType: hard
+
 "react-native-permissions@npm:^5.4.2":
   version: 5.6.0
   resolution: "react-native-permissions@npm:5.6.0"
@@ -12304,6 +12314,7 @@ __metadata:
     react-native-linear-gradient: "npm:^2.8.3"
     react-native-loader-kit: "npm:^3.0.0"
     react-native-network-logger: "npm:^2.0.1"
+    react-native-orientation-turbo: "npm:^2.2.0"
     react-native-permissions: "npm:^5.4.2"
     react-native-phone-number-input: "npm:2.1.0"
     react-native-popup-menu: "npm:^0.18.0"

@@ -11,6 +11,32 @@ import {
   validateFeedMediaItemsForUpload,
 } from '../../utils/feedMediaValidation';
 
+type PollOptionInput = {
+  id?: number;
+  poll_option_id?: number;
+  text?: string;
+  option_text?: string;
+  label?: string;
+  option?: string;
+};
+
+export const getPollOptionText = (option?: PollOptionInput | null): string =>
+  (option?.text ?? option?.option_text ?? option?.label ?? option?.option ?? '').trim();
+
+export const normalizePollOptionsForEdit = (options?: PollOptionInput[]) => {
+  if (!options?.length) {
+    return [
+      { id: 1, text: '' },
+      { id: 2, text: '' },
+    ];
+  }
+
+  return options.map((option, index) => ({
+    id: option?.id ?? option?.poll_option_id ?? index + 1,
+    text: getPollOptionText(option),
+  }));
+};
+
 const useEditPostController = (postData: any) => {
   const navigation = useNavigation();
   const { showOkModal } = useModal();
@@ -27,10 +53,7 @@ const useEditPostController = (postData: any) => {
   );
   const [deletedMediaIds, setDeletedMediaIds] = useState<number[]>([]);
   const [pollOptions, setPollOptions] = useState(
-    postData?.poll_options || [
-      { id: 1, text: '' },
-      { id: 2, text: '' },
-    ],
+    normalizePollOptionsForEdit(postData?.poll_options),
   );
   const [activeTab, setActiveTab] = useState<
     'text' | 'photo' | 'video' | 'poll'
@@ -110,9 +133,7 @@ const useEditPostController = (postData: any) => {
           });
           return;
         }
-        const validOptions = pollOptions.filter(
-          (opt: any) => opt.text.trim() || opt.option_text?.trim(),
-        );
+        const validOptions = pollOptions.filter(opt => getPollOptionText(opt));
         if (validOptions.length < 2) {
           showOkModal({
             type: 'error',
@@ -157,8 +178,8 @@ const useEditPostController = (postData: any) => {
       // Add poll options if this is a poll
       if (activeTab === 'poll') {
         pollOptions.forEach((option: any, index: number) => {
-          const optionText = option.text || option.option_text || '';
-          if (optionText.trim()) {
+          const optionText = getPollOptionText(option);
+          if (optionText) {
             formData.append(`poll[${index}]`, optionText);
           }
         });

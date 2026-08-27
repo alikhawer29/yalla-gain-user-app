@@ -76,7 +76,7 @@
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize"
         android:exported="true"
-        android:screenOrientation="portrait">
+        android:screenOrientation="fullSensor">
         <!-- Add this to prevent Android from killing the app during Zoom -->
         <meta-data
             android:name="android.app.multiWindowSupport"

@@ -13,7 +13,7 @@ import { getPhoneMaxLength } from "../../utils/helper";
 
 const AppointmentBooking = () => {
     const {
-        values: { formData, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
+        values: { formData, phoneInputKey, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
         functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatSlotLocalTime, isSlotPassed, isSlotConflictingWithUserBooking },
     } = useAppointmentBookingController();
 
@@ -59,6 +59,7 @@ const AppointmentBooking = () => {
             />
             <Seperator size={15} />
             <Input
+                key={`booking-phone-${phoneInputKey}-${formData.country_code}`}
                 label="Mobile Number"
                 placeholder="Enter phone number"
                 type="phone"

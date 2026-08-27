@@ -1,7 +1,6 @@
 import { Platform, StyleSheet } from 'react-native';
 import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
-import fonts from '../../assets/fonts';
 
 const styles = StyleSheet.create({
   container: {
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     color: colors.white,
     minHeight: Platform.OS === 'ios' ? heightPixel(30) : heightPixel(40),
     maxHeight: heightPixel(120),
-    fontFamily: fonts.sfpro.regular,
     fontSize: 14,
   },
   input_with_attachments: {
