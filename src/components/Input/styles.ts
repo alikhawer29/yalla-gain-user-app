@@ -43,6 +43,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  phone_flag: {
+    width: widthPixel(28),
+    height: heightPixel(20),
+  },
   error: {
     marginTop: heightPixel(4),
     marginLeft: widthPixel(15),

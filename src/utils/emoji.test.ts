@@ -30,4 +30,11 @@ describe('splitByEmoji', () => {
       { value: '👨‍💻', isEmoji: true },
     ]);
   });
+
+  it('treats country flag regional-indicator pairs as emoji', () => {
+    expect(splitByEmoji('🇦🇪 (+971) 501234567')).toEqual([
+      { value: '🇦🇪', isEmoji: true },
+      { value: ' (+971) 501234567', isEmoji: false },
+    ]);
+  });
 });

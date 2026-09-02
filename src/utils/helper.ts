@@ -115,6 +115,46 @@ export const withDialingCodePlus = (
   return s.startsWith('+') ? s : `+${s}`;
 };
 
+/** ISO-3166 alpha-2 → regional-indicator flag emoji (e.g. AE → 🇦🇪). */
+export const countryFlagEmoji = (
+  countryCode?: string | null,
+): string => {
+  const iso = `${countryCode ?? ''}`.trim().toUpperCase();
+  if (!/^[A-Z]{2}$/.test(iso)) {
+    return '';
+  }
+  return String.fromCodePoint(
+    ...[...iso].map(char => 0x1f1e6 + char.charCodeAt(0) - 65),
+  );
+};
+
+/** PNG flag URL — Android does not render regional-indicator emoji flags. */
+export const countryFlagImageUri = (
+  countryCode?: string | null,
+): string => {
+  const iso = `${countryCode ?? ''}`.trim().toLowerCase();
+  if (!/^[a-z]{2}$/.test(iso)) {
+    return '';
+  }
+  return `https://flagcdn.com/w40/${iso}.png`;
+};
+
+/** Read-only phone: flag + (+dialing) + local number. */
+export const formatPhoneDisplay = (
+  dialingCode?: string | null,
+  phone?: string | null,
+  countryCode?: string | null,
+): string => {
+  const number = `${phone ?? ''}`.trim();
+  if (!number) {
+    return '';
+  }
+  const flag = countryFlagEmoji(countryCode);
+  const code = withDialingCodePlus(dialingCode);
+  const numberPart = code ? `(${code}) ${number}` : number;
+  return flag ? `${flag} ${numberPart}` : numberPart;
+};
+
 export const formHandler = (data: any) => {
   let formdata = new FormData();
 

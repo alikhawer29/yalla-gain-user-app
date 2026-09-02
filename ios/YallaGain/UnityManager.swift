@@ -49,6 +49,10 @@ final class UnityManager {
     /// Start Unity Framework if not already started (app-level, call once).
     /// Optionally pass a completion called when Unity has finished starting and is ready to embed.
     func startUnityIfNeeded(completion: (() -> Void)? = nil) {
+        #if targetEnvironment(simulator)
+        print("ℹ️ Unity is not supported on the iOS Simulator; skipping start")
+        completion?()
+        #else
         var alreadyStarted = false
         lockQueue.sync {
             guard !started else {
@@ -67,6 +71,7 @@ final class UnityManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.startUnity(completion: completion)
         }
+        #endif
     }
     
     private func startUnity(completion: (() -> Void)? = nil) {

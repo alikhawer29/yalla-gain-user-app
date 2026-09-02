@@ -19,7 +19,8 @@ const useForgotPasswordController = () => {
         via: params?.type,
         email: "",
         phone: "",
-        calling_code: ""
+        dialing_code: "+971",
+        country_code: "AE",
     }
 
     useEffect(() => {

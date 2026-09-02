@@ -1,5 +1,5 @@
 import React, { FC, memo, useState } from 'react';
-import { TextInput, TouchableOpacity, View, type TextInputProps } from 'react-native';
+import { Image, TextInput, TouchableOpacity, View, type TextInputProps } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import PhoneInput from "react-native-phone-number-input";
 import fonts from '../../assets/fonts';
@@ -7,7 +7,7 @@ import images from '../../assets/images';
 import useToggle from '../../hooks/useToggle';
 import { IInput } from '../../interfaces';
 import colors from '../../utils/colors';
-import { createInsets, dateFormatter, heightPixel, timeFormatter, widthPixel } from '../../utils/helper';
+import { countryFlagImageUri, createInsets, dateFormatter, heightPixel, timeFormatter, widthPixel } from '../../utils/helper';
 import Icon from '../Icon';
 import Text from '../Text';
 import Touchable from '../Touchable';
@@ -52,6 +52,7 @@ const Input: FC<IInput> = props => {
             {
                 type === "phone" ?
                     <PhoneInput
+                        key={country}
                         layout='first'
                         disabled={disabled}
                         placeholder={placeholder}
@@ -63,16 +64,29 @@ const Input: FC<IInput> = props => {
                         containerStyle={[{ padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
                         textInputStyle={[styles.input, { padding: 0, backgroundColor: colors.transparent, color: colors.white }]}
                         codeTextStyle={{ fontFamily: fonts.sfpro.regular, margin: 0, padding: 0, color: colors.white }}
-                        flagButtonStyle={{ backgroundColor: colors.transparent, margin: 0 }}
+                        flagButtonStyle={{ backgroundColor: colors.transparent, margin: 0, width: widthPixel(56), minWidth: widthPixel(56) }}
                         textContainerStyle={{ paddingHorizontal: widthPixel(15), paddingVertical: 0, backgroundColor: colors.transparent, borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
-                        countryPickerButtonStyle={{ borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
+                        countryPickerButtonStyle={{ borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5), width: widthPixel(56) }}
                         textInputProps={{
                             cursorColor: colors.primary,
                             placeholderTextColor: colors.white,
-                            maxLength: 15,
+                            maxLength: maxLength ?? 15,
+                            keyboardType: 'number-pad',
                         }}
                         disableArrowIcon
-                        countryPickerProps={{ renderFlagButton: false }}
+                        countryPickerProps={{
+                            withEmoji: false,
+                            renderFlagButton: () => {
+                                const uri = countryFlagImageUri(country);
+                                return uri ? (
+                                    <Image
+                                        source={{ uri }}
+                                        style={styles.phone_flag}
+                                        resizeMode="contain"
+                                    />
+                                ) : null;
+                            },
+                        }}
                     />
                     :
                     <Component style={[styles.inputContainer, isFocused && mode !== "secondary" && styles.focusedInputContainer, type === "textarea" && styles.multiline_input_container, mode === "secondary" ? { borderColor: colors.transparent, backgroundColor: colors.grayish_black } : {}]} onPress={toggleDate} disabled={disabled}>

@@ -5,6 +5,7 @@
 #import <React/RCTEventDispatcherProtocol.h>
 #import <React/RCTComponentEvent.h>
 #import <React/UIView+React.h>
+#import <TargetConditionals.h>
 #import <dlfcn.h>
 // Import the generated Swift header to access YallaGainUnityView Swift class
 #import "YallaGain-Swift.h"
@@ -22,18 +23,27 @@ void* YallaGainGetExecuteHeader(void) {
 
 // Call setExecuteHeader on UnityFramework so Swift doesn't need to pass Mach header pointer
 void YallaGainUnitySetExecuteHeader(id unityFramework) {
+#if TARGET_OS_SIMULATOR
+    (void)unityFramework;
+#else
     if (!unityFramework || ![unityFramework respondsToSelector:@selector(setExecuteHeader:)]) return;
     void *header = getExecuteHeaderPtr();
     if (header) {
         [unityFramework setExecuteHeader:header];
     }
+#endif
 }
 
 // setDataBundleId expects (const char*) — call with C string like the Unity uaal-example
 void YallaGainUnitySetDataBundleId(id unityFramework, const char *bundleId) {
+#if TARGET_OS_SIMULATOR
+    (void)unityFramework;
+    (void)bundleId;
+#else
     if (unityFramework && bundleId && [unityFramework respondsToSelector:@selector(setDataBundleId:)]) {
         [unityFramework setDataBundleId:bundleId];
     }
+#endif
 }
 
 @interface RNUnityViewManager : RCTViewManager

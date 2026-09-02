@@ -52,7 +52,7 @@ export const EMOJI_FONT_FAMILY = Platform.select({
 });
 
 const EMOJI_SEQUENCE =
-  /(?:\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?)*)/gu;
+  /(?:\p{Regional_Indicator}{2}|\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?(?:\p{Emoji_Modifier})?)*)/gu;
 
 const clampSelection = (text: string, selection: TextSelection): TextSelection => {
   const start = Math.max(0, Math.min(selection.start, text.length));

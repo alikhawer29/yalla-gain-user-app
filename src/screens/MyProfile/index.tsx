@@ -8,6 +8,7 @@ import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import colors from '../../utils/colors';
 import { capitalizeFirst } from '../../utils/data';
+import { formatPhoneDisplay } from '../../utils/helper';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import styles from './styles';
@@ -43,8 +44,7 @@ const MyProfile = () => {
           <View style={[styles.item, styles.item_width]}>
             <Text color={colors.icon_gray}>Phone Number</Text>
             <Text weight="bold">
-              {user?.dialing_code ? `(${user?.dialing_code}) ` : ''}
-              {user?.phone}
+              {formatPhoneDisplay(user?.dialing_code, user?.phone, user?.country_code)}
             </Text>
           </View>
         ) : null}

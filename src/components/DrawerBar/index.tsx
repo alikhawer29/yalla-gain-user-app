@@ -12,7 +12,7 @@ import { setWatchHealthLinked } from "../../services/health/healthProvider"
 import { deleteUnityGameUserData } from "../../utils/unityGameData"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
-import { navigationRef } from "../../utils/navigation"
+import { getDrawerChallengesResetState, navigationRef } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
@@ -237,31 +237,7 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
                 // the previous nested screen.
                 if (childItem?.params?.screen === ROUTES.CHALLENGES) {
                     navigationRef.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [
-                                {
-                                    name: NAVIGATORS.DRAWER,
-                                    state: {
-                                        routes: [
-                                            {
-                                                name: childItem.route, // NAVIGATORS.BOTTOM
-                                                state: {
-                                                    routes: [
-                                                        {
-                                                            name: childItem.child, // NAVIGATORS.HOME_STACK
-                                                            state: {
-                                                                routes: [{ name: ROUTES.CHALLENGES }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        }),
+                        CommonActions.reset(getDrawerChallengesResetState()),
                     );
                     return;
                 }

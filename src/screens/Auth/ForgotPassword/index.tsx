@@ -4,6 +4,7 @@ import Button from "../../../components/Button"
 import Input from "../../../components/Input"
 import Text from "../../../components/Text"
 import styles from "../styles"
+import { getPhoneMaxLength, withDialingCodePlus } from "../../../utils/helper"
 import useForgotPasswordController from "./useForgotPasswordController"
 
 const ForgotPassword = () => {
@@ -57,7 +58,19 @@ const ForgotPassword = () => {
                                     value={data?.phone}
                                     error={touched?.phone ? errors?.phone : ""}
                                     onChangeText={handleChange("phone")}
-                                    onChangeCountry={e => setFieldValue("calling_code", e?.callingCode?.[0])}
+                                    country={data?.country_code}
+                                    maxLength={getPhoneMaxLength(data?.country_code || 'AE')}
+                                    onChangeCountry={e => {
+                                        setFieldValue("country_code", e?.cca2)
+                                        setFieldValue("phone", "")
+                                        const raw = e?.callingCode?.[0]
+                                        setFieldValue(
+                                            "dialing_code",
+                                            raw != null && raw !== ""
+                                                ? withDialingCodePlus(String(raw))
+                                                : "",
+                                        )
+                                    }}
                                 />
                             )
                         }

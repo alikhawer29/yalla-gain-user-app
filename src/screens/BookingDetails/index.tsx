@@ -11,6 +11,7 @@ import Text from "../../components/Text";
 import TipModal from "../../components/TipModal";
 import Wrapper from "../../components/Wrapper";
 import colors from "../../utils/colors";
+import { formatPhoneDisplay } from "../../utils/helper";
 import styles from "./styles";
 import useBookingDetailsController from "./useBookingDetailsController";
 
@@ -140,7 +141,9 @@ const BookingDetails = () => {
                 </View>
                 <View style={styles.column}>
                     <Text size={14} weight="bold" color={colors.white}>User Contact No:</Text>
-                    <Text size={14} color={colors.icon_gray}>{booking?.dialing_code}{booking?.phone}</Text>
+                    <Text size={14} color={colors.icon_gray}>
+                        {formatPhoneDisplay(booking?.dialing_code, booking?.phone, booking?.country_code)}
+                    </Text>
                 </View>
             </Row>
 

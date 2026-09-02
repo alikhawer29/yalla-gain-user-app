@@ -19,11 +19,15 @@ typedef void (^RCTBubblingEventBlock)(NSDictionary *body);
 #import <react-native-app-auth/RNAppAuthAuthorizationFlowManager.h>
 #import <react-native-app-auth/RNAppAuthAuthorizationFlowManagerDelegate.h>
 
-// Unity Framework - only include if available
+// Unity Framework is device-only. Importing it on simulator makes Swift autolink
+// the iphoneos dylib and fails with: building for iOS-simulator, but linking in dylib built for iOS.
+#import <TargetConditionals.h>
+#if !TARGET_OS_SIMULATOR
 #if __has_include(<UnityFramework/UnityFramework.h>)
 #import <UnityFramework/UnityFramework.h>
 #elif __has_include("UnityFramework.h")
 #import "UnityFramework.h"
+#endif
 #endif
 
 // Unity setExecuteHeader - required before runEmbedded (see Unity docs)

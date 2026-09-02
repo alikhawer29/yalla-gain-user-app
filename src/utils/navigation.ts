@@ -77,6 +77,52 @@ export const navigateToBookingDetails = (bookingId: number) => {
   }
 };
 
+type NestedResetState = {
+  index?: number;
+  routes: Array<{ name: string; state?: NestedResetState }>;
+};
+
+/**
+ * Drawer → Challenges must land on the list without wiping Home.
+ * If Challenges is the only HomeStack route, Android hardware back
+ * finishes the activity (app closes; repeating that can crash).
+ */
+export const getDrawerChallengesResetState = (): NestedResetState => ({
+  index: 0,
+  routes: [
+    {
+      name: NAVIGATORS.DRAWER,
+      state: {
+        index: 0,
+        routes: [
+          {
+            name: NAVIGATORS.BOTTOM,
+            state: {
+              index: 0,
+              routes: [
+                {
+                  name: NAVIGATORS.HOME_STACK,
+                  state: {
+                    index: 1,
+                    routes: [
+                      { name: ROUTES.HOME },
+                      { name: ROUTES.CHALLENGES },
+                    ],
+                  },
+                },
+                { name: NAVIGATORS.NEWSFEED_STACK },
+                { name: NAVIGATORS.PROGRESS_TRACKING_STACK },
+                { name: NAVIGATORS.CHAT_STACK },
+                { name: NAVIGATORS.MY_PROFILE_STACK },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+});
+
 /** Navigate to Challenges stack from drawer level */
 export const navigateToChallenges = () => {
   if (navigationRef.isReady()) {
