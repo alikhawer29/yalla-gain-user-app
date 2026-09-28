@@ -140,12 +140,14 @@ dependencies {
         implementation jscFlavor
     }
 
-    // Force a single ExoPlayer version to resolve class cast conflicts
-    implementation("androidx.media3:media3-exoplayer:1.2.1")
-    implementation("androidx.media3:media3-exoplayer-dash:1.2.1")
-    implementation("androidx.media3:media3-exoplayer-hls:1.2.1")
-    implementation("androidx.media3:media3-ui:1.2.1")
-    implementation("androidx.media3:media3-common:1.2.1")
+    // Match react-native-video (RNVideo_media3Version). 1.2.1 makes
+    // LoadControl.getBackBufferDurationUs() abstract with no PlayerId argument,
+    // which RNVLoadControl does not implement.
+    implementation("androidx.media3:media3-exoplayer:1.8.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.8.0")
+    implementation("androidx.media3:media3-exoplayer-hls:1.8.0")
+    implementation("androidx.media3:media3-ui:1.8.0")
+    implementation("androidx.media3:media3-common:1.8.0")
 
 }
 
@@ -153,12 +155,16 @@ dependencies {
 // downgrade Compose below what the Zoom SDK expects.
 configurations.all {
     resolutionStrategy {
-        // ExoPlayer
-        force "androidx.media3:media3-exoplayer:1.2.1"
-        force "androidx.media3:media3-exoplayer-dash:1.2.1"
-        force "androidx.media3:media3-exoplayer-hls:1.2.1"
-        force "androidx.media3:media3-ui:1.2.1"
-        force "androidx.media3:media3-common:1.2.1"
+        // ExoPlayer — keep every Media3 artifact on the version react-native-video compiles against
+        force "androidx.media3:media3-exoplayer:1.8.0"
+        force "androidx.media3:media3-exoplayer-dash:1.8.0"
+        force "androidx.media3:media3-exoplayer-hls:1.8.0"
+        force "androidx.media3:media3-exoplayer-smoothstreaming:1.8.0"
+        force "androidx.media3:media3-ui:1.8.0"
+        force "androidx.media3:media3-common:1.8.0"
+        force "androidx.media3:media3-session:1.8.0"
+        force "androidx.media3:media3-datasource:1.8.0"
+        force "androidx.media3:media3-datasource-okhttp:1.8.0"
         force "com.google.android.exoplayer:exoplayer:2.19.1"
     }
 }
