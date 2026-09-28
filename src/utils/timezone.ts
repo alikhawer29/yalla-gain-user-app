@@ -14,6 +14,131 @@ export function getDeviceTimezone(): string {
   return 'UTC';
 }
 
+/**
+ * Prefer the signed-in user's profile timezone; fall back to the device IANA zone.
+ * @param profileTimezone Optional `user.timezone` from auth/profile.
+ */
+export function resolveUserTimezone(
+  profileTimezone?: string | null,
+): string {
+  if (typeof profileTimezone === 'string' && profileTimezone.trim()) {
+    return profileTimezone.trim();
+  }
+  return getDeviceTimezone();
+}
+
+/**
+ * Calendar date `YYYY-MM-DD` for `date` in the given IANA timezone.
+ * Uses `en-CA` so the formatted string is always ISO-like `YYYY-MM-DD`.
+ */
+export function formatYmdInTimezone(
+  date: Date = new Date(),
+  timeZone?: string | null,
+): string {
+  const tz = resolveUserTimezone(timeZone);
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  } catch {
+    return formatLocalDateYmd(date);
+  }
+}
+
+/**
+ * UTC instant of local midnight for `ymd` (`YYYY-MM-DD`) in `timeZone`.
+ * Corrects once for DST / offset so HealthKit / Health Connect day windows match the user TZ.
+ */
+export function startOfDayUtcMsForYmd(
+  ymd: string,
+  timeZone?: string | null,
+): number {
+  const tz = resolveUserTimezone(timeZone);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
+  if (!match) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const desiredAsUtc = Date.UTC(year, month - 1, day, 0, 0, 0, 0);
+
+  let formatter: Intl.DateTimeFormat;
+  try {
+    formatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    });
+  } catch {
+    return desiredAsUtc;
+  }
+
+  const partsMs = (ms: number): number => {
+    const parts = formatter.formatToParts(new Date(ms));
+    const get = (type: Intl.DateTimeFormatPartTypes): number =>
+      Number(parts.find(p => p.type === type)?.value ?? '0');
+    return Date.UTC(
+      get('year'),
+      get('month') - 1,
+      get('day'),
+      get('hour'),
+      get('minute'),
+      get('second'),
+    );
+  };
+
+  // utcGuess − (localAtGuess − desiredLocalMidnight) ≈ UTC of local midnight
+  let startMs = desiredAsUtc - (partsMs(desiredAsUtc) - desiredAsUtc);
+  startMs = startMs - (partsMs(startMs) - desiredAsUtc);
+  return startMs;
+}
+
+/**
+ * ISO range from midnight today through `now`, in the user's timezone.
+ */
+export function getDayRangeIsoInTimezone(
+  timeZone?: string | null,
+  now: Date = new Date(),
+): { startIso: string; endIso: string } {
+  const tz = resolveUserTimezone(timeZone);
+  const ymd = formatYmdInTimezone(now, tz);
+  const startMs = startOfDayUtcMsForYmd(ymd, tz);
+  return {
+    startIso: new Date(startMs).toISOString(),
+    endIso: now.toISOString(),
+  };
+}
+
+/**
+ * Milliseconds until the next local midnight in `timeZone` (clamped ≥ 1s).
+ * Used to force a day-end health refresh without waiting for the next poll.
+ */
+export function msUntilNextMidnight(
+  timeZone?: string | null,
+  now: Date = new Date(),
+): number {
+  const tz = resolveUserTimezone(timeZone);
+  const todayYmd = formatYmdInTimezone(now, tz);
+  const tomorrowStart =
+    startOfDayUtcMsForYmd(todayYmd, tz) + 24 * 60 * 60 * 1000;
+  // Recompute tomorrow from next calendar day in case of DST 23h/25h days
+  const approxTomorrow = new Date(tomorrowStart + 12 * 60 * 60 * 1000);
+  const nextYmd = formatYmdInTimezone(approxTomorrow, tz);
+  const nextMidnight = startOfDayUtcMsForYmd(nextYmd, tz);
+  return Math.max(1000, nextMidnight - now.getTime());
+}
+
 /** Append or merge `timezone` onto a JSON body or FormData payload. */
 export function withTimezone<T extends Record<string, unknown> | FormData>(
   body: T,

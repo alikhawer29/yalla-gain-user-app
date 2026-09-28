@@ -13,6 +13,7 @@ import colors from "../../../utils/colors";
 import { heightPixel, widthPixel } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
+import { mergePollOptionsFromFeed } from './pollOptions';
 import CardWrapper from "../../CardWrapper";
 import Icon from "../../Icon";
 import Image from "../../Image";
@@ -178,15 +179,16 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         };
     }, [id, currentUser?.id]);
 
-    // Sync local poll options when feed data refreshes (counts only)
+    // Sync local poll options when feed data refreshes (counts only).
+    // Skip stale payloads that would drop vote totals after an optimistic vote.
     useEffect(() => {
         if (isVotingRef.current) return;
 
         const nextOptions = getPollOptionsFromProps(poll_options, poll);
-        if (nextOptions.length > 0) {
-            setLocalPollOptions(nextOptions);
-        }
-    }, [poll_options, poll, isVoting]);
+        setLocalPollOptions(prev =>
+            mergePollOptionsFromFeed(prev, nextOptions, selectedOptionId != null),
+        );
+    }, [poll_options, poll, isVoting, selectedOptionId]);
 
     // Check if this is user's own post
     const isOwnPost = currentUser?.id === user?.id;
@@ -266,10 +268,18 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         await setStoredPollVote(currentUser?.id, id, optionId);
 
         try {
-            await votePoll({
+            const response = await votePoll({
                 post_id: id,
                 option_id: optionId,
             }).unwrap();
+
+            const serverOptions = getPollOptionsFromProps(
+                response?.data?.poll_options,
+                response?.data?.poll,
+            );
+            if (serverOptions.length > 0) {
+                setLocalPollOptions(serverOptions);
+            }
         } catch (error: any) {
             console.error('Vote poll error:', error);
             setSelectedOptionId(previousSelectedOptionId);

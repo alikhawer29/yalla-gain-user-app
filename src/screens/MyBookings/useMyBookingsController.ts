@@ -28,14 +28,6 @@ const useMyBookingsController = () => {
   const navigation = useNavigation();
   const { requireAccess } = useSubscriptionAccess();
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!requireAccess('any_appointments')) {
-        navigation.goBack();
-      }
-    }, [navigation, requireAccess]),
-  );
-
   const [selectedTab, setSelectedTab] = useState<string>('doctor');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [search, setSearch] = useState('');
@@ -65,6 +57,16 @@ const useMyBookingsController = () => {
     per_page: PER_PAGE,
     page,
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!requireAccess('any_appointments')) {
+        navigation.goBack();
+        return;
+      }
+      void refetch();
+    }, [navigation, requireAccess, refetch]),
+  );
 
   const meta = data?.meta;
   const currentPage = meta?.current_page ?? 1;

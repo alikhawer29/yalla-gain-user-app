@@ -1,4 +1,7 @@
-import { buildAppointmentBookingForm } from './useAppointmentBookingController';
+import {
+  buildAppointmentBookingForm,
+  nextBookingFormOnCountryChange,
+} from './useAppointmentBookingController';
 
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: jest.fn(),
@@ -91,7 +94,7 @@ describe('buildAppointmentBookingForm', () => {
     });
   });
 
-  it('returns empty form defaults when user is missing', () => {
+  it('returns defaults when user is missing', () => {
     expect(buildAppointmentBookingForm(null)).toEqual({
       first_name: '',
       last_name: '',
@@ -99,6 +102,49 @@ describe('buildAppointmentBookingForm', () => {
       phone: '',
       dialing_code: '+971',
       country_code: 'AE',
+    });
+  });
+});
+
+describe('nextBookingFormOnCountryChange', () => {
+  const base = {
+    first_name: 'Rehan',
+    last_name: 'Khan',
+    email: 'rehan@example.com',
+    phone: '501234567',
+    dialing_code: '+971',
+    country_code: 'AE',
+  };
+
+  it('keeps the prefilled phone when PhoneInput reports the same country on mount', () => {
+    expect(
+      nextBookingFormOnCountryChange(base, {
+        callingCode: ['971'],
+        cca2: 'AE',
+      }),
+    ).toEqual(base);
+  });
+
+  it('normalizes dialing code without clearing phone for the same country', () => {
+    expect(
+      nextBookingFormOnCountryChange(
+        { ...base, dialing_code: '+0971' },
+        { callingCode: ['971'], cca2: 'AE' },
+      ),
+    ).toEqual(base);
+  });
+
+  it('clears phone only when the user picks a different country', () => {
+    expect(
+      nextBookingFormOnCountryChange(base, {
+        callingCode: ['92'],
+        cca2: 'PK',
+      }),
+    ).toEqual({
+      ...base,
+      dialing_code: '+92',
+      country_code: 'PK',
+      phone: '',
     });
   });
 });

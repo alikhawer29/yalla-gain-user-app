@@ -412,12 +412,14 @@ export const userApi = createApi({
         url: `view-doctor/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Consultants'],
     }),
     getServiceDetails: builder.query({
       query: id => ({
         url: `service-detail/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Consultants'],
     }),
     getServiceSlots: builder.query({
       query: ({ serviceId, date }: { serviceId: number; date?: string }) => ({
@@ -425,6 +427,7 @@ export const userApi = createApi({
         method: 'GET',
         params: date ? { date } : undefined,
       }),
+      providesTags: ['Consultants'],
     }),
     bookAppointment: builder.mutation({
       query: body => ({
@@ -432,7 +435,7 @@ export const userApi = createApi({
         method: 'POST',
         body: withTimezone(body),
       }),
-      invalidatesTags: ['Bookings', 'Wallet'],
+      invalidatesTags: ['Bookings', 'Wallet', 'Consultants'],
     }),
     getMyBookings: builder.query({
       query: params => ({
@@ -447,11 +450,8 @@ export const userApi = createApi({
         url: `my-booking/${id}`,
         method: 'GET',
       }),
-      // Disable caching by not providing tags
-      // providesTags: (result, error, id) => [{ type: 'Bookings', id }],
-
-      // Alternative: Set cache time to 0
-      keepUnusedDataFor: 0, // Immediately remove from cache when unused
+      providesTags: ['Bookings'],
+      keepUnusedDataFor: 0,
     }),
     joinZoomSession: builder.mutation({
       query: (id: number) => ({

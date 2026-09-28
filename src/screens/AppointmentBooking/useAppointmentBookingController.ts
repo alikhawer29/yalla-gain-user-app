@@ -66,6 +66,33 @@ export const buildAppointmentBookingForm = (
   };
 };
 
+/** PhoneInput calls onChangeCountry on mount; only clear the number when country really changes. */
+export const nextBookingFormOnCountryChange = (
+  prev: FormData,
+  country: { callingCode?: string[]; cca2?: string },
+): FormData | null => {
+  const callingCode = country?.callingCode?.[0];
+  const cca2 = country?.cca2;
+  if (!callingCode || !cca2) {
+    return null;
+  }
+
+  const dialing_code = `+${callingCode}`;
+
+  if (prev.country_code === cca2) {
+    return prev.dialing_code === dialing_code
+      ? prev
+      : { ...prev, dialing_code };
+  }
+
+  return {
+    ...prev,
+    dialing_code,
+    country_code: cca2,
+    phone: '',
+  };
+};
+
 interface FieldErrors {
   first_name?: string;
   last_name?: string;
@@ -181,10 +208,37 @@ const useAppointmentBookingController = () => {
   );
 
   useEffect(() => {
-    if (!user || prefillFromUserOnce.current) return;
-    prefillFromUserOnce.current = true;
-    setFormData(buildAppointmentBookingForm(user));
-    setPhoneInputKey(key => key + 1);
+    if (!user) return;
+
+    const next = buildAppointmentBookingForm(user);
+
+    if (!prefillFromUserOnce.current) {
+      prefillFromUserOnce.current = true;
+      setFormData(next);
+      setPhoneInputKey(key => key + 1);
+      return;
+    }
+
+    if (!next.phone) {
+      return;
+    }
+
+    let shouldRemountPhone = false;
+    setFormData(prev => {
+      if (prev.phone) {
+        return prev;
+      }
+      shouldRemountPhone = true;
+      return {
+        ...prev,
+        phone: next.phone,
+        dialing_code: next.dialing_code,
+        country_code: next.country_code,
+      };
+    });
+    if (shouldRemountPhone) {
+      setPhoneInputKey(key => key + 1);
+    }
   }, [user]);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -260,17 +314,14 @@ const useAppointmentBookingController = () => {
   };
 
   const onCountryChange = (country: any) => {
-    const callingCode = country?.callingCode?.[0];
-    if (!callingCode) {
-      console.error('Invalid country selected: missing calling code', country);
-      return;
-    }
-    setFormData(prev => ({
-      ...prev,
-      dialing_code: `+${callingCode}`,
-      country_code: country.cca2,
-      phone: '',
-    }));
+    setFormData(prev => {
+      const next = nextBookingFormOnCountryChange(prev, country);
+      if (!next) {
+        console.error('Invalid country selected: missing calling code', country);
+        return prev;
+      }
+      return next;
+    });
     setFieldErrors(prev => ({ ...prev, phone: undefined }));
   };
 

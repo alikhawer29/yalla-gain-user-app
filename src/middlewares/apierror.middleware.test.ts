@@ -1,5 +1,9 @@
 import Toast from 'react-native-toast-message';
-import errorLogger from './apierror.middleware';
+import errorLogger, {
+  GENERIC_ERROR_MESSAGE,
+  NO_INTERNET_MESSAGE,
+  isSilentRejection,
+} from './apierror.middleware';
 
 jest.mock('@reduxjs/toolkit', () => ({
   isRejectedWithValue: () => true,
@@ -11,9 +15,6 @@ jest.mock('react-native-toast-message', () => ({
     show: jest.fn(),
   },
 }));
-
-const NO_INTERNET_MESSAGE =
-  'No internet connection. Please check your network and try again.';
 
 const dispatchError = (action: Record<string, unknown>) => {
   const next = jest.fn();
@@ -96,5 +97,53 @@ describe('apierror middleware', () => {
     });
 
     expect(Toast.show).not.toHaveBeenCalled();
+  });
+
+  it('does not toast bare Rejected noise from cancelled navigation queries', () => {
+    dispatchError({
+      payload: undefined,
+      error: { message: 'Rejected' },
+    });
+
+    expect(Toast.show).not.toHaveBeenCalled();
+    expect(
+      isSilentRejection({
+        payload: undefined,
+        error: { message: 'Rejected' },
+        meta: {},
+      }),
+    ).toBe(true);
+  });
+
+  it('maps Rejected with a fetch status to a friendly offline message', () => {
+    dispatchError({
+      payload: {
+        status: 'FETCH_ERROR',
+        error: 'Rejected',
+      },
+      error: { message: 'Rejected' },
+    });
+
+    expect(Toast.show).toHaveBeenCalledWith({
+      text1: 'Error!',
+      text2: NO_INTERNET_MESSAGE,
+      type: 'error',
+    });
+  });
+
+  it('never surfaces the literal Rejected string for HTTP errors without a body', () => {
+    dispatchError({
+      payload: {
+        status: 500,
+        data: {},
+      },
+      error: { message: 'Rejected' },
+    });
+
+    expect(Toast.show).toHaveBeenCalledWith({
+      text1: 'Error!',
+      text2: GENERIC_ERROR_MESSAGE,
+      type: 'error',
+    });
   });
 });

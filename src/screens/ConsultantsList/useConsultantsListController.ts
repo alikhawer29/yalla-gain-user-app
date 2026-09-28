@@ -19,14 +19,6 @@ const useConsultantsListController = () => {
   const appointmentFeature =
     type === 'doctor' ? 'doctor_appointments' : 'trainer_appointments';
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!requireAccess(appointmentFeature)) {
-        navigation.goBack();
-      }
-    }, [appointmentFeature, navigation, requireAccess]),
-  );
-
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [accumulatedData, setAccumulatedData] = useState<any[]>([]);
@@ -57,6 +49,27 @@ const useConsultantsListController = () => {
     isFetching: isTrainersFetching,
     refetch: refetchTrainers,
   } = useGetAllTrainersQuery(queryParams, { skip: type !== 'trainer' });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!requireAccess(appointmentFeature)) {
+        navigation.goBack();
+        return;
+      }
+      if (type === 'doctor') {
+        void refetchDoctors();
+      } else {
+        void refetchTrainers();
+      }
+    }, [
+      appointmentFeature,
+      navigation,
+      requireAccess,
+      type,
+      refetchDoctors,
+      refetchTrainers,
+    ]),
+  );
 
   const apiData = type === 'doctor' ? doctorsData : trainersData;
   const isFetching = type === 'doctor' ? isDoctorsFetching : isTrainersFetching;

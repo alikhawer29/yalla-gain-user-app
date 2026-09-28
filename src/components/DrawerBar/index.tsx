@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks"
 import { useSubscriptionAccess } from "../../hooks/useSubscriptionAccess"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import { useGetWalletCoinsQuery } from "../../redux/Apis/User"
-import { setWatchHealthLinked } from "../../services/health/healthProvider"
+import { setWatchHealthLinked, getWatchStackEntryRoute } from "../../services/health/healthProvider"
 import { deleteUnityGameUserData } from "../../utils/unityGameData"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
@@ -125,7 +125,10 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
     const dispatch = useAppDispatch()
     const { showYesNoModal } = useModal()
     const { guardAccess } = useSubscriptionAccess()
-    const { data: walletData } = useGetWalletCoinsQuery({}, { refetchOnMountOrArgChange: true })
+    const { data: walletData } = useGetWalletCoinsQuery({}, {
+        // Avoid refetching every drawer open — offline nav was toasting Error/Rejected.
+        refetchOnMountOrArgChange: false,
+    })
 
     const onPressLogout = () => {
         showYesNoModal({
@@ -263,6 +266,21 @@ const DrawerBar = (props: DrawerContentComponentProps) => {
                         params: { screen: childItem.child },
                     })
                 );
+            } else if (childItem?.route === NAVIGATORS.WATCH_STACK) {
+                void getWatchStackEntryRoute().then((entry) => {
+                    if (!navigationRef.isReady()) return;
+                    navigationRef.dispatch(
+                        CommonActions.navigate({
+                            name: childItem.route,
+                            params: {
+                                screen:
+                                    entry === 'WatchConnected'
+                                        ? ROUTES.WATCH_CONNECTED
+                                        : ROUTES.WATCH_CONNECT,
+                            },
+                        }),
+                    );
+                });
             } else {
                 navigationRef.dispatch(
                     CommonActions.navigate({ name: childItem.route })

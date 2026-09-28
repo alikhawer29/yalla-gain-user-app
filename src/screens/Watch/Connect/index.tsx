@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import Wrapper from '../../../components/Wrapper';
 import Text from '../../../components/Text';
 import Icon from '../../../components/Icon';
@@ -7,7 +8,7 @@ import Button from '../../../components/Button';
 import images from '../../../assets/images';
 import colors from '../../../utils/colors';
 import { heightPixel, widthPixel } from '../../../utils/helper';
-import { goBack, navigate } from '../../../utils/navigation';
+import { goBack } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
 import {
   getHealthPermissionState,
@@ -17,6 +18,7 @@ import {
 } from '../../../services/health/healthProvider';
 
 const WatchConnect = () => {
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
 
@@ -44,7 +46,13 @@ const WatchConnect = () => {
       }
 
       await setWatchHealthLinked(true);
-      navigate(ROUTES.WATCH_CONNECTED as any);
+      // Replace Connect so back / revisit does not return to the CTA.
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: ROUTES.WATCH_CONNECTED }],
+        }),
+      );
     } catch (e: any) {
       setErrorText(e?.message || 'Something went wrong. Please try again.');
     } finally {

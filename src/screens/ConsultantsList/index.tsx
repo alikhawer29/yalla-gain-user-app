@@ -1,7 +1,8 @@
-import { FlatList, RefreshControl, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
 import ConsultantCard from "../../components/Cards/ConsultantCard";
+import Empty from "../../components/Empty";
 import Input from "../../components/Input";
 import Row from "../../components/Row";
 import Seperator from "../../components/Seperator";
@@ -17,6 +18,7 @@ const ConsultantsList = () => {
     } = useConsultantsListController();
 
     const placeholder = type === "doctor" ? "Search Doctors" : "Search Trainer";
+    const emptyMessage = type === "doctor" ? "No doctors found" : "No trainers found";
 
     return (
         <Wrapper>
@@ -34,7 +36,7 @@ const ConsultantsList = () => {
             <FlatList
                 data={data}
                 numColumns={2}
-                columnWrapperStyle={{ justifyContent: "space-between" }}
+                columnWrapperStyle={data.length > 0 ? { justifyContent: "space-between" } : undefined}
                 renderItem={({ item }) => (
                     <ConsultantCard
                         id={item.id}
@@ -57,6 +59,15 @@ const ConsultantsList = () => {
                         tintColor={colors.primary}
                     />
                 }
+                ListEmptyComponent={
+                    isLoading ? (
+                        <View style={{ paddingVertical: heightPixel(40), alignItems: "center" }}>
+                            <ActivityIndicator color={colors.primary} />
+                        </View>
+                    ) : (
+                        <Empty message={emptyMessage} />
+                    )
+                }
                 ListFooterComponent={
                     hasMore && data.length > 0 ? (
                         <View style={{ paddingVertical: heightPixel(20), alignItems: "center" }}>
@@ -76,4 +87,3 @@ const ConsultantsList = () => {
 };
 
 export default ConsultantsList;
-

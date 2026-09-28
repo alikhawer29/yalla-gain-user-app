@@ -1,7 +1,6 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
-import messaging from '@react-native-firebase/messaging';
 import { useEffect, useMemo } from 'react';
 import { AppState, LogBox, StatusBar, StyleSheet } from 'react-native';
 import BootSplash from 'react-native-bootsplash';
@@ -12,6 +11,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
 import ForceLogoutListener from './src/components/ForceLogoutListener';
+import ConsultationRealtimeBootstrap from './src/components/ConsultationRealtimeBootstrap';
 import NetworkLoggerFAB from './src/components/NetworkLoggerFAB';
 import { ModalProvider } from './src/contexts/ModalContext';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
@@ -19,14 +19,13 @@ import { userApi } from './src/redux/Apis/User';
 import { persistor, store } from './src/redux/Store';
 import colors from './src/utils/colors';
 import { ensureFirebaseMessagingReady } from './src/utils/devicePush';
-import {
-  flushPendingForceLogoutModal,
-  handleNotificationOpenForceLogout,
-} from './src/utils/forceLogout';
-import { setupFcmForegroundHandlers } from './src/utils/fcmForegroundHandlers';
+import { flushPendingForceLogoutModal } from './src/utils/forceLogout';
 import { ensureForegroundPushChannels } from './src/utils/foregroundFcmNotifications';
+import { flushPendingNotificationDeepLink } from './src/utils/notificationDeepLink';
 import { navigationRef } from './src/utils/navigation';
+import { setupPushNotificationHandlers } from './src/utils/pushNotificationHandlers';
 import { STRIPE_URL_SCHEME } from './src/utils/stripe';
+import { startConsultationRealtimeSync } from './src/services/consultationRealtime';
 
 const STRIPE_PUBLISHABLE_KEY =
   'pk_test_51OHpI2EN9IooQZRaU3MAJ8mKTWdFhvI7vequEoOlA9qlEOP1gdLKSB01ec6GeJkfAjHgQjipR85UligbuLBs5UaI00aoghaww7';
@@ -55,6 +54,7 @@ function App() {
     const sub = AppState.addEventListener('change', next => {
       if (next === 'active') {
         flushPendingForceLogoutModal();
+        flushPendingNotificationDeepLink();
         store.dispatch(userApi.util.invalidateTags(['Notifications']));
       }
     });
@@ -62,38 +62,20 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
-      void handleNotificationOpenForceLogout(remoteMessage);
-    });
-
-    void messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-          void handleNotificationOpenForceLogout(remoteMessage);
-        }
-      });
-
-    return () => {
-      unsubOpened();
-    };
-  }, []);
-
-  useEffect(() => {
-    let unsubFcm: (() => void) | undefined;
+    let unsubPush: (() => void) | undefined;
 
     (async () => {
       try {
         await ensureFirebaseMessagingReady();
         await ensureForegroundPushChannels();
-        unsubFcm = setupFcmForegroundHandlers();
+        unsubPush = setupPushNotificationHandlers();
       } catch {
         // Push setup is best-effort; login/OTP still registers token via getDevicePushPayload.
       }
     })();
 
     return () => {
-      unsubFcm?.();
+      unsubPush?.();
     };
   }, []);
 
@@ -123,7 +105,14 @@ function App() {
                 <MenuProvider>
                   <ModalProvider>
                     <ForceLogoutListener />
-                    <NavigationContainer ref={navigationRef} theme={navTheme}>
+                    <ConsultationRealtimeBootstrap />
+                    <NavigationContainer
+                      ref={navigationRef}
+                      theme={navTheme}
+                      onReady={() => {
+                        flushPendingNotificationDeepLink();
+                      }}
+                    >
                       <AppStackNavigator />
                       {__DEV__ && <NetworkLoggerFAB />}
                       <Toast />

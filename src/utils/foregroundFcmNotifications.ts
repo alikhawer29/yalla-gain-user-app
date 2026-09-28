@@ -69,7 +69,10 @@ export async function displayForegroundFcmNotification(
     android: {
       channelId: FOREGROUND_FCM_CHANNEL_ID,
       smallIcon: 'ic_notification',
-      pressAction: { id: 'default' },
+      pressAction: {
+        id: 'default',
+        launchActivity: 'default',
+      },
       sound: 'default',
       importance: AndroidImportance.HIGH,
       visibility: AndroidVisibility.PUBLIC,

@@ -4,12 +4,16 @@ import AppleHealthKit, {
   HealthValue,
 } from 'react-native-health';
 import {
+  aggregateRecord,
   getSdkStatus,
   initialize,
-  readRecords,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
-import type { Permission } from 'react-native-health-connect';
+import {
+  formatYmdInTimezone,
+  getDayRangeIsoInTimezone,
+  resolveUserTimezone,
+} from '../../utils/timezone';
 
 /** Result of a single native provider read attempt. */
 export type NativeHealthReadResult =
@@ -17,34 +21,30 @@ export type NativeHealthReadResult =
   | { ok: false };
 
 /**
- * Builds local ISO range strings from midnight today through now.
+ * Builds ISO range strings from midnight today through now in the user timezone.
  * @param now Current instant (injectable for tests).
+ * @param timeZone IANA timezone (profile or device); defaults to device.
  */
-export function getLocalDayRangeIso(now: Date = new Date()): {
+export function getLocalDayRangeIso(
+  now: Date = new Date(),
+  timeZone?: string | null,
+): {
   startIso: string;
   endIso: string;
 } {
-  const start = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    0,
-    0,
-    0,
-    0,
-  );
-  return { startIso: start.toISOString(), endIso: now.toISOString() };
+  return getDayRangeIsoInTimezone(resolveUserTimezone(timeZone), now);
 }
 
 /**
- * Formats a `Date` as `YYYY-MM-DD` in local calendar fields.
+ * Formats a `Date` as `YYYY-MM-DD` in the user timezone (falls back to device).
  * @param d Date to format.
+ * @param timeZone IANA timezone (profile or device).
  */
-export function formatLocalYyyyMmDd(d: Date = new Date()): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+export function formatLocalYyyyMmDd(
+  d: Date = new Date(),
+  timeZone?: string | null,
+): string {
+  return formatYmdInTimezone(d, resolveUserTimezone(timeZone));
 }
 
 function getIosPermissions(): {
@@ -66,7 +66,7 @@ function getIosPermissions(): {
     return ok
       ? { Permissions: { StepCount, ActiveEnergyBurned }, available: true }
       : { Permissions: null, available: false };
-  } catch (e) {
+  } catch {
     return { Permissions: null, available: false };
   }
 }
@@ -99,22 +99,13 @@ function ensureIosHealthKit(): Promise<boolean> {
   return iosInitPromise;
 }
 
-function sumHealthValues(samples: HealthValue[] | undefined): number {
-  if (!samples?.length) {
-    return 0;
-  }
-  return samples.reduce((acc, s) => acc + (Number(s?.value) || 0), 0);
-}
-
-function promisifyDailySteps(
-  startIso: string,
-  endIso: string,
-): Promise<number> {
+/** Same aggregate API the Watch screen / Apple Health use (not raw daily samples). */
+function promisifyStepCount(startIso: string, endIso: string): Promise<number> {
   return new Promise(resolve => {
-    AppleHealthKit.getDailyStepCountSamples(
+    AppleHealthKit.getStepCount(
       { startDate: startIso, endDate: endIso },
-      (_err: string, results: HealthValue[]) => {
-        resolve(sumHealthValues(results));
+      (_err: string, results: { value?: number }) => {
+        resolve(typeof results?.value === 'number' ? results.value : 0);
       },
     );
   });
@@ -128,7 +119,12 @@ function promisifyActiveEnergy(
     AppleHealthKit.getActiveEnergyBurned(
       { startDate: startIso, endDate: endIso },
       (_err: string, results: HealthValue[]) => {
-        resolve(sumHealthValues(results));
+        if (!results?.length) {
+          resolve(0);
+          return;
+        }
+        const sum = results.reduce((acc, s) => acc + (Number(s?.value) || 0), 0);
+        resolve(sum);
       },
     );
   });
@@ -136,12 +132,10 @@ function promisifyActiveEnergy(
 
 let androidInitDone = false;
 
-const androidReadPermissions: Permission[] = [
-  { accessType: 'read', recordType: 'Steps' },
-  { accessType: 'read', recordType: 'ActiveCaloriesBurned' },
-];
-
-async function ensureAndroidHealthConnect(): Promise<boolean> {
+/**
+ * Health Connect initialize only — never requestPermission (UI-owned).
+ */
+export async function ensureAndroidHealthConnectReady(): Promise<boolean> {
   try {
     const status = await getSdkStatus();
     if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
@@ -154,78 +148,81 @@ async function ensureAndroidHealthConnect(): Promise<boolean> {
         return false;
       }
     }
-    /**
-     * IMPORTANT (Android):
-     * `requestPermission(...)` uses an ActivityResultLauncher and will crash the app if invoked
-     * when the launcher isn't registered (e.g. during background/IO flows or very early startup).
-     *
-     * Permission prompting must be triggered from a UI-owned flow (screen/button) where the
-     * activity is ready; this low-level "ensure" helper should never pop UI.
-     */
     return true;
   } catch {
     return false;
   }
 }
 
-async function readAllAndroidSteps(
+/**
+ * Aggregate steps for a time range — matches Health Connect app totals (deduped).
+ */
+export async function aggregateAndroidSteps(
   startIso: string,
   endIso: string,
 ): Promise<number> {
-  const timeRangeFilter = {
-    operator: 'between' as const,
-    startTime: startIso,
-    endTime: endIso,
-  };
-  let pageToken: string | undefined;
-  let total = 0;
-  do {
-    const page = await readRecords('Steps', {
-      timeRangeFilter,
-      pageToken,
-    });
-    for (const r of page.records) {
-      total += Number(r.count) || 0;
-    }
-    pageToken = page.pageToken;
-  } while (pageToken);
-  return total;
-}
-
-async function readAllAndroidActiveKcal(
-  startIso: string,
-  endIso: string,
-): Promise<number> {
-  const timeRangeFilter = {
-    operator: 'between' as const,
-    startTime: startIso,
-    endTime: endIso,
-  };
-  let pageToken: string | undefined;
-  let total = 0;
-  do {
-    const page = await readRecords('ActiveCaloriesBurned', {
-      timeRangeFilter,
-      pageToken,
-    });
-    for (const r of page.records) {
-      const energy = r.energy as { inKilocalories?: number } | undefined;
-      total += Number(energy?.inKilocalories) || 0;
-    }
-    pageToken = page.pageToken;
-  } while (pageToken);
-  return Math.round(total * 10) / 10;
+  const result = await aggregateRecord({
+    recordType: 'Steps',
+    timeRangeFilter: {
+      operator: 'between',
+      startTime: startIso,
+      endTime: endIso,
+    },
+  });
+  const total = result?.COUNT_TOTAL;
+  return typeof total === 'number' && Number.isFinite(total) ? total : 0;
 }
 
 /**
- * Reads today's steps and active energy from HealthKit (iOS) or Health Connect (Android).
- * @returns `{ ok: true, ... }` when the query ran without throwing; `{ ok: false }` on failure.
+ * Aggregate active kcal, falling back to total calories (Samsung / some OEMs).
  */
-export async function readTodayHealthFromNative(
-  now: Date = new Date(),
-): Promise<NativeHealthReadResult> {
-  const { startIso, endIso } = getLocalDayRangeIso(now);
+export async function aggregateAndroidActiveCalories(
+  startIso: string,
+  endIso: string,
+): Promise<number> {
+  const timeRangeFilter = {
+    operator: 'between' as const,
+    startTime: startIso,
+    endTime: endIso,
+  };
 
+  try {
+    const active = await aggregateRecord({
+      recordType: 'ActiveCaloriesBurned',
+      timeRangeFilter,
+    });
+    const kcal = active?.ACTIVE_CALORIES_TOTAL?.inKilocalories;
+    if (typeof kcal === 'number' && Number.isFinite(kcal) && kcal > 0) {
+      return Math.round(kcal * 10) / 10;
+    }
+  } catch {
+    // Fall through to TotalCaloriesBurned.
+  }
+
+  try {
+    const total = await aggregateRecord({
+      recordType: 'TotalCaloriesBurned',
+      timeRangeFilter,
+    });
+    const kcal = total?.ENERGY_TOTAL?.inKilocalories;
+    if (typeof kcal === 'number' && Number.isFinite(kcal)) {
+      return Math.round(kcal * 10) / 10;
+    }
+  } catch {
+    // No calorie permission / data.
+  }
+
+  return 0;
+}
+
+/**
+ * Shared day-range steps + calories used by Home and Watch Connected.
+ * Keeps both screens aligned with each other and with Health Connect / HealthKit aggregates.
+ */
+export async function readStepsAndCaloriesInRange(
+  startIso: string,
+  endIso: string,
+): Promise<NativeHealthReadResult> {
   try {
     if (Platform.OS === 'ios') {
       const ready = await ensureIosHealthKit();
@@ -233,7 +230,7 @@ export async function readTodayHealthFromNative(
         return { ok: false };
       }
       const [steps, activeCalories] = await Promise.all([
-        promisifyDailySteps(startIso, endIso),
+        promisifyStepCount(startIso, endIso),
         promisifyActiveEnergy(startIso, endIso),
       ]);
       return {
@@ -244,19 +241,36 @@ export async function readTodayHealthFromNative(
     }
 
     if (Platform.OS === 'android') {
-      const ready = await ensureAndroidHealthConnect();
+      const ready = await ensureAndroidHealthConnectReady();
       if (!ready) {
         return { ok: false };
       }
       const [steps, activeCalories] = await Promise.all([
-        readAllAndroidSteps(startIso, endIso),
-        readAllAndroidActiveKcal(startIso, endIso),
+        aggregateAndroidSteps(startIso, endIso),
+        aggregateAndroidActiveCalories(startIso, endIso),
       ]);
-      return { ok: true, steps, activeCalories };
+      return {
+        ok: true,
+        steps: Math.round(steps),
+        activeCalories,
+      };
     }
 
     return { ok: false };
   } catch {
     return { ok: false };
   }
+}
+
+/**
+ * Reads today's steps and active energy from HealthKit (iOS) or Health Connect (Android).
+ * Day window is midnight→now in the user's timezone.
+ * @returns `{ ok: true, ... }` when the query ran without throwing; `{ ok: false }` on failure.
+ */
+export async function readTodayHealthFromNative(
+  now: Date = new Date(),
+  timeZone?: string | null,
+): Promise<NativeHealthReadResult> {
+  const { startIso, endIso } = getLocalDayRangeIso(now, timeZone);
+  return readStepsAndCaloriesInRange(startIso, endIso);
 }

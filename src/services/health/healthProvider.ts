@@ -1,16 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeModules, Platform, TurboModuleRegistry } from 'react-native';
 import type { AppleHealthKit, HealthValue } from 'react-native-health';
+import { store } from '../../redux/Store';
+import type { RootState } from '../../redux/Store';
+import {
+  getDayRangeIsoInTimezone,
+  resolveUserTimezone,
+  startOfDayUtcMsForYmd,
+  formatYmdInTimezone,
+} from '../../utils/timezone';
+import {
+  ensureAndroidHealthConnectReady,
+  readStepsAndCaloriesInRange,
+} from './healthService';
 
 /** Prefer `Units` / `Observers` from `src/constants` — named `HealthUnit` / `HealthObserver` from the package entry can be undefined at runtime (bridge / bundling). */
 const { Activities, Observers, Permissions, Units } =
   require('react-native-health/src/constants');
 import {
   ExerciseType,
-  initialize as hcInitialize,
   requestPermission as hcRequestPermission,
   readRecords as hcReadRecords,
   getSdkStatus as hcGetSdkStatus,
+  getGrantedPermissions as hcGetGrantedPermissions,
   openHealthConnectSettings,
   SdkAvailabilityStatus,
 } from 'react-native-health-connect';
@@ -150,18 +162,33 @@ function exerciseTypeLabelAndroid(exerciseType: number | undefined): string | un
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function resolveHealthTimezone(): string {
+  try {
+    const user = (store.getState() as RootState).auth.user;
+    return resolveUserTimezone(
+      typeof user?.timezone === 'string' ? user.timezone : null,
+    );
+  } catch {
+    return resolveUserTimezone(null);
+  }
+}
+
+/** Midnight today in the user's timezone, as UTC ISO. */
 const startOfTodayIso = () => {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
+  const tz = resolveHealthTimezone();
+  const { startIso } = getDayRangeIsoInTimezone(tz);
+  return startIso;
 };
 
-/** Local midnight N calendar days before today; start of workout lookback window. */
+/** Local midnight N calendar days before today (user TZ); start of workout lookback window. */
 const startOfLocalDayIsoDaysAgo = (daysAgo: number) => {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString();
+  const tz = resolveHealthTimezone();
+  const todayYmd = formatYmdInTimezone(new Date(), tz);
+  const todayStart = startOfDayUtcMsForYmd(todayYmd, tz);
+  // Midday probe so DST length doesn't skip a calendar day
+  const probe = new Date(todayStart - daysAgo * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000);
+  const ymd = formatYmdInTimezone(probe, tz);
+  return new Date(startOfDayUtcMsForYmd(ymd, tz)).toISOString();
 };
 
 const nowIso = () => new Date().toISOString();
@@ -178,38 +205,6 @@ const HEALTH_LOG_VERBOSE =
 function healthLog(...args: unknown[]) {
   if (!HEALTH_LOG_VERBOSE) return;
   console.log('[YallaGain Health]', ...args);
-}
-
-let androidHcInitialized = false;
-
-/**
- * Health Connect requires `initialize()` before every read session. Connect screen calls it
- * once during permission grant, but `getMetrics` runs again after cold start — without this,
- * reads fail silently and the Connected dashboard shows dashes.
- */
-async function ensureAndroidHealthConnectInitialized(): Promise<boolean> {
-  if (Platform.OS !== 'android') {
-    return false;
-  }
-  try {
-    const sdkStatus = await hcGetSdkStatus();
-    if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
-      healthLog('Health Connect SDK not available', { sdkStatus });
-      return false;
-    }
-    if (!androidHcInitialized) {
-      const ok = await hcInitialize();
-      androidHcInitialized = Boolean(ok);
-      healthLog('hcInitialize', { ok });
-      if (!ok) {
-        return false;
-      }
-    }
-    return true;
-  } catch (e: unknown) {
-    healthLog('ensureAndroidHealthConnectInitialized failed', e);
-    return false;
-  }
 }
 
 export async function getHealthPermissionState(): Promise<HealthPermissionState> {
@@ -267,7 +262,7 @@ export async function requestPermissions(): Promise<boolean> {
   }
 
   if (Platform.OS === 'android') {
-    const ok = await ensureAndroidHealthConnectInitialized();
+    const ok = await ensureAndroidHealthConnectReady();
     if (!ok) return false;
 
     const granted = await hcRequestPermission([
@@ -380,21 +375,20 @@ export async function getMetrics(): Promise<WatchMetrics> {
     workoutWindowEnd: endTime,
     workoutLookbackDays: WORKOUT_LOOKBACK_DAYS,
     platform: Platform.OS,
-    note: 'Steps / active calories / HR: today only. Workout ring: latest session in workout window.',
+    note: 'Steps / active calories: shared aggregate reader (same as Home). Workout ring: lookback window.',
   });
 
   if (Platform.OS === 'ios') {
     try {
-      const [steps, caloriesKcal, heartRate, workout] = await Promise.all([
-        getTodaySteps_ios(todayStart, endTime),
-        getTodayActiveCalories_ios(todayStart, endTime),
+      const [dayTotals, heartRate, workout] = await Promise.all([
+        readStepsAndCaloriesInRange(todayStart, endTime),
         getLatestHeartRate_ios(todayStart, endTime),
         getLatestWorkout_ios(workoutWindowStart, endTime),
       ]);
 
       const merged: WatchMetrics = {
-        steps: typeof steps === 'number' ? Math.round(steps) : undefined,
-        caloriesKcal: caloriesKcal ?? undefined,
+        steps: dayTotals.ok ? dayTotals.steps : undefined,
+        caloriesKcal: dayTotals.ok ? dayTotals.activeCalories : undefined,
         heartRateBpm: heartRate?.bpm,
         heartRateAt: heartRate?.at,
         workoutDurationSec: workout?.durationSec,
@@ -413,21 +407,20 @@ export async function getMetrics(): Promise<WatchMetrics> {
   }
 
   if (Platform.OS === 'android') {
-    const ready = await ensureAndroidHealthConnectInitialized();
+    const ready = await ensureAndroidHealthConnectReady();
     if (!ready) {
       return {};
     }
 
-    const [steps, caloriesKcal, heartRate, workout] = await Promise.all([
-      getTodaySteps_android(todayStart, endTime),
-      getTodayActiveCalories_android(todayStart, endTime),
+    const [dayTotals, heartRate, workout] = await Promise.all([
+      readStepsAndCaloriesInRange(todayStart, endTime),
       getLatestHeartRate_android(todayStart, endTime),
       getLatestWorkout_android(workoutWindowStart, endTime),
     ]);
 
     const merged: WatchMetrics = {
-      steps: typeof steps === 'number' ? Math.round(steps) : undefined,
-      caloriesKcal: caloriesKcal ?? undefined,
+      steps: dayTotals.ok ? dayTotals.steps : undefined,
+      caloriesKcal: dayTotals.ok ? dayTotals.activeCalories : undefined,
       heartRateBpm: heartRate?.bpm,
       heartRateAt: heartRate?.at,
       workoutDurationSec: workout?.durationSec,
@@ -442,51 +435,6 @@ export async function getMetrics(): Promise<WatchMetrics> {
   }
 
   return {};
-}
-
-async function getTodaySteps_ios(
-  startDate: string,
-  endDate: string,
-): Promise<number | null> {
-  return await new Promise((resolve) => {
-    iosHealthKit().getStepCount(
-      { startDate, endDate },
-      (err: string, results: { value?: number }) => {
-        if (err) {
-          healthLog('getStepCount', { err, startDate, endDate });
-          return resolve(null);
-        }
-        const value = typeof results?.value === 'number' ? results.value : null;
-        healthLog('getStepCount', { value, raw: results });
-        resolve(value);
-      },
-    );
-  });
-}
-
-async function getTodayActiveCalories_ios(
-  startDate: string,
-  endDate: string,
-): Promise<number | null> {
-  return await new Promise((resolve) => {
-    iosHealthKit().getActiveEnergyBurned(
-      { startDate, endDate, unit: Units.kilocalorie },
-      (err: string, results: Array<{ value?: number }>) => {
-        if (err) {
-          healthLog('getActiveEnergyBurned', { err, startDate, endDate });
-          return resolve(null);
-        }
-        const sum = Array.isArray(results)
-          ? results.reduce((acc, r) => acc + (typeof r?.value === 'number' ? r.value : 0), 0)
-          : 0;
-        healthLog('getActiveEnergyBurned', {
-          sampleCount: Array.isArray(results) ? results.length : 0,
-          sumKcal: sum > 0 ? sum : null,
-        });
-        resolve(sum > 0 ? sum : null);
-      },
-    );
-  });
 }
 
 async function getLatestHeartRate_ios(
@@ -545,106 +493,6 @@ async function getLatestWorkout_ios(
       },
     );
   });
-}
-
-async function getTodaySteps_android(
-  startTime: string,
-  endTime: string,
-): Promise<number | null> {
-  try {
-    const res: any = await hcReadRecords('Steps', {
-      timeRangeFilter: { operator: 'between', startTime, endTime },
-    } as any);
-    const items = res?.records || res?.result || [];
-    if (!Array.isArray(items)) {
-      healthLog('Android Steps', { recordCount: 'invalid', resKeys: res ? Object.keys(res) : [] });
-      return null;
-    }
-    const sum = items.reduce((acc, r) => acc + (typeof r?.count === 'number' ? r.count : 0), 0);
-    const dataOrigins = Array.from(
-      new Set(
-        items
-          .map((r: any) => r?.metadata?.dataOrigin)
-          .filter((s: any): s is string => typeof s === 'string' && s.length > 0),
-      ),
-    );
-    healthLog('Android Steps', { recordCount: items.length, sum, dataOrigins });
-    return sum > 0 ? sum : null;
-  } catch (e: unknown) {
-    healthLog('Android Steps error', { error: e instanceof Error ? e.message : String(e) });
-    return null;
-  }
-}
-
-type KcalReadResult =
-  | { ok: true; sum: number; count: number; origins: string[] }
-  | { ok: false; error: string };
-
-/**
- * Reads kcal records from Health Connect, never throws. A `SecurityException`
- * here is expected when the caller hasn't granted the matching `READ_*`
- * permission yet — callers should treat that as "no data" and continue.
- */
-async function readKcalSumFromHc(
-  recordType: 'ActiveCaloriesBurned' | 'TotalCaloriesBurned',
-  startTime: string,
-  endTime: string,
-): Promise<KcalReadResult> {
-  try {
-    const res: any = await hcReadRecords(recordType, {
-      timeRangeFilter: { operator: 'between', startTime, endTime },
-    } as any);
-    const items = res?.records || res?.result || [];
-    if (!Array.isArray(items)) return { ok: true, sum: 0, count: 0, origins: [] };
-    const sum = items.reduce((acc, r) => {
-      const kcal = r?.energy?.inKilocalories;
-      return acc + (typeof kcal === 'number' ? kcal : 0);
-    }, 0);
-    const origins = Array.from(
-      new Set(
-        items
-          .map((r: any) => r?.metadata?.dataOrigin)
-          .filter((s: any): s is string => typeof s === 'string' && s.length > 0),
-      ),
-    );
-    return { ok: true, sum, count: items.length, origins };
-  } catch (e: any) {
-    return { ok: false, error: e?.message || String(e) };
-  }
-}
-
-/**
- * Active first, then Total fallback. Samsung Health (and several other consumer
- * apps) only writes `TotalCaloriesBurned` to Health Connect, so an `Active`-only
- * read returns 0 for most users even when they have step/calorie data.
- */
-async function getTodayActiveCalories_android(
-  startTime: string,
-  endTime: string,
-): Promise<number | null> {
-  const active = await readKcalSumFromHc('ActiveCaloriesBurned', startTime, endTime);
-  if (active.ok) {
-    healthLog('Android ActiveCaloriesBurned', {
-      recordCount: active.count,
-      sumKcal: active.sum > 0 ? active.sum : null,
-      dataOrigins: active.origins,
-    });
-    if (active.sum > 0) return active.sum;
-  } else {
-    healthLog('Android ActiveCaloriesBurned (skipped)', { error: active.error });
-  }
-
-  const total = await readKcalSumFromHc('TotalCaloriesBurned', startTime, endTime);
-  if (total.ok) {
-    healthLog('Android TotalCaloriesBurned (fallback)', {
-      recordCount: total.count,
-      sumKcal: total.sum > 0 ? total.sum : null,
-      dataOrigins: total.origins,
-    });
-    return total.sum > 0 ? total.sum : null;
-  }
-  healthLog('Android TotalCaloriesBurned (skipped)', { error: total.error });
-  return null;
 }
 
 async function getLatestHeartRate_android(
@@ -736,6 +584,31 @@ async function getLatestWorkout_android(
 
 const WATCH_HEALTH_LINKED_KEY = '@yallagain/watch_health_linked';
 
+/** True when the OS already granted the core health read permissions. */
+async function hasGrantedHealthPermissions(): Promise<boolean> {
+  if (Platform.OS === 'android') {
+    try {
+      const ready = await ensureAndroidHealthConnectReady();
+      if (!ready) return false;
+      const granted = await hcGetGrantedPermissions();
+      if (!Array.isArray(granted) || granted.length === 0) return false;
+      const hasSteps = granted.some(
+        (p: any) =>
+          p?.accessType === 'read' &&
+          (p?.recordType === 'Steps' || p?.recordType === 'steps'),
+      );
+      return hasSteps || granted.length > 0;
+    } catch {
+      return false;
+    }
+  }
+  if (Platform.OS === 'ios') {
+    // HealthKit does not expose a reliable granted-permissions list; a linked flag is authoritative.
+    return false;
+  }
+  return false;
+}
+
 /** Set once the user completes Connect (HealthKit / Health Connect). Used to skip the CTA on next visit. */
 export async function setWatchHealthLinked(linked: boolean): Promise<void> {
   if (linked) {
@@ -745,7 +618,31 @@ export async function setWatchHealthLinked(linked: boolean): Promise<void> {
   }
 }
 
+/**
+ * Whether the user has completed Smart Watch connect on this device.
+ * Auto-heals the flag when Health Connect permissions are already granted.
+ */
 export async function getWatchHealthLinked(): Promise<boolean> {
-  const v = await AsyncStorage.getItem(WATCH_HEALTH_LINKED_KEY);
-  return v === '1';
+  try {
+    const v = await AsyncStorage.getItem(WATCH_HEALTH_LINKED_KEY);
+    if (v === '1') {
+      return true;
+    }
+    const granted = await hasGrantedHealthPermissions();
+    if (granted) {
+      await setWatchHealthLinked(true);
+      return true;
+    }
+  } catch {
+    // fall through
+  }
+  return false;
+}
+
+/** Nested drawer target for the Watch stack based on linked state. */
+export async function getWatchStackEntryRoute(): Promise<
+  'WatchConnect' | 'WatchConnected'
+> {
+  const linked = await getWatchHealthLinked();
+  return linked ? 'WatchConnected' : 'WatchConnect';
 }

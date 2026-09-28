@@ -105,9 +105,15 @@ const MyBookings = () => {
                     onEndReached={onLoadMore}
                     onEndReachedThreshold={Platform.OS === "ios" ? 0.45 : 0.3}
                     ListEmptyComponent={
-                        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                            <Text size={16} color={colors.gray}>No bookings found</Text>
-                        </View>
+                        isLoading ? (
+                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingVertical: heightPixel(40) }}>
+                                <ActivityIndicator size="large" color={colors.transparent_primary} />
+                            </View>
+                        ) : (
+                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+                                <Text size={16} color={colors.gray}>No bookings found</Text>
+                            </View>
+                        )
                     }
                     ListFooterComponent={
                         isLoadingMore ? (

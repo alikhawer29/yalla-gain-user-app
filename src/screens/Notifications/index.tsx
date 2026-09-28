@@ -8,6 +8,7 @@ import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
+import { navigateFromNotificationData } from "../../utils/notificationDeepLink"
 import styles from "./styles"
 import useNotificationController from "./useNotificationController"
 
@@ -16,6 +17,19 @@ const Notifications: FC = () => {
         values: { tabs, selectedTab, notifications, isInitialLoading, isRefreshing, isLoadingMore, hasMore },
         functions: { setSelectedTab, toggleReadStatus, onReload, onLoadMore },
     } = useNotificationController()
+
+    const openNotification = (item: any) => {
+        if (!item?.is_read) {
+            void toggleReadStatus(item.uuid ?? item.id, false)
+        }
+        navigateFromNotificationData({
+            type: item?.type,
+            target_type: item?.target_type,
+            target_id: item?.target_id,
+            content_id: item?.content_id,
+            id: item?.content_id ?? item?.target_id,
+        })
+    }
 
     const renderTabItem = ({ item }: { item: any }) => {
         const isSelected = selectedTab === item.value;
@@ -36,7 +50,11 @@ const Notifications: FC = () => {
     }
 
     const renderNotificationItem = ({ item }: { item: any }) => (
-        <View style={[styles.card, item.is_read ? styles.readCard : styles.unreadCard]}>
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => openNotification(item)}
+            style={[styles.card, item.is_read ? styles.readCard : styles.unreadCard]}
+        >
             {item?.title ? (
                 <Text size={16} weight="bold" color={colors.white} style={styles.message}>
                     {item.title}
@@ -56,7 +74,9 @@ const Notifications: FC = () => {
                         <Text size={12} color={colors.white}>{item.time}</Text>
                     </View>
                 </View>
-                <TouchableOpacity onPress={() => toggleReadStatus(item.uuid ?? item.id, item.is_read)}>
+                <TouchableOpacity
+                    onPress={() => toggleReadStatus(item.uuid ?? item.id, item.is_read)}
+                >
                     <Text
                         size={16}
                         weight="semibold"
@@ -67,7 +87,7 @@ const Notifications: FC = () => {
                     </Text>
                 </TouchableOpacity>
             </Row>
-        </View>
+        </TouchableOpacity>
     )
 
     return (
