@@ -13,6 +13,10 @@ describe('mergePollOptionsFromFeed', () => {
     { id: 1, option_text: 'A', votes: 3 },
     { id: 2, option_text: 'B', votes: 2 },
   ];
+  const equalTotalWrongSelected = [
+    { id: 1, option_text: 'A', votes: 2 },
+    { id: 2, option_text: 'B', votes: 2 },
+  ];
 
   it('keeps optimistic counts when a stale feed refetch has fewer votes', () => {
     expect(mergePollOptionsFromFeed(voted, stale, true)).toEqual(voted);
@@ -21,6 +25,12 @@ describe('mergePollOptionsFromFeed', () => {
   it('accepts newer feed data when vote totals are equal or higher', () => {
     expect(mergePollOptionsFromFeed(voted, voted, true)).toEqual(voted);
     expect(mergePollOptionsFromFeed(voted, fresh, true)).toEqual(fresh);
+  });
+
+  it('keeps local counts when totals match but selected option would regress', () => {
+    expect(
+      mergePollOptionsFromFeed(voted, equalTotalWrongSelected, true, 1),
+    ).toEqual(voted);
   });
 
   it('always accepts incoming options before the user has voted', () => {

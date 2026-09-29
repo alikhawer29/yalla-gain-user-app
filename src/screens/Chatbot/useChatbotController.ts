@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
+  chatbotApi,
   useCreateConversationMutation,
   useEndSessionMutation,
   useSendQuestionMutation,
@@ -19,10 +20,43 @@ import {
   touchChatbotSession,
 } from '../../services/chatbot/chatbotSessionCache';
 import { sessionToMessages } from '../../services/chatbot/chatbotHistory';
-import { consumePendingHistorySession } from '../../services/chatbot/chatbotHistoryStore';
+import {
+  consumePendingHistorySession,
+  upsertOptimisticHistorySession,
+} from '../../services/chatbot/chatbotHistoryStore';
+
+const messagesToOptimisticSession = (
+  sessionId: string,
+  nextMessages: TMessage[],
+): ChatbotApiSession => {
+  const questions: NonNullable<ChatbotApiSession['questions']> = [];
+  const answers: NonNullable<ChatbotApiSession['answers']> = [];
+
+  for (const message of nextMessages) {
+    if (message.typing || !message.text?.trim()) continue;
+    const timestamp =
+      message.timestamp instanceof Date
+        ? message.timestamp.toISOString()
+        : new Date().toISOString();
+
+    if (message.sender === 'me') {
+      questions.push({ text: message.text.trim(), timestamp });
+    } else if (message.sender === 'bot' && message.id !== CHATBOT_INITIAL_MESSAGE.id) {
+      answers.push({ text: message.text.trim(), timestamp });
+    }
+  }
+
+  return {
+    session_id: sessionId,
+    questions,
+    answers,
+    started_at: questions[0]?.timestamp ?? new Date().toISOString(),
+  };
+};
 
 const useChatbotController = () => {
   const flatlist_ref = useRef<FlatList>(null);
+  const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const sessionIdRef = useRef<string | null>(null);
   const isCreatingSessionRef = useRef(false);
@@ -199,9 +233,15 @@ const useChatbotController = () => {
       const withoutTyping = prev.filter(m => !m.typing);
       const next = [...withoutTyping, new_message];
       touchChatbotSession({ messages: next });
+      if (sessionIdRef.current) {
+        upsertOptimisticHistorySession(
+          messagesToOptimisticSession(sessionIdRef.current, next),
+        );
+        dispatch(chatbotApi.util.invalidateTags(['ChatbotHistory']));
+      }
       return next;
     });
-  }, [isSendSuccess, sendData]);
+  }, [dispatch, isSendSuccess, sendData]);
 
   useEffect(() => {
     if (!isSendLoading) return;
@@ -269,6 +309,12 @@ const useChatbotController = () => {
     setMessages(prev => {
       const nextMessages = [...prev.filter(m => !m.typing), new_message];
       touchChatbotSession({ messages: nextMessages });
+      if (sessionIdRef.current) {
+        upsertOptimisticHistorySession(
+          messagesToOptimisticSession(sessionIdRef.current, nextMessages),
+        );
+        dispatch(chatbotApi.util.invalidateTags(['ChatbotHistory']));
+      }
       return nextMessages;
     });
 
@@ -277,6 +323,11 @@ const useChatbotController = () => {
     } catch {
       const newSessionId = await createSessionOnly();
       if (!newSessionId) return;
+
+      upsertOptimisticHistorySession(
+        messagesToOptimisticSession(newSessionId, messagesRef.current),
+      );
+      dispatch(chatbotApi.util.invalidateTags(['ChatbotHistory']));
 
       try {
         await sendQuestion(question, newSessionId);

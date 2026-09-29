@@ -1,4 +1,4 @@
-import { ActivityIndicator, FlatList, View, TextInput } from "react-native"
+import { ActivityIndicator, FlatList, View, TextInput, TouchableOpacity } from "react-native"
 import React, { useCallback, useRef, useState } from "react"
 import images from "../../assets/images"
 import Button from "../../components/Button"
@@ -7,6 +7,7 @@ import Icon from "../../components/Icon"
 import Row from "../../components/Row"
 import Seperator from "../../components/Seperator"
 import Tabs from "../../components/Tabs"
+import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
@@ -20,8 +21,31 @@ import { heightPixel } from "../../utils/helper"
 const Chat = () => {
     useSubscriptionScreenGuard('messaging')
     const {
-        values: { chatTypes, selectedTab, searchQuery, filteredChats, isLoading, selectedFilter, showFilterModal, isOpeningAdminChat },
-        functions: { setSelectedTab, onSearchChange, onChatPress, onFilterPress, onCloseFilterModal, onFilterChange, openOrCreateAdminChat },
+        values: {
+            chatTypes,
+            selectedTab,
+            searchQuery,
+            filteredChats,
+            isLoading,
+            selectedFilter,
+            showFilterModal,
+            isOpeningAdminChat,
+            isOpeningUserChat,
+            searchResults,
+            showSearchResults,
+            isSearching,
+            searchTab,
+        },
+        functions: {
+            setSelectedTab,
+            onSearchChange,
+            onChatPress,
+            onFilterPress,
+            onCloseFilterModal,
+            onFilterChange,
+            openOrCreateAdminChat,
+            onSearchUserPress,
+        },
     } = useChatController();
 
     const searchInputRef = useRef<TextInput>(null)
@@ -35,6 +59,22 @@ const Chat = () => {
             })
         }
     }, [isSearchFocused, onSearchChange])
+
+    const searchPlaceholder =
+        searchTab === 'trainer'
+            ? 'Search trainers'
+            : searchTab === 'doctor'
+                ? 'Search doctors'
+                : searchTab === 'admin'
+                    ? 'Search Chat'
+                    : 'Search users by name'
+
+    const emptySearchLabel =
+        searchTab === 'trainer'
+            ? 'No trainers found'
+            : searchTab === 'doctor'
+                ? 'No doctors found'
+                : 'No users found'
 
     const renderEmpty = () => {
         if (isLoading) {
@@ -60,34 +100,67 @@ const Chat = () => {
         return <Empty message="No chats found" />;
     };
 
+    const renderSearchResults = () => {
+        if (!showSearchResults) return null;
+
+        if (isSearching || isOpeningUserChat) {
+            return (
+                <View style={[styles.searchResults, styles.searchLoading]}>
+                    <ActivityIndicator size="small" color={colors.primary} />
+                </View>
+            );
+        }
+
+        if (searchResults.length === 0) {
+            return (
+                <View style={[styles.searchResults, styles.searchEmpty]}>
+                    <Text size={14} color={colors.icon_gray}>
+                        {emptySearchLabel}
+                    </Text>
+                </View>
+            );
+        }
+
+        return (
+            <View style={styles.searchResults}>
+                {searchResults.map((user, index) => (
+                    <TouchableOpacity
+                        key={user.id}
+                        style={[
+                            styles.searchResultItem,
+                            index === searchResults.length - 1 && styles.searchResultItemLast,
+                        ]}
+                        onPress={() => onSearchUserPress(user)}
+                        activeOpacity={0.7}
+                    >
+                        <Icon
+                            source={user.photo ? { uri: user.photo } : images.dummy}
+                            size={40}
+                            rounded
+                            no_padding
+                            border={colors.white}
+                            resize="cover"
+                        />
+                        <Text weight="semibold">
+                            {user.first_name} {user.last_name}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        );
+    };
+
     return (
         <Wrapper scrollable={false} hide_bottom_bar>
             <View style={styles.header_container}>
-                <Row align="center" justify="space-between">
+                <Row align="flex-start" justify="space-between">
                     <View style={styles.search_container}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                borderWidth: 1,
-                                borderColor: colors.white,
-                                borderRadius: 5,
-                                paddingHorizontal: 15,
-                                backgroundColor: 'transparent',
-                                flex: 1,
-                                height: heightPixel(40),
-                            }}
-                        >
+                        <View style={styles.searchInputRow}>
                             <Icon source={images.search} size={13.5} />
                             <TextInput
                                 ref={searchInputRef}
-                                style={{
-                                    flex: 1,
-                                    marginLeft: 5,
-                                    color: colors.white,
-                                    fontSize: 14,
-                                }}
-                                placeholder="Search Chat"
+                                style={styles.searchInput}
+                                placeholder={searchPlaceholder}
                                 placeholderTextColor={colors.white}
                                 value={searchQuery}
                                 onChangeText={handleSearchChange}
@@ -100,6 +173,7 @@ const Chat = () => {
                                 onBlur={() => setIsSearchFocused(false)}
                             />
                         </View>
+                        {renderSearchResults()}
                     </View>
                     <View style={styles.filter_container}>
                         <Touchable onPress={onFilterPress}>

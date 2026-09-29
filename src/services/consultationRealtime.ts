@@ -19,8 +19,86 @@ function invalidateConsultationCaches(): void {
   }
 }
 
+function patchFeedPostReaction(payload: {
+  post_id?: string | number;
+  reaction_count?: number;
+  actor_id?: string | number | null;
+  action?: string;
+}): void {
+  const postId = payload?.post_id;
+  if (postId == null) return;
+
+  const nextCount =
+    payload.reaction_count != null ? Number(payload.reaction_count) : null;
+  if (nextCount == null || Number.isNaN(nextCount)) return;
+
+  // Own reactions are already applied optimistically + via mutation response.
+  // Skipping avoids races that look like double-counts on like/unlike.
+  try {
+    const currentUserId = store.getState().auth?.user?.id;
+    if (
+      currentUserId != null &&
+      payload.actor_id != null &&
+      String(currentUserId) === String(payload.actor_id)
+    ) {
+      return;
+    }
+  } catch {
+    // Continue with patch if auth state is unavailable.
+  }
+
+  const patchList = (draft: any) => {
+    const posts = draft?.data;
+    if (!Array.isArray(posts)) return;
+    const index = posts.findIndex(
+      (post: any) => String(post?.id) === String(postId),
+    );
+    if (index < 0) return;
+    posts[index] = {
+      ...posts[index],
+      reaction_count: nextCount,
+    };
+  };
+
+  try {
+    for (let page = 1; page <= 10; page += 1) {
+      store.dispatch(
+        userApi.util.updateQueryData('getFeeds', { page }, patchList),
+      );
+      store.dispatch(
+        userApi.util.updateQueryData('getMyFeeds', { page }, patchList),
+      );
+    }
+    store.dispatch(userApi.util.updateQueryData('getFeeds', {}, patchList));
+    store.dispatch(userApi.util.updateQueryData('getMyFeeds', {}, patchList));
+    store.dispatch(
+      userApi.util.updateQueryData('getFeedById', postId, (draft: any) => {
+        if (!draft?.data) return;
+        draft.data = {
+          ...draft.data,
+          reaction_count: nextCount,
+        };
+      }),
+    );
+    store.dispatch(
+      userApi.util.invalidateTags([{ type: 'PostReactions', id: postId }]),
+    );
+  } catch {
+    // Store may not be ready during early boot.
+  }
+}
+
 function onCatalogOrAppointment(): void {
   invalidateConsultationCaches();
+}
+
+function onFeedPostReacted(payload: {
+  post_id?: string | number;
+  reaction_count?: number;
+  actor_id?: string | number | null;
+  event?: string;
+}): void {
+  patchFeedPostReaction(payload);
 }
 
 /**
@@ -58,6 +136,7 @@ export function startConsultationRealtimeSync(): () => void {
 
   socket.on('serviceCatalogUpdated', onCatalogOrAppointment);
   socket.on('appointmentUpdated', onCatalogOrAppointment);
+  socket.on('feedPostReacted', onFeedPostReacted);
   socket.on('realtimeSync', (payload: { event?: string }) => {
     const event = String(payload?.event || '');
     if (
@@ -66,6 +145,7 @@ export function startConsultationRealtimeSync(): () => void {
     ) {
       onCatalogOrAppointment();
     }
+    // feedPostReacted is handled by its dedicated listener — skip duplicate.
   });
 
   return () => stopConsultationRealtimeSync();
@@ -76,6 +156,7 @@ export function stopConsultationRealtimeSync(): void {
   if (socket) {
     socket.off('serviceCatalogUpdated', onCatalogOrAppointment);
     socket.off('appointmentUpdated', onCatalogOrAppointment);
+    socket.off('feedPostReacted', onFeedPostReacted);
     socket.removeAllListeners();
     socket.disconnect();
     socket = null;

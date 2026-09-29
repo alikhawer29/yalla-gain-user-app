@@ -81,6 +81,7 @@ export const userApi = createApi({
     'Consultants',
     'Chats',
     'Posts',
+    'PostReactions',
     'BlockedUsers',
     'Wallet',
     'Challenges',
@@ -186,7 +187,73 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Posts'],
+      async onQueryStarted({ id, body }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: response } = await queryFulfilled;
+          const reactionPayload = response?.data;
+          const added = Boolean(
+            reactionPayload &&
+              (reactionPayload.id != null || reactionPayload.reaction != null) &&
+              !reactionPayload.message,
+          );
+          const reactionType = added
+            ? reactionPayload?.reaction ?? body?.reaction
+            : null;
+          const absoluteCount = Number(reactionPayload?.reaction_count);
+          const hasAbsolute = Number.isFinite(absoluteCount);
+
+          const patchList = (draft: any) => {
+            const posts = draft?.data;
+            if (!Array.isArray(posts)) return;
+            const index = posts.findIndex(
+              (post: any) => String(post?.id) === String(id),
+            );
+            if (index < 0) return;
+            const prev = posts[index];
+            posts[index] = {
+              ...prev,
+              // Prefer server absolute count so socket + mutation never double-bump.
+              reaction_count: hasAbsolute
+                ? absoluteCount
+                : Number(prev?.reaction_count ?? 0),
+              is_reacted: added,
+              reaction_type: reactionType,
+              is_liked: added && reactionType === 'like',
+            };
+          };
+
+          for (let page = 1; page <= 10; page += 1) {
+            dispatch(
+              userApi.util.updateQueryData('getFeeds', { page }, patchList),
+            );
+            dispatch(
+              userApi.util.updateQueryData('getMyFeeds', { page }, patchList),
+            );
+          }
+          dispatch(userApi.util.updateQueryData('getFeeds', {}, patchList));
+          dispatch(userApi.util.updateQueryData('getMyFeeds', {}, patchList));
+          dispatch(
+            userApi.util.updateQueryData('getFeedById', id, (draft: any) => {
+              if (!draft?.data) return;
+              const prev = draft.data;
+              draft.data = {
+                ...prev,
+                reaction_count: hasAbsolute
+                  ? absoluteCount
+                  : Number(prev?.reaction_count ?? 0),
+                is_reacted: added,
+                reaction_type: reactionType,
+                is_liked: added && reactionType === 'like',
+              };
+            }),
+          );
+        } catch {
+          // Card local state rolls back on unwrap() failure.
+        }
+      },
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'PostReactions', id },
+      ],
     }),
     reactComment: builder.mutation({
       query: ({ id, body }) => ({
@@ -222,7 +289,41 @@ export const userApi = createApi({
         url: `post/${post_id}/${option_id}/poll`,
         method: 'POST',
       }),
-      invalidatesTags: ['Posts'],
+      async onQueryStarted({ post_id }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: response } = await queryFulfilled;
+          const updatedPost = response?.data;
+          if (!updatedPost?.poll_options) {
+            return;
+          }
+
+          const patchList = (draft: any) => {
+            const posts = draft?.data;
+            if (!Array.isArray(posts)) return;
+            const index = posts.findIndex(
+              (post: any) => String(post?.id) === String(post_id),
+            );
+            if (index < 0) return;
+            posts[index] = {
+              ...posts[index],
+              poll_options: updatedPost.poll_options,
+              is_poll: updatedPost.is_poll ?? posts[index].is_poll,
+            };
+          };
+
+          // Patch common cached feed pages so list props don't briefly go stale.
+          for (let page = 1; page <= 10; page += 1) {
+            dispatch(
+              userApi.util.updateQueryData('getFeeds', { page }, patchList),
+            );
+          }
+          dispatch(
+            userApi.util.updateQueryData('getFeeds', {}, patchList),
+          );
+        } catch {
+          // Local card state remains the source of truth until next refresh.
+        }
+      },
     }),
     getFeeds: builder.query({
       query: query => ({
@@ -239,11 +340,18 @@ export const userApi = createApi({
       }),
     }),
     searchPostUsers: builder.query({
-      query: (q: string) => ({
-        url: 'posts/search',
-        method: 'GET',
-        params: { q },
-      }),
+      query: (arg: string | { q: string; type?: string }) => {
+        const q = typeof arg === 'string' ? arg : arg.q;
+        const type = typeof arg === 'string' ? undefined : arg.type;
+        return {
+          url: 'posts/search',
+          method: 'GET',
+          params: {
+            q,
+            ...(type ? { type } : {}),
+          },
+        };
+      },
     }),
     getFeedById: builder.query({
       query: id => ({
@@ -270,6 +378,8 @@ export const userApi = createApi({
         url: `post/${id}/reacted`,
         method: 'GET',
       }),
+      providesTags: (_result, _error, id) => [{ type: 'PostReactions', id }],
+      keepUnusedDataFor: 0,
     }),
     // workout
     saveVideo: builder.mutation({

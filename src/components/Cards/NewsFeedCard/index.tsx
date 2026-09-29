@@ -13,7 +13,7 @@ import colors from "../../../utils/colors";
 import { heightPixel, widthPixel } from "../../../utils/helper";
 import { navigate } from "../../../utils/navigation";
 import { ROUTES } from "../../../utils/routes";
-import { mergePollOptionsFromFeed } from './pollOptions';
+import { mergePollOptionsFromFeed, bumpPollOptionVotes, getPollPercentages } from './pollOptions';
 import CardWrapper from "../../CardWrapper";
 import Icon from "../../Icon";
 import Image from "../../Image";
@@ -85,6 +85,7 @@ const normalizePollOptions = (options: any[] | undefined) =>
     (options ?? []).map(option => ({
         ...option,
         id: getPollOptionId(option),
+        votes: Number(option?.votes) || 0,
     }));
 
 const getPollOptionsFromProps = (pollOptions?: any[], poll?: INewsFeedCard['poll']) => {
@@ -148,6 +149,22 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
     // Local counts for optimistic updates
     const [localReactionCount, setLocalReactionCount] = useState(reaction_count);
     const [localCommentCount, setLocalCommentCount] = useState(comment_count);
+    const isReactingRef = useRef(false);
+
+    // Keep card counts in sync when feed cache / realtime updates props
+    useEffect(() => {
+        if (isReactingRef.current) return;
+        setLocalReactionCount(reaction_count ?? 0);
+    }, [reaction_count]);
+
+    useEffect(() => {
+        setLocalCommentCount(comment_count ?? 0);
+    }, [comment_count]);
+
+    useEffect(() => {
+        if (isReactingRef.current) return;
+        setUserReaction(getInitialReaction());
+    }, [id, is_reacted, reaction_type, is_liked]);
 
     // Report modals state
     const [showReportConfirm, setShowReportConfirm] = useState(false);
@@ -186,7 +203,12 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
 
         const nextOptions = getPollOptionsFromProps(poll_options, poll);
         setLocalPollOptions(prev =>
-            mergePollOptionsFromFeed(prev, nextOptions, selectedOptionId != null),
+            mergePollOptionsFromFeed(
+                prev,
+                nextOptions,
+                selectedOptionId != null,
+                selectedOptionId,
+            ),
         );
     }, [poll_options, poll, isVoting, selectedOptionId]);
 
@@ -198,6 +220,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         const previousCount = localReactionCount;
 
         // Optimistic update
+        isReactingRef.current = true;
         setUserReaction(reaction);
         if (!previousReaction) {
             // Adding new reaction
@@ -205,15 +228,21 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         }
 
         try {
-            await reactFeed({
+            const response = await reactFeed({
                 id,
                 body: { reaction: reaction === 'heart' ? 'love' : 'like' }
             }).unwrap();
+            const absolute = Number(response?.data?.reaction_count);
+            if (Number.isFinite(absolute)) {
+                setLocalReactionCount(absolute);
+            }
         } catch (error) {
             // Revert on error
             setUserReaction(previousReaction);
             setLocalReactionCount(previousCount);
             console.error('React error:', error);
+        } finally {
+            isReactingRef.current = false;
         }
     };
 
@@ -256,12 +285,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         isVotingRef.current = true;
         setIsVoting(true);
 
-        const updatedOptions = localPollOptions.map((opt: any) => ({
-            ...opt,
-            votes: optionIdsMatch(opt, optionId)
-                ? (opt.votes || 0) + 1
-                : (opt.votes || 0),
-        }));
+        const updatedOptions = bumpPollOptionVotes(localPollOptions, optionId);
 
         setSelectedOptionId(optionId);
         setLocalPollOptions(updatedOptions);
@@ -278,7 +302,14 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                 response?.data?.poll,
             );
             if (serverOptions.length > 0) {
-                setLocalPollOptions(serverOptions);
+                setLocalPollOptions(
+                    mergePollOptionsFromFeed(
+                        updatedOptions,
+                        serverOptions,
+                        true,
+                        optionId,
+                    ),
+                );
             }
         } catch (error: any) {
             console.error('Vote poll error:', error);
@@ -461,17 +492,13 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
         const options = localPollOptions || [];
         if (options.length === 0) return null;
 
-        const totalVotes = options.reduce((sum: number, opt: any) => {
-            return sum + (opt.votes || 0);
-        }, 0);
-
+        const percentages = getPollPercentages(options);
         const userHasVoted = selectedOptionId != null;
 
         return (
             <View style={{ marginTop: heightPixel(10) }}>
                 {options.map((option: any, index: number) => {
-                    const votes = option.votes || 0;
-                    const percentage = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+                    const percentage = percentages[index] ?? 0;
                     const optionText = option.option_text || option.label || option.option || '';
                     const optionId = getPollOptionId(option);
                     const isSelected =
@@ -647,16 +674,23 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                                 // Remove reaction if already reacted
                                 const previousReaction = userReaction;
                                 const previousCount = localReactionCount;
+                                isReactingRef.current = true;
                                 setUserReaction(null);
                                 setLocalReactionCount(prev => Math.max(0, prev - 1));
                                 try {
-                                    await reactFeed({
+                                    const response = await reactFeed({
                                         id,
                                         body: { reaction: previousReaction === 'heart' ? 'love' : 'like' }
                                     }).unwrap();
+                                    const absolute = Number(response?.data?.reaction_count);
+                                    if (Number.isFinite(absolute)) {
+                                        setLocalReactionCount(absolute);
+                                    }
                                 } catch (error) {
                                     setUserReaction(previousReaction);
                                     setLocalReactionCount(previousCount);
+                                } finally {
+                                    isReactingRef.current = false;
                                 }
                             } else {
                                 // Quick like
@@ -709,7 +743,7 @@ const NewsFeedCard: FC<INewsFeedCard> = ({
                 visible={showReactionsModal}
                 onClose={() => setShowReactionsModal(false)}
                 post_id={id}
-                reaction_count={reaction_count}
+                reaction_count={localReactionCount}
             />
             <PostCommentsModal
                 visible={showCommentsModal}

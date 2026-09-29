@@ -2,12 +2,15 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   useCreateAdminChatMutation,
+  useCreateChatMutation,
   useGetChatListQuery,
+  useSearchPostUsersQuery,
 } from '../../redux/Apis/User';
 import { IChat, RootStackParamList } from '../../interfaces';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import socketService from '../../services/socketService';
+import useDebounce from '../../hooks/useDebounce';
 
 const CHAT_TYPES = [
   { label: 'User', value: 'user' },
@@ -22,8 +25,18 @@ const CHAT_FILTERS = [
   { label: 'Unread', value: 'unread' },
 ];
 
+export interface ChatSearchUser {
+  id: number;
+  first_name: string;
+  last_name: string;
+  type: string;
+  photo?: string;
+}
+
 const isAdminChat = (chat: IChat) =>
   String(chat.user_role ?? '').toLowerCase() === 'admin';
+
+const SEARCHABLE_TABS = new Set(['user', 'trainer', 'doctor']);
 
 const useChatController = () => {
   const route = useRoute<RouteProp<RootStackParamList, 'Chat'>>();
@@ -37,6 +50,7 @@ const useChatController = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [isOpeningAdminChat, setIsOpeningAdminChat] = useState(false);
+  const [isOpeningUserChat, setIsOpeningUserChat] = useState(false);
 
   const {
     data,
@@ -45,8 +59,23 @@ const useChatController = () => {
   } = useGetChatListQuery(undefined);
 
   const [createAdminChat] = useCreateAdminChatMutation();
+  const [createChat] = useCreateChatMutation();
 
   const chatList: IChat[] = data?.data || [];
+
+  const trimmedSearch = searchQuery.trim();
+  const debouncedSearch = useDebounce(trimmedSearch, 400);
+  const searchTab = String(selectedTab);
+  const canSearchUsers = SEARCHABLE_TABS.has(searchTab);
+  const showSearchResults = canSearchUsers && trimmedSearch.length > 0;
+  const isSearchPending = trimmedSearch !== debouncedSearch;
+
+  const { data: searchData, isFetching: isSearching } = useSearchPostUsersQuery(
+    { q: debouncedSearch, type: searchTab },
+    { skip: !canSearchUsers || debouncedSearch.length === 0 },
+  );
+
+  const searchResults: ChatSearchUser[] = searchData?.data ?? [];
 
   // Connect socket on mount
   useEffect(() => {
@@ -140,6 +169,52 @@ const useChatController = () => {
     }
   }, [refetch, chatList, createAdminChat, navigateToChatDetails]);
 
+  const onSearchUserPress = useCallback(
+    async (user: ChatSearchUser) => {
+      if (isOpeningUserChat) return;
+      setIsOpeningUserChat(true);
+      try {
+        const existing = chatList.find(
+          chat =>
+            String(chat.user_id) === String(user.id) ||
+            (chat.name?.toLowerCase() ===
+              `${user.first_name} ${user.last_name}`.toLowerCase() &&
+              chat.user_role?.toLowerCase() ===
+                String(user.type || searchTab).toLowerCase()),
+        );
+        if (existing) {
+          setSearchQuery('');
+          navigateToChatDetails(existing);
+          return;
+        }
+
+        const response = await createChat(user.id).unwrap();
+        const chat = (response?.data ?? response) as IChat | undefined;
+        const chatId = chat?.id ?? response?.id;
+        if (!chatId) return;
+
+        setSearchQuery('');
+        navigate(ROUTES.CHAT_DETAILS, {
+          chatId,
+          name: `${user.first_name} ${user.last_name}`.trim(),
+          title: `${user.first_name} ${user.last_name}`.trim(),
+          image: user.photo || '',
+          userRole: user.type || searchTab,
+          userId: user.id,
+        });
+      } finally {
+        setIsOpeningUserChat(false);
+      }
+    },
+    [
+      isOpeningUserChat,
+      chatList,
+      createChat,
+      navigateToChatDetails,
+      searchTab,
+    ],
+  );
+
   const onSearchChange = useCallback((text: string) => {
     setSearchQuery(text);
   }, []);
@@ -156,6 +231,11 @@ const useChatController = () => {
     setSelectedFilter(filter);
   }, []);
 
+  const handleSetSelectedTab = useCallback((tab: string | number) => {
+    setSelectedTab(tab);
+    setSearchQuery('');
+  }, []);
+
   return {
     values: {
       chatTypes: CHAT_TYPES,
@@ -166,9 +246,14 @@ const useChatController = () => {
       selectedFilter,
       showFilterModal,
       isOpeningAdminChat,
+      isOpeningUserChat,
+      searchResults,
+      showSearchResults,
+      isSearching: isSearching || isSearchPending,
+      searchTab,
     },
     functions: {
-      setSelectedTab,
+      setSelectedTab: handleSetSelectedTab,
       onSearchChange,
       onChatPress,
       onFilterPress,
@@ -176,6 +261,7 @@ const useChatController = () => {
       onFilterChange,
       refetch,
       openOrCreateAdminChat,
+      onSearchUserPress,
     },
   };
 };

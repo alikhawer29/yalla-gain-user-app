@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from "react";
+import { FC, useState, useMemo, useEffect } from "react";
 import { Modal, View, FlatList, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native";
 import Row from "../Row";
 import Icon from "../Icon";
@@ -20,10 +20,23 @@ type ReactionType = 'all' | 'like' | 'heart';
 const PostReactionsModal: FC<IPostReactionsModal> = ({ visible, onClose, post_id, reaction_count }) => {
     const [selectedTab, setSelectedTab] = useState<ReactionType>('all');
 
-    // Fetch reactions from API
-    const { data, isLoading, isFetching } = useGetReactsQuery(post_id, {
-        skip: !visible || !post_id, // Skip query if modal is not visible or no post_id
+    // Fetch reactions from API — always refresh when modal opens
+    const { data, isLoading, isFetching, refetch } = useGetReactsQuery(post_id, {
+        skip: !visible || !post_id,
+        refetchOnMountOrArgChange: true,
     });
+
+    useEffect(() => {
+        if (visible && post_id) {
+            refetch();
+        }
+    }, [visible, post_id, refetch]);
+
+    useEffect(() => {
+        if (!visible) {
+            setSelectedTab('all');
+        }
+    }, [visible]);
 
     // Map API response to match our component structure
     const reactions = useMemo(() => {

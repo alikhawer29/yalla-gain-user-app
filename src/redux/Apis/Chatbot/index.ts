@@ -9,6 +9,7 @@ const CHAT_CONFIG = {
 
 export const chatbotApi = createApi({
   reducerPath: 'chatbotApi',
+  tagTypes: ['ChatbotHistory'],
   baseQuery: fetchBaseQuery({
     baseUrl: CHAT_URL,
     responseHandler: async response => {
@@ -59,6 +60,7 @@ export const chatbotApi = createApi({
           },
         };
       },
+      invalidatesTags: ['ChatbotHistory'],
     }),
     endSession: builder.mutation({
       query: body => ({
@@ -73,6 +75,7 @@ export const chatbotApi = createApi({
           'Content-Type': 'application/json',
         },
       }),
+      invalidatesTags: ['ChatbotHistory'],
     }),
     listConversations: builder.query({
       query: (params: { visitor_id: string | number }) => ({
@@ -85,6 +88,7 @@ export const chatbotApi = createApi({
           'Content-Type': 'application/json',
         },
       }),
+      providesTags: ['ChatbotHistory'],
     }),
   }),
 });

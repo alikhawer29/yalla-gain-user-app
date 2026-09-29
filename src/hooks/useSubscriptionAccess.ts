@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { useModal } from '../contexts/ModalContext';
 import { selectUser } from '../redux/Slices/AuthSlice';
 import {
@@ -7,22 +8,31 @@ import {
   SUBSCRIPTION_UPGRADE_MESSAGE,
   SubscriptionFeature,
 } from '../utils/subscription';
+import { NAVIGATORS, ROUTES } from '../utils/routes';
 import { useAppSelector } from './index';
 
 export const useSubscriptionAccess = () => {
   const user = useAppSelector(selectUser);
   const subscription = getUserSubscription(user);
   const { showOkModal } = useModal();
+  const navigation = useNavigation<any>();
 
   const showUpgradeModal = useCallback(
     (message?: string) => {
-      showOkModal({
-        type: 'warning',
-        title: 'Upgrade Required',
-        message: message ?? SUBSCRIPTION_UPGRADE_MESSAGE,
-      });
+      showOkModal(
+        {
+          type: 'warning',
+          title: 'Upgrade Required',
+          message: message ?? SUBSCRIPTION_UPGRADE_MESSAGE,
+        },
+        () => {
+          navigation.navigate(NAVIGATORS.SUBSCRIPTION_STACK, {
+            screen: ROUTES.SUBSCRIPTION,
+          });
+        },
+      );
     },
-    [showOkModal],
+    [navigation, showOkModal],
   );
 
   const canAccess = useCallback(

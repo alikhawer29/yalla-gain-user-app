@@ -3,6 +3,7 @@ import { authApi } from '../../Apis/Auth';
 import { userApi } from '../../Apis/User';
 import { RootState } from '../../Store';
 import { clearChatbotSession } from '../../../services/chatbot/chatbotSessionCache';
+import { clearAllOptimisticHistorySessions } from '../../../services/chatbot/chatbotHistoryStore';
 import { writeUserIdToUnityGame } from '../../../utils/unityGameData';
 import type { UserSubscription } from '../../../utils/subscription';
 
@@ -33,6 +34,7 @@ export const auth = createSlice({
   reducers: {
     logout: state => {
       clearChatbotSession();
+      clearAllOptimisticHistorySessions();
       state.isLoggedIn = false;
       state.user = null;
       state.token = null;

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { useSelector } from 'react-redux';
 import { useListConversationsQuery } from '../../redux/Apis/Chatbot';
 import { selectUser } from '../../redux/Slices/AuthSlice';
@@ -6,9 +6,19 @@ import {
   parseListConversationsResponse,
   toHistoryListItems,
 } from '../../services/chatbot/chatbotHistory';
+import {
+  getOptimisticHistoryVersion,
+  mergeHistorySessions,
+  subscribeOptimisticHistory,
+} from '../../services/chatbot/chatbotHistoryStore';
 
 const useChatbotHistoryController = () => {
   const user = useSelector(selectUser);
+  const optimisticVersion = useSyncExternalStore(
+    subscribeOptimisticHistory,
+    getOptimisticHistoryVersion,
+    getOptimisticHistoryVersion,
+  );
 
   const { data, isLoading, isFetching, refetch, error } =
     useListConversationsQuery(
@@ -17,8 +27,11 @@ const useChatbotHistoryController = () => {
     );
 
   const historyItems = useMemo(
-    () => toHistoryListItems(parseListConversationsResponse(data)),
-    [data],
+    () =>
+      toHistoryListItems(
+        mergeHistorySessions(parseListConversationsResponse(data)),
+      ),
+    [data, optimisticVersion],
   );
 
   return {

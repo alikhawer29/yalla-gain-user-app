@@ -114,7 +114,7 @@ function App() {
                       }}
                     >
                       <AppStackNavigator />
-                      {__DEV__ && <NetworkLoggerFAB />}
+                      {/* {__DEV__ && <NetworkLoggerFAB />} */}
                       <Toast />
                     </NavigationContainer>
                   </ModalProvider>

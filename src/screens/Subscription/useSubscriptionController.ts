@@ -68,9 +68,16 @@ const useSubscriptionController = () => {
 
   const onChoosePlan = useCallback(
     (plan_id: number) => {
+      const plan = (data?.data || []).find(
+        (item: { id?: number; is_active?: boolean }) => item.id === plan_id,
+      );
+      // is_active means current non-cancelled plan — Choose Plan is disabled for it.
+      if (plan?.is_active) {
+        return;
+      }
       subscribe({ plan_id });
     },
-    [subscribe],
+    [data?.data, subscribe],
   );
 
   const onSubscriptionLogs = useCallback(() => {
