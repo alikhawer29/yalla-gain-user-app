@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import useSearch from '../../hooks/useSearch';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
 import { useGetMusclesQuery, useGetWorkoutQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
@@ -10,7 +11,7 @@ const useWorkoutController = () => {
   const [muscleId, setMuscleId] = useState<number | null>(null);
   const [showFilterModal, setShowFilterModal] = useState(false);
 
-  const { data: musclesPayload, isFetching: musclesLoading } =
+  const { data: musclesPayload, isFetching: musclesLoading, refetch: refetchMuscles } =
     useGetMusclesQuery();
 
   const muscles = useMemo(() => {
@@ -26,6 +27,8 @@ const useWorkoutController = () => {
     search: debouncedSearch || undefined,
     muscle_id: muscleId ?? undefined,
   });
+
+  useRefreshOnScreenFocus(refetch, refetchMuscles);
 
   const onWorkoutPress = useCallback(
     (item: { id: number; muscle_id?: number }) => {

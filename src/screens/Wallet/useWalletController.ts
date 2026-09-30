@@ -1,15 +1,16 @@
+import { useStripe } from '@stripe/stripe-react-native';
 import { useCallback, useRef, useState } from 'react';
 import { Keyboard } from 'react-native';
 import { useModal } from '../../contexts/ModalContext';
-import { navigate } from '../../utils/navigation';
-import { ROUTES } from '../../utils/routes';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
 import {
-  useGetWalletCoinsQuery,
-  useGetTransactionCommissionQuery,
   useBuyYallaCoinMutation,
   useConfirmPaymentMutation,
+  useGetTransactionCommissionQuery,
+  useGetWalletCoinsQuery,
 } from '../../redux/Apis/User';
-import { useStripe } from '@stripe/stripe-react-native';
+import { navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 import { STRIPE_RETURN_URL } from '../../utils/stripe';
 import { waitForUiSettled } from '../../utils/waitForUiSettled';
 
@@ -19,6 +20,7 @@ const useWalletController = () => {
     isLoading,
     refetch: refetchWallet,
   } = useGetWalletCoinsQuery({});
+  useRefreshOnScreenFocus(refetchWallet);
   const [buyCoins, { isLoading: isBuyCoinsLoading }] =
     useBuyYallaCoinMutation();
   const [confirmPayment] = useConfirmPaymentMutation();

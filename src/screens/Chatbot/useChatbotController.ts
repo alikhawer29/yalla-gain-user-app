@@ -345,6 +345,7 @@ const useChatbotController = () => {
       data: messages,
       input,
       isStartingNewChat,
+      userPhoto: user?.photo || user?.image || null,
     },
     functions: {
       onSendMessage,

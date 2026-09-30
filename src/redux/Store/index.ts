@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
 import { persistReducer, persistStore } from 'redux-persist';
 import errorLogger from '../../middlewares/apierror.middleware';
 import successLogger from '../../middlewares/apisuccess.middleware';
@@ -10,6 +9,7 @@ import authReducer from '../Slices/AuthSlice';
 import spotifyReducer from '../Slices/SpotifySlice';
 import { chatbotApi } from '../Apis/Chatbot';
 import { movementCorrectionApi } from '../Apis/MovementCorrection';
+import { setupReactNativeQueryListeners } from '../queryLifecycle';
 
 const persistConfig = {
     key: 'yallagain',
@@ -44,7 +44,7 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-setupListeners(store.dispatch);
+setupReactNativeQueryListeners(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

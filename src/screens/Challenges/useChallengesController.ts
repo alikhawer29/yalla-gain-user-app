@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import useDebounce from '../../hooks/useDebounce';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
 import { useGetChallengesQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
-import useDebounce from '../../hooks/useDebounce';
 
 const useChallengesController = () => {
   const [search, setSearch] = useState('');
@@ -13,6 +14,8 @@ const useChallengesController = () => {
     search: debouncedSearch || undefined,
     type: bodyPartType || undefined,
   });
+
+  useRefreshOnScreenFocus(refetch);
 
   const challenges = data?.data ?? [];
 

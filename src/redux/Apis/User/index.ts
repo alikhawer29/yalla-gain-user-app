@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_USER_BASE_URL } from '../../../utils/data';
 import { withTimezone } from '../../../utils/timezone';
+import { queryRefetchDefaults } from '../../queryLifecycle';
 import { RootState } from '../../Store';
 
 export interface WeeklyCaloriesDataPoint {
@@ -73,6 +74,7 @@ export interface ConsultationSessionsResponse {
 
 export const userApi = createApi({
   reducerPath: 'userApi',
+  ...queryRefetchDefaults,
   tagTypes: [
     'SavedContent',
     'VideoDetails',

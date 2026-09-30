@@ -14,7 +14,7 @@ import { getPhoneMaxLength } from "../../utils/helper";
 const AppointmentBooking = () => {
     const {
         values: { formData, phoneInputKey, user, dates, availableSlots, selectedDate, selectedSlot, isBooking, isRefreshing, fieldErrors },
-        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatSlotLocalTime, isSlotPassed, isSlotConflictingWithUserBooking },
+        functions: { updateFormData, onCountryChange, onDateSelect, onSlotSelect, onSlotPress, onBook, onRefresh, formatSlotLabel, isSlotPassed, isSlotConflictingWithUserBooking },
     } = useAppointmentBookingController();
 
     const displayName = [user?.first_name, user?.last_name]
@@ -148,7 +148,7 @@ const AppointmentBooking = () => {
                                     size={14}
                                     color={isPassed && !isBooked && !isUserConflict ? colors.icon_gray : colors.white}
                                 >
-                                    {formatSlotLocalTime(slot.start_at_utc)} - {formatSlotLocalTime(slot.end_at_utc)}
+                                    {formatSlotLabel(slot)}
                                 </Text>
 
                             </TouchableOpacity>

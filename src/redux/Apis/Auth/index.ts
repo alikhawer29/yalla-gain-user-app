@@ -1,9 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { API_BASE_API_PREFIX, API_USER_BASE_URL } from '../../../utils/data'
 import { withTimezone } from '../../../utils/timezone'
+import { queryRefetchDefaults } from '../../queryLifecycle'
 
 export const authApi = createApi({
     reducerPath: 'authApi',
+    ...queryRefetchDefaults,
     baseQuery: fetchBaseQuery({
         baseUrl: API_USER_BASE_URL,
         prepareHeaders: (headers, { }) => {

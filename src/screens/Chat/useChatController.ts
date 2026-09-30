@@ -11,6 +11,7 @@ import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import socketService from '../../services/socketService';
 import useDebounce from '../../hooks/useDebounce';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
 
 const CHAT_TYPES = [
   { label: 'User', value: 'user' },
@@ -57,6 +58,8 @@ const useChatController = () => {
     isFetching: isLoading,
     refetch,
   } = useGetChatListQuery(undefined);
+
+  useRefreshOnScreenFocus(refetch);
 
   const [createAdminChat] = useCreateAdminChatMutation();
   const [createChat] = useCreateChatMutation();

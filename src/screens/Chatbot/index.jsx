@@ -27,7 +27,7 @@ const Chatbot = () => {
 
   const {
     refs: { flatlist_ref },
-    values: { data, input, isStartingNewChat },
+    values: { data, input, isStartingNewChat, userPhoto },
     functions: { onChangeInput, onSendMessage, onStartNewChat },
   } = useChatbotController();
 
@@ -35,6 +35,7 @@ const Chatbot = () => {
   const headerHeight = useHeaderHeight();
   const keyboardHeight = useKeyboard();
   const isNewAndroid = Platform.OS === 'android' && Platform.Version >= 35;
+  const myAvatar = userPhoto ? { uri: userPhoto } : images.dummy;
 
   const renderItem = ({ item }) => (
     <ChatItemCard
@@ -42,7 +43,7 @@ const Chatbot = () => {
       sender={item.sender === 'me'}
       created_at={item?.timestamp}
       typing={item?.typing}
-      image={item.sender === 'me' ? images.dummy : images.chatbot}
+      image={item.sender === 'me' ? myAvatar : images.chatbot}
     />
   );
 

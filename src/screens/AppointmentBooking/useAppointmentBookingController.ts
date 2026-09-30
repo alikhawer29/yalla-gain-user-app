@@ -16,7 +16,7 @@ import {
   isAppointmentOverlapApiError,
   isSlotConflictingWithBookings,
 } from '../../utils/appointmentOverlap';
-import { formatUtcIsoToLocalTime, formatLocalDateYmd } from '../../utils/timezone';
+import { formatUtcIsoToLocalTime, formatLocalDateYmd, formatWallClockTo12h } from '../../utils/timezone';
 
 const SCHEDULING_CONFLICT_MESSAGE =
   'You already have a session booked during this time. Please choose a different slot.';
@@ -356,6 +356,23 @@ const useAppointmentBookingController = () => {
   const formatSlotLocalTime = (startAtUtc?: string | null) =>
     formatUtcIsoToLocalTime(startAtUtc);
 
+  /** Prefer UTC instant; fall back to raw wall-clock if UTC missing. */
+  const formatSlotLabel = (slot: {
+    start_at_utc?: string | null;
+    end_at_utc?: string | null;
+    start_time?: string | null;
+    end_time?: string | null;
+  }) => {
+    const start =
+      formatUtcIsoToLocalTime(slot.start_at_utc) ||
+      formatWallClockTo12h(slot.start_time);
+    const end =
+      formatUtcIsoToLocalTime(slot.end_at_utc) ||
+      formatWallClockTo12h(slot.end_time);
+    if (start && end) return `${start} - ${end}`;
+    return start || end || '';
+  };
+
   const isSlotPassed = (
     startTime: string,
     date: Date | null,
@@ -660,6 +677,7 @@ const useAppointmentBookingController = () => {
       onBook,
       onRefresh,
       formatSlotLocalTime,
+      formatSlotLabel,
       isSlotPassed,
       isSlotConflictingWithUserBooking,
     },

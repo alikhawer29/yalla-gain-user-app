@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { queryRefetchDefaults } from '../../queryLifecycle';
 
 const CHAT_URL = 'https://core-model-v2.botnest.ai/v1/';
 const CHAT_CONFIG = {
@@ -9,6 +10,7 @@ const CHAT_CONFIG = {
 
 export const chatbotApi = createApi({
   reducerPath: 'chatbotApi',
+  ...queryRefetchDefaults,
   tagTypes: ['ChatbotHistory'],
   baseQuery: fetchBaseQuery({
     baseUrl: CHAT_URL,

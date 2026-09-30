@@ -25,6 +25,7 @@ import { flushPendingNotificationDeepLink } from './src/utils/notificationDeepLi
 import { navigationRef } from './src/utils/navigation';
 import { setupPushNotificationHandlers } from './src/utils/pushNotificationHandlers';
 import { STRIPE_URL_SCHEME } from './src/utils/stripe';
+import { notifyNavigationQueryFocus } from './src/redux/queryLifecycle';
 import { startConsultationRealtimeSync } from './src/services/consultationRealtime';
 
 const STRIPE_PUBLISHABLE_KEY =
@@ -111,6 +112,9 @@ function App() {
                       theme={navTheme}
                       onReady={() => {
                         flushPendingNotificationDeepLink();
+                      }}
+                      onStateChange={() => {
+                        notifyNavigationQueryFocus();
                       }}
                     >
                       <AppStackNavigator />

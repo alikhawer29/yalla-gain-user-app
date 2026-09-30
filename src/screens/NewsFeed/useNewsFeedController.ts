@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
-import { useGetFeedsQuery, useSearchPostUsersQuery } from '../../redux/Apis/User';
 import useDebounce from '../../hooks/useDebounce';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
+import { useGetFeedsQuery, useSearchPostUsersQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 
@@ -24,6 +25,8 @@ const useNewsFeedController = () => {
     debouncedSearch,
     { skip: debouncedSearch.length === 0 },
   );
+
+  useRefreshOnScreenFocus(refetch);
 
   const searchResults: PostSearchUser[] = searchData?.data ?? [];
   const trimmedSearch = search.trim();

@@ -175,6 +175,18 @@ export function formatUtcIsoToLocalTime(iso?: string | null): string {
   return `${String(hours12).padStart(2, '0')}:${minutes} ${ampm}`;
 }
 
+/** Wall-clock `HH:mm[:ss]` → `08:00 PM` (no timezone shift; display as-is). */
+export function formatWallClockTo12h(time?: string | null): string {
+  if (!time?.trim()) return '';
+  const [h, m] = time.trim().split(':');
+  const hours24 = Number(h);
+  if (!Number.isFinite(hours24)) return '';
+  const minutes = String(m ?? '00').padStart(2, '0');
+  const ampm = hours24 >= 12 ? 'PM' : 'AM';
+  const hours12 = hours24 % 12 || 12;
+  return `${String(hours12).padStart(2, '0')}:${minutes} ${ampm}`;
+}
+
 /** Local time range from UTC ISO start/end, e.g. `08:00 PM - 09:00 PM`. */
 export function formatUtcIsoLocalRange(
   startIso?: string | null,
